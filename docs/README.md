@@ -21,6 +21,7 @@ This directory is the product and engineering source of truth for the initial ve
 - [Performance budgets](performance-budgets.md)
 - [Testing and QA](testing-qa.md)
 - [Deployment and operations](deployment-and-operations.md)
+- [Observability](observability.md)
 
 ## Art
 
