@@ -66,11 +66,12 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Repeatable multiplayer bot harness for local eight-player smoke/load tests.
 - Automated Chromium smoke tests for real client/server connection, multiplayer room population, HUD/settings, and authoritative combat input.
 - Automated game-client bundle-size regression budgets enforced in CI with build-summary reporting.
+- Structured authoritative room tick-duration p50/p95/p99/max telemetry.
 - Eight-character readable set or modular variants.
 - Responsive HUD/lobby.
 - Accessibility controls.
 - Deployment to staging regions.
-- Crash/performance/network observability.
+- Crash/client-performance/network observability dashboards.
 - Structured external playtest.
 
 **Exit:** retention/rematch/readability data supports continued content investment.
