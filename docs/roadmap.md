@@ -82,10 +82,13 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Persistent color-safe blue/orange team palette with matching HUD/3D objective/player materials and hue-independent diamond/circle team markers.
 - Bounded browser session/performance/error telemetry with an aggregate staging summary endpoint and browser E2E ingestion coverage.
 - Client observability explicitly excludes account identity, display names, user-agent strings, raw input, and stack traces; the current aggregate is process-local and non-durable.
+- Environment-neutral game-client image with startup-generated runtime service URLs and release identity, validated in container smoke tests.
+- Main-branch GHCR publication workflow for immutable SHA-tagged server/API/game/web images with OCI provenance/SBOM metadata, plus a pull-only compose definition for promotion testing.
+- Browser telemetry grouped by runtime release identity for basic canary/regression comparison.
+- Next: deploy the published immutable images to a hosted staging region and validate public HTTPS/WebSocket routing, health probes, and rollback.
 - Next: responsive lobby/party flow once lobby interaction is promoted beyond the current direct-match prototype.
 - Next: input remapping/accessibility control depth and formal color-vision validation on production art.
 - Eight-character readable set or modular variants.
-- Deploy the tested container/static artifacts to hosted staging regions.
 - Next observability step: durable structured logs/metrics plus hosted dashboards for room tick health, browser frame pacing, client error rate, and match completion/rematch behavior.
 - Structured external playtest.
 
