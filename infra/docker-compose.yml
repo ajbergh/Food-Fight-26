@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: foodfight
+      POSTGRES_PASSWORD: foodfight
+      POSTGRES_DB: foodfight
+    ports:
+      - "5432:5432"
+    volumes:
+      - foodfight_pg:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodfight -d foodfight"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --save 60 1
+    ports:
+      - "6379:6379"
+    volumes:
+      - foodfight_redis:/data
+
+volumes:
+  foodfight_pg:
+  foodfight_redis:
