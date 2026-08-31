@@ -28,4 +28,8 @@ Generated concept images are direction-finding material. Before using any genera
 
 ## Repository hygiene
 
-Every imported third-party asset should have a source/license record. Add an asset manifest before the first external art pack or audio library is committed.
+Every imported third-party asset must have a source/license record in `assets/third-party/manifest.json`. CI runs `pnpm assets:audit` to prevent runtime assets from referencing unknown or unapproved sources and to verify the committed derivative against its recorded SHA-256.
+
+A publisher page changing after an earlier release is a provenance-review event, not something to infer around. Preserve the source/license evidence used for the decision, place ambiguous sources on hold, and do not import from them until the applicable terms are explicitly resolved. The manifest may therefore include candidate sources that are intentionally blocked from runtime use.
+
+The manifest is an engineering control, not a substitute for legal review. Before commercial release, re-review all third-party production sources, required notices, redistribution constraints, trademarks, and any license terms that changed during development.
