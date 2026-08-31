@@ -39,6 +39,8 @@ Minimum production signals:
 - client frame-time and network-quality samples;
 - match completion rate.
 
+The game server already emits `room_tick_perf` as one-line structured JSON after approximately 60 seconds of authoritative simulation samples per active room. Ingest the event as structured fields rather than parsing presentation text; retain `roomId`, `samples`, `tickBudgetMs`, `p50Ms`, `p95Ms`, `p99Ms`, and `maxMs`. Production aggregation should primarily group by build, region, process, and time window rather than room ID.
+
 ## Release strategy
 
 - Deploy static client and servers with compatible protocol windows.
