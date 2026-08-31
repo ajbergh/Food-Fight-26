@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, isAbsolute, resolve } from "node:path";
+import { inspectModelFile } from "./gltf.mjs";
 
 const SOURCE_STATUSES = new Set(["approved", "hold", "rejected"]);
 const ASSET_KINDS = new Set(["model", "texture", "audio"]);
@@ -10,6 +11,13 @@ const EXTENSIONS_BY_KIND = Object.freeze({
   texture: new Set([".ktx2", ".basis"]),
   audio: new Set([".ogg", ".mp3", ".webm"]),
 });
+const MODEL_LIMITS = Object.freeze([
+  ["maxTriangles", "triangles", "triangles"],
+  ["maxPrimitives", "primitives", "primitives"],
+  ["maxMaterials", "materials", "materials"],
+  ["maxTextures", "textures", "textures"],
+  ["maxAnimations", "animations", "animations"],
+]);
 const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -29,6 +37,13 @@ export function auditManifest(manifest, repoRoot) {
     firstPlayBytes: 0,
     firstPlayByBucket: Object.fromEntries(BUDGET_BUCKETS.map((bucket) => [bucket, 0])),
     budgets: Object.fromEntries([...BUDGET_BUCKETS, "total"].map((bucket) => [bucket, 0])),
+    modelCount: 0,
+    modelTriangles: 0,
+    modelPrimitives: 0,
+    modelMaterials: 0,
+    modelTextures: 0,
+    modelAnimations: 0,
+    modelSkins: 0,
   };
 
   if (!isRecord(manifest)) {
@@ -125,10 +140,11 @@ export function auditManifest(manifest, repoRoot) {
       errors.push(`${label}.sourceId '${asset.sourceId}' is not approved for runtime use.`);
     }
 
+    let extension = "";
     if (!ASSET_KINDS.has(asset.kind)) {
       errors.push(`${label}.kind must be model, texture, or audio.`);
     } else if (assetPath) {
-      const extension = extname(assetPath).toLowerCase();
+      extension = extname(assetPath).toLowerCase();
       if (!EXTENSIONS_BY_KIND[asset.kind].has(extension)) {
         errors.push(`${label}.path has unsupported ${asset.kind} extension '${extension || "(none)"}'.`);
       }
@@ -153,6 +169,7 @@ export function auditManifest(manifest, repoRoot) {
     if (typeof asset.sha256 !== "string" || !SHA256_PATTERN.test(asset.sha256)) {
       errors.push(`${label}.sha256 must be a lowercase SHA-256 hex digest.`);
     }
+    if (asset.kind === "model") validateModelLimits(asset, label, errors);
 
     if (!assetPath) continue;
     const fullPath = resolve(repoRoot, assetPath);
@@ -175,6 +192,15 @@ export function auditManifest(manifest, repoRoot) {
       const digest = createHash("sha256").update(readFileSync(fullPath)).digest("hex");
       if (digest !== asset.sha256) {
         errors.push(`${label}.sha256 does not match '${assetPath}'.`);
+      }
+    }
+
+    if (asset.kind === "model" && EXTENSIONS_BY_KIND.model.has(extension)) {
+      const inspection = inspectModelFile(fullPath);
+      for (const error of inspection.errors) errors.push(`${label}.path '${assetPath}': ${error}`);
+      if (inspection.errors.length === 0) {
+        recordModelMetrics(summary, inspection.metrics);
+        evaluateModelLimits(asset, inspection.metrics, label, errors);
       }
     }
 
@@ -207,6 +233,7 @@ export function formatAuditReport(result) {
     "",
     `- Sources: ${summary.sourceCount} (${summary.approvedSourceCount} approved, ${summary.heldSourceCount} hold)`,
     `- Runtime assets: ${summary.assetCount}`,
+    `- Models: ${summary.modelCount}; ${summary.modelTriangles.toLocaleString("en-US")} triangles; ${summary.modelPrimitives.toLocaleString("en-US")} primitives; ${summary.modelMaterials.toLocaleString("en-US")} materials; ${summary.modelTextures.toLocaleString("en-US")} textures; ${summary.modelAnimations.toLocaleString("en-US")} animations`,
     `- First-play third-party payload: ${formatBytes(summary.firstPlayBytes)} / ${formatBytes(summary.budgets.total)} hard review threshold`,
   ];
 
@@ -246,6 +273,33 @@ function validateBudgets(value, errors, summary) {
       summary.budgets[bucket] = budget;
     }
   }
+}
+
+function validateModelLimits(asset, label, errors) {
+  for (const [field] of MODEL_LIMITS) {
+    if (!Number.isInteger(asset[field]) || asset[field] < 0) {
+      errors.push(`${label}.${field} must be a non-negative integer for model assets.`);
+    }
+  }
+}
+
+function evaluateModelLimits(asset, metrics, label, errors) {
+  for (const [field, metric, noun] of MODEL_LIMITS) {
+    const limit = asset[field];
+    if (Number.isInteger(limit) && limit >= 0 && metrics[metric] > limit) {
+      errors.push(`${label} model has ${metrics[metric].toLocaleString("en-US")} ${noun}; limit is ${limit.toLocaleString("en-US")}.`);
+    }
+  }
+}
+
+function recordModelMetrics(summary, metrics) {
+  summary.modelCount += 1;
+  summary.modelTriangles += metrics.triangles;
+  summary.modelPrimitives += metrics.primitives;
+  summary.modelMaterials += metrics.materials;
+  summary.modelTextures += metrics.textures;
+  summary.modelAnimations += metrics.animations;
+  summary.modelSkins += metrics.skins;
 }
 
 function normalizeRelativePath(value) {
