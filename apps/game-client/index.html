@@ -8,18 +8,19 @@
   <body>
     <canvas id="game"></canvas>
     <div class="hud">
-      <div><b>BLUE <span id="blue-score">0</span></b></div>
+      <div class="blue-score"><b>BLUE <span id="blue-score">0</span></b></div>
       <div id="timer" class="timer">3:00</div>
-      <div><b>RED <span id="red-score">0</span></b></div>
+      <div class="red-score"><b>RED <span id="red-score">0</span></b></div>
     </div>
     <div class="inventory">
       <span>🍅 <b id="tomato-ammo">3</b></span>
       <span>🍌 <b id="banana-ammo">1</b></span>
     </div>
+    <button id="quality" class="quality" type="button" title="Cycle graphics quality (G)">graphics · medium</button>
     <div id="match-banner" class="match-banner"></div>
     <div id="event-toast" class="event-toast"></div>
-    <div id="objective" class="objective">HOLD THE SUNDAE</div>
-    <div class="controls">WASD / stick · move &nbsp; SPACE / A · tomato &nbsp; Q / B · banana &nbsp; SHIFT / RB · dodge</div>
+    <div id="objective" class="objective" data-state="none">HOLD THE SUNDAE</div>
+    <div class="controls">WASD / stick · move &nbsp; SPACE / A · tomato &nbsp; Q / B · banana &nbsp; SHIFT / RB · dodge &nbsp; G · graphics</div>
     <div id="network" class="network">connecting…</div>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -35,23 +35,26 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 
 **Exit:** the core eight-player graybox rules are implemented; external playtesting is still required to establish whether the loop is genuinely fun.
 
-## M3 — Sundae Control — in progress
+## M3 — Sundae Control — complete at prototype level
 
 - Objective ownership/scoring.
 - Round countdown, timer, overtime, results, and automatic rematch loop.
 - Round recovery/reset.
 - Match-event telemetry hooks.
+- Client objective ownership, overtime, countdown, and result feedback.
 - Future: knockout-specific respawn if a health/KO system is introduced.
 
 **Exit:** complete repeatable three-minute match loop.
 
-## M4 — Art prototype
+## M4 — Art prototype — in progress
 
-- One production-quality hero rig/style.
-- Food-court environment kit.
-- Tomato/banana/pie production assets.
-- First final VFX/audio language.
-- Performance-quality settings.
+- Procedural food-court perimeter and clearer environment hierarchy.
+- Stylized chef silhouettes layered over networked player capsules.
+- More readable sundae objective and team-control ring.
+- Low/medium/high visual-quality toggles.
+- Open-asset source shortlist and intake policy.
+- Next: evaluate one production external food pack and one production hero rig/style.
+- Next: first final VFX/audio language and performance capture.
 
 **Exit:** visual direction validated without blowing performance/download budgets.
 

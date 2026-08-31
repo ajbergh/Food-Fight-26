@@ -4,11 +4,13 @@ import { foodCourtMap } from "@foodfight/maps";
 import type {
   BananaSnapshot,
   ImpactMessage,
+  MatchEventMessage,
   MatchStateShape,
   PickupSnapshot,
   PlayerSnapshot,
   ProjectileSnapshot,
 } from "@foodfight/protocol";
+import { createArtPrototype } from "./artPrototype";
 import { connectToMatch, type MatchConnection } from "./network";
 import "./styles.css";
 
@@ -19,6 +21,9 @@ const blueScoreLabel = document.querySelector<HTMLSpanElement>("#blue-score")!;
 const redScoreLabel = document.querySelector<HTMLSpanElement>("#red-score")!;
 const tomatoAmmoLabel = document.querySelector<HTMLElement>("#tomato-ammo")!;
 const bananaAmmoLabel = document.querySelector<HTMLElement>("#banana-ammo")!;
+const matchBanner = document.querySelector<HTMLDivElement>("#match-banner")!;
+const eventToast = document.querySelector<HTMLDivElement>("#event-toast")!;
+const objectiveLabel = document.querySelector<HTMLDivElement>("#objective")!;
 const keyboard = new pc.Keyboard(window);
 
 const app = new pc.Application(canvas, {
@@ -78,6 +83,8 @@ sundae.addComponent("render", { type: "cylinder", material: material(new pc.Colo
 sundae.setLocalScale(2.2, 3.2, 2.2);
 sundae.setPosition(foodCourtMap.objective.x, 1.6, foodCourtMap.objective.y);
 app.root.addChild(sundae);
+
+const art = createArtPrototype({ app, camera, keyLight: light, sundae });
 
 const playerColors = [
   new pc.Color(0.2, 0.55, 1),
@@ -141,6 +148,7 @@ let smoothedPatchHz = 0;
 let currentPlayerCount = 0;
 let currentBananaCount = 0;
 let currentPickupCount = 0;
+let toastTimer: number | undefined;
 
 window.addEventListener("keydown", (event) => {
   if (event.repeat) return;
@@ -177,9 +185,11 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
   }
 
   const entity = new pc.Entity(`player-${sessionId}`);
-  entity.addComponent("render", { type: "capsule", material: material(colorForSession(sessionId)) });
+  const accent = colorForSession(sessionId);
+  entity.addComponent("render", { type: "capsule", material: material(accent) });
   entity.setLocalScale(0.85, 1.2, 0.85);
   entity.setPosition(player.x, 0.9, player.y);
+  art.decoratePlayer(entity, accent, player.team);
   app.root.addChild(entity);
 
   const label = document.createElement("div");
@@ -338,8 +348,50 @@ function syncState(state: MatchStateShape) {
 
   blueScoreLabel.textContent = String(state.blueScore);
   redScoreLabel.textContent = String(state.redScore);
-  timerLabel.textContent = formatTime(state.timeRemaining);
+  timerLabel.textContent = formatTime(state.phase === "playing" ? state.timeRemaining : state.phaseRemaining);
+  art.setObjectiveState(state.objectiveOwner, state.objectiveContested);
+  updateMatchPresentation(state);
   updateNetworkLabel(state.phase, projectiles.size);
+}
+
+function updateMatchPresentation(state: MatchStateShape) {
+  let banner = "";
+  if (state.phase === "waiting") {
+    banner = `ROUND ${state.roundNumber} · ${Math.max(1, Math.ceil(state.phaseRemaining))}`;
+  } else if (state.phase === "overtime") {
+    banner = "OVERTIME · SUDDEN CONTROL";
+  } else if (state.phase === "finished") {
+    banner = state.winner === "none" ? "ROUND OVER" : `${state.winner.toUpperCase()} WINS`;
+  }
+  matchBanner.textContent = banner;
+  matchBanner.classList.toggle("visible", banner.length > 0);
+  matchBanner.dataset.team = state.winner;
+
+  const objectiveState = state.objectiveContested ? "contested" : state.objectiveOwner;
+  objectiveLabel.dataset.state = objectiveState;
+  objectiveLabel.textContent = state.objectiveContested
+    ? "SUNDAE CONTESTED"
+    : state.objectiveOwner === "blue"
+      ? "BLUE CONTROLS THE SUNDAE"
+      : state.objectiveOwner === "red"
+        ? "RED CONTROLS THE SUNDAE"
+        : "HOLD THE SUNDAE";
+}
+
+function handleMatchEvent(message: MatchEventMessage) {
+  const team = message.team?.toUpperCase();
+  const text = message.type === "round_started"
+    ? `ROUND ${message.roundNumber} · FIGHT!`
+    : message.type === "overtime"
+      ? "OVERTIME!"
+      : message.type === "objective_control"
+        ? `${team} TOOK THE SUNDAE`
+        : `${team ?? "ROUND"} FINISHED`;
+  eventToast.textContent = text;
+  eventToast.dataset.team = message.team ?? "none";
+  eventToast.classList.add("visible");
+  if (toastTimer !== undefined) window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => eventToast.classList.remove("visible"), 1500);
 }
 
 function readMovement() {
@@ -402,7 +454,7 @@ function updateLabels() {
   const markerScreen = new pc.Vec3();
   for (const visual of playerVisuals.values()) {
     markerWorld.copy(visual.entity.getPosition());
-    markerWorld.y += 1.7;
+    markerWorld.y += 2.25;
     cameraComponent.worldToScreen(markerWorld, markerScreen);
     visual.label.style.transform = `translate(-50%, -100%) translate(${markerScreen.x}px, ${markerScreen.y}px)`;
     visual.label.classList.toggle("local", visual.local);
@@ -504,6 +556,7 @@ app.on("update", (dt: number) => {
 
   tickPickups(dt);
   tickImpacts(dt);
+  art.update(dt);
   updateLabels();
 
   if (!connection) return;
@@ -535,6 +588,7 @@ connectToMatch(`Guest-${Math.floor(Math.random() * 9000 + 1000)}`)
     networkLabel.textContent = `connected · ${connection.room.sessionId.slice(0, 6)}`;
     connection.room.onStateChange((state) => syncState(state));
     connection.room.onMessage("impact", (message: ImpactMessage) => spawnImpact(message));
+    connection.room.onMessage("match_event", (message: MatchEventMessage) => handleMatchEvent(message));
     syncState(connection.room.state);
   })
   .catch((error: unknown) => {
