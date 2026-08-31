@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { dirname, extname, isAbsolute, relative, resolve } from "node:path";
+import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 
 const GLB_MAGIC = 0x46546c67;
 const GLB_JSON_CHUNK = 0x4e4f534a;
@@ -132,7 +132,7 @@ export function validateResourceUris(document, fullPath) {
 
     const target = resolve(modelDirectory, decoded);
     const pathFromModel = relative(modelDirectory, target);
-    if (pathFromModel === ".." || pathFromModel.startsWith(`..${process.platform === "win32" ? "\\" : "/"}`) || isAbsolute(pathFromModel)) {
+    if (pathFromModel === ".." || pathFromModel.startsWith(`..${sep}`) || isAbsolute(pathFromModel)) {
       errors.push(`${label} URI '${uri}' escapes the model asset directory.`);
       continue;
     }
