@@ -1,6 +1,7 @@
 import * as pc from "playcanvas";
 import { foodCourtMap } from "@foodfight/maps";
 import type { TeamName } from "@foodfight/protocol";
+import { createArenaDetail } from "./arenaDetail";
 import { createCharacterVisual, type CharacterVisual } from "./characterVisual";
 
 export type VisualQuality = "low" | "medium" | "high";
@@ -97,6 +98,8 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   const mintMaterial = makeMaterial(PALETTE.mint, 0.45);
   const foliageMaterial = makeMaterial(PALETTE.foliage, 0.2);
   const creamMaterial = makeMaterial(PALETTE.cream, 0.52);
+
+  createArenaDetail({ app, mediumDetailRoot, highDetailRoot });
 
   addPrimitive(
     environmentRoot,
