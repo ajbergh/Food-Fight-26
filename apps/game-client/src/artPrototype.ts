@@ -40,9 +40,13 @@ const PALETTE = {
   foliage: new pc.Color(0.2, 0.55, 0.29),
 };
 
+function copyColor(color: pc.Color) {
+  return new pc.Color(color.r, color.g, color.b, color.a);
+}
+
 function makeMaterial(color: pc.Color, gloss = 0.4, metalness = 0.03) {
   const value = new pc.StandardMaterial();
-  value.diffuse = color;
+  value.diffuse = copyColor(color);
   value.gloss = gloss;
   value.metalness = metalness;
   value.update();
@@ -50,7 +54,7 @@ function makeMaterial(color: pc.Color, gloss = 0.4, metalness = 0.03) {
 }
 
 function setMaterialColor(material: pc.StandardMaterial, color: pc.Color) {
-  material.diffuse.copy(color);
+  material.diffuse = copyColor(color);
   material.update();
 }
 
