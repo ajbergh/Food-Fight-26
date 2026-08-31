@@ -8,6 +8,8 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(network).toContainText("1/8");
   await expect(page.locator("#performance")).toContainText("fps");
   await expect(page.locator("#objective")).toBeVisible();
+  await expect(page.locator(".blue-score")).toContainText("◆");
+  await expect(page.locator(".red-score")).toContainText("●");
 
   const quality = page.locator("#quality");
   const initialQuality = (await quality.textContent()) ?? "";
@@ -38,6 +40,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   const objective = page.locator("#objective");
   const motion = page.locator("#motion");
   const hudScale = page.locator("#hud-scale");
+  const palette = page.locator("#palette");
 
   await expect(network).toContainText("online");
   await expect(settings).toBeVisible();
@@ -52,6 +55,15 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   await hudScale.click();
   await expect(body).toHaveAttribute("data-hud-scale", "large");
   await expect(hudScale).toHaveAttribute("aria-label", /HUD scale: large/);
+
+  await expect(body).toHaveAttribute("data-team-palette", "default");
+  await expect(palette).toHaveAttribute("aria-pressed", "false");
+  await palette.click();
+  await expect(body).toHaveAttribute("data-team-palette", "color-safe");
+  await expect(palette).toHaveAttribute("aria-pressed", "true");
+  const redBorder = await page.locator(".red-score").evaluate((element) => getComputedStyle(element).borderTopColor);
+  expect(redBorder).toContain("230");
+  expect(redBorder).toContain("159");
 
   for (const button of await settings.locator("button").all()) {
     const box = await button.boundingBox();
@@ -70,6 +82,8 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   await page.reload();
   await expect(body).toHaveAttribute("data-hud-scale", "large");
   await expect(body).toHaveAttribute("data-reduced-motion", "false");
+  await expect(body).toHaveAttribute("data-team-palette", "color-safe");
+  await expect(palette).toHaveAttribute("aria-pressed", "true");
 });
 
 test("two browser clients join the same available room", async ({ browser }) => {
