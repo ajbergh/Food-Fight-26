@@ -10,11 +10,12 @@ const networkLabel = document.querySelector<HTMLDivElement>("#network")!;
 const timerLabel = document.querySelector<HTMLDivElement>("#timer")!;
 const blueScoreLabel = document.querySelector<HTMLSpanElement>("#blue-score")!;
 const redScoreLabel = document.querySelector<HTMLSpanElement>("#red-score")!;
+const keyboard = new pc.Keyboard(window);
 
 const app = new pc.Application(canvas, {
   mouse: new pc.Mouse(canvas),
   touch: new pc.TouchDevice(canvas),
-  keyboard: new pc.Keyboard(window),
+  keyboard,
 });
 app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
 app.setCanvasResolution(pc.RESOLUTION_AUTO);
@@ -142,7 +143,6 @@ function syncState(state: MatchStateShape) {
 }
 
 function readMovement() {
-  const keyboard = app.keyboard;
   let x = 0;
   let y = 0;
   if (keyboard.isPressed(pc.KEY_A) || keyboard.isPressed(pc.KEY_LEFT)) x -= 1;
@@ -156,6 +156,12 @@ function readMovement() {
   }
   if (length > 0) lastAim = { x, y };
   return { x, y };
+}
+
+function smoothPosition(entity: pc.Entity, target: pc.Vec3, responsiveness: number, dt: number) {
+  const current = entity.getPosition().clone();
+  current.lerp(current, target, 1 - Math.exp(-responsiveness * dt));
+  entity.setPosition(current);
 }
 
 function formatTime(seconds: number) {
@@ -182,21 +188,13 @@ app.on("update", (dt: number) => {
     if (correctionDistance > 2.5) {
       localVisual.entity.setPosition(localVisual.authoritative);
     } else {
-      localVisual.entity.getPosition().lerp(
-        localVisual.entity.getPosition(),
-        localVisual.authoritative,
-        1 - Math.exp(-8 * dt),
-      );
+      smoothPosition(localVisual.entity, localVisual.authoritative, 8, dt);
     }
   }
 
   for (const visual of playerVisuals.values()) {
     if (visual.local) continue;
-    visual.entity.getPosition().lerp(
-      visual.entity.getPosition(),
-      visual.target,
-      1 - Math.exp(-14 * dt),
-    );
+    smoothPosition(visual.entity, visual.target, 14, dt);
   }
 
   if (!connection) return;
