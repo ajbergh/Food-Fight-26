@@ -1,5 +1,6 @@
 import { Client, type Room } from "@colyseus/sdk";
 import type { PlayerInputMessage } from "@foodfight/protocol";
+import { getRuntimeConfig } from "./runtimeConfig";
 
 export interface MatchConnection {
   room: Room;
@@ -8,8 +9,7 @@ export interface MatchConnection {
 }
 
 export async function connectToMatch(displayName: string): Promise<MatchConnection> {
-  const endpoint = import.meta.env.VITE_GAME_SERVER_URL ?? "http://localhost:2567";
-  const client = new Client(endpoint);
+  const client = new Client(getRuntimeConfig().gameServerUrl);
   const room = await client.joinOrCreate("food_fight", { displayName });
 
   return {
