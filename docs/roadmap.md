@@ -57,7 +57,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Live FPS/frame-time instrumentation for art iteration.
 - Open-asset source shortlist and intake policy.
 - Next: evaluate one production external food pack and one production hero rig/style.
-- Next: benchmark download size, draw-call pressure, and frame pacing on target laptops/tablets.
+- Next: benchmark production-asset download size, draw-call pressure, and frame pacing on target laptops/tablets.
 
 **Exit:** visual direction validated without blowing performance/download budgets.
 
@@ -65,6 +65,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 
 - Repeatable multiplayer bot harness for local eight-player smoke/load tests.
 - Automated Chromium smoke tests for real client/server connection, multiplayer room population, HUD/settings, and authoritative combat input.
+- Automated game-client bundle-size regression budgets enforced in CI with build-summary reporting.
 - Eight-character readable set or modular variants.
 - Responsive HUD/lobby.
 - Accessibility controls.
