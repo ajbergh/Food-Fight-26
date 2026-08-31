@@ -12,7 +12,7 @@ Serialization compatibility, malformed input rejection, authoritative state tran
 Multiple simulated clients join/leave, move, throw, score, disconnect, and finish rounds.
 
 ### Browser integration
-Playwright Chromium smoke tests launch the real Vite client and Colyseus game server, then validate load -> connect -> synchronized room population -> live diagnostics -> graphics/audio controls -> active-round combat input. CI installs Chromium and runs `pnpm test:e2e` after type-checks, unit tests, and production builds. Failed runs retain a short-lived Playwright report artifact. Add Firefox/WebKit coverage for critical regressions as the client matures.
+Playwright Chromium smoke tests launch the real Vite client and Colyseus game server, then validate load -> connect -> synchronized room population -> live diagnostics -> graphics/audio controls -> active-round combat input. CI installs Chromium and runs `pnpm test:e2e` after type-checks, unit tests, production builds, and the client performance-budget gate. Failed runs retain a short-lived Playwright report artifact. Add Firefox/WebKit coverage for critical regressions as the client matures.
 
 For a local browser smoke run:
 
@@ -69,13 +69,16 @@ Tier 2 includes Firefox and Chromebook/Linux targets.
 
 ## Performance regression gates
 
-Automated build should eventually report:
+CI currently measures the built game client with `pnpm perf:budget` and blocks merges when the largest JavaScript chunk or aggregate initial HTML/CSS/JS/WASM payload exceeds the repository budgets. The budget logic has unit coverage in `tools/perf-budget`, and the command emits a GitHub Actions step summary for quick review.
 
-- bundle sizes;
-- representative asset sizes;
-- server simulation benchmark;
+Next automated performance gates should add:
+
+- representative asset-size accounting by production format;
+- server simulation benchmark with p50/p95/p99 tick duration;
 - browser frame-time trace on a stable scene;
 - memory after repeated match cycles.
+
+Budget changes must be reviewed as product/architecture changes rather than silently raised to make CI green.
 
 ## Playtest questionnaire
 

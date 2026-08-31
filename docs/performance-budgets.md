@@ -17,6 +17,27 @@ Initial aspiration (compressed transfer):
 
 Cosmetics, alternate maps, and nonessential audio stream after first interaction.
 
+## Automated client build gates
+
+The production game-client build has an intentionally tighter code-only regression gate before large production assets arrive. CI runs `pnpm perf:budget` after `pnpm build` and fails when any of these thresholds are exceeded:
+
+| Measurement | CI budget |
+|---|---:|
+| Largest JavaScript bundle, raw | <= 2.75 MB |
+| Largest JavaScript bundle, gzip estimate | <= 700 kB |
+| Initial HTML/CSS/JS/WASM, gzip estimate | <= 900 kB |
+
+The checker lives in `tools/perf-budget`. It measures the files emitted by `apps/game-client/dist`, uses deterministic gzip level 9 as a repository-local transfer-size estimate, prints the result to the build log, and appends the same report to the GitHub Actions step summary when available.
+
+These are regression thresholds, not targets to consume. A budget increase requires an explicit performance review explaining why code splitting, lazy loading, dependency reduction, or a cheaper implementation is not appropriate. Asset budgets remain separate because compressed textures, models, and audio need format-aware accounting rather than generic gzip estimates.
+
+For a local check:
+
+```bash
+pnpm build
+pnpm perf:budget
+```
+
 ## Frame targets
 
 Tier 1 desktop: stable 60 fps at common laptop resolutions on medium settings.

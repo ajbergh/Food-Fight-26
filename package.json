@@ -14,6 +14,7 @@
     "check": "pnpm -r check",
     "test": "pnpm -r test",
     "test:e2e": "playwright test",
+    "perf:budget": "pnpm --filter @foodfight/perf-budget check:client",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
   },
