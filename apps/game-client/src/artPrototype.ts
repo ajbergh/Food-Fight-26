@@ -3,6 +3,7 @@ import { foodCourtMap } from "@foodfight/maps";
 import type { TeamName } from "@foodfight/protocol";
 
 export type VisualQuality = "low" | "medium" | "high";
+export type TeamPalette = "default" | "color-safe";
 
 interface ArtPrototypeOptions {
   app: pc.Application;
@@ -32,18 +33,29 @@ const PALETTE = {
   mint: new pc.Color(0.28, 0.83, 0.69),
   blue: new pc.Color(0.16, 0.5, 1),
   red: new pc.Color(1, 0.24, 0.18),
+  colorSafeBlue: new pc.Color(0, 0.447, 0.698),
+  colorSafeOrange: new pc.Color(0.902, 0.624, 0),
   gold: new pc.Color(1, 0.72, 0.18),
   neutral: new pc.Color(0.78, 0.76, 0.82),
   foliage: new pc.Color(0.2, 0.55, 0.29),
 };
 
+function copyColor(color: pc.Color) {
+  return new pc.Color(color.r, color.g, color.b, color.a);
+}
+
 function makeMaterial(color: pc.Color, gloss = 0.4, metalness = 0.03) {
   const value = new pc.StandardMaterial();
-  value.diffuse = color;
+  value.diffuse = copyColor(color);
   value.gloss = gloss;
   value.metalness = metalness;
   value.update();
   return value;
+}
+
+function setMaterialColor(material: pc.StandardMaterial, color: pc.Color) {
+  material.diffuse = copyColor(color);
+  material.update();
 }
 
 function addPrimitive(
@@ -154,12 +166,15 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   const cherry = addPrimitive(sundae, "cherry", "sphere", makeMaterial(PALETTE.red, 0.62), [0.25, 0.25, 0.25], [0.05, 1.48, 0]);
   addPrimitive(sundae, "cherry-stem", "cylinder", foliageMaterial, [0.05, 0.22, 0.05], [0.09, 1.68, 0], [0, 0, -18]);
 
+  let teamPalette = readTeamPalette();
+  const initialTeamColors = teamColors(teamPalette);
   const ringMaterials = {
     none: makeMaterial(PALETTE.neutral, 0.45),
-    blue: makeMaterial(PALETTE.blue, 0.55),
-    red: makeMaterial(PALETTE.red, 0.55),
+    blue: makeMaterial(initialTeamColors.blue, 0.55),
+    red: makeMaterial(initialTeamColors.red, 0.55),
     contested: makeMaterial(PALETTE.gold, 0.58),
   };
+  const playerTeamMaterials: Array<{ material: pc.StandardMaterial; team: number }> = [];
   const ringEntities = new Map<string, pc.Entity>();
   for (const [state, ringMaterial] of Object.entries(ringMaterials)) {
     const ring = new pc.Entity(`objective-ring-${state}`);
@@ -217,12 +232,27 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     applyQuality(next[quality]);
   }
 
+  function applyTeamPalette(next: TeamPalette) {
+    teamPalette = next;
+    const colors = teamColors(next);
+    setMaterialColor(ringMaterials.blue, colors.blue);
+    setMaterialColor(ringMaterials.red, colors.red);
+    for (const entry of playerTeamMaterials) {
+      setMaterialColor(entry.material, entry.team === 0 ? colors.blue : colors.red);
+    }
+  }
+
   qualityButton?.addEventListener("click", cycleQuality);
   window.addEventListener("keydown", (event) => {
     if (event.repeat || event.code !== "KeyG") return;
     cycleQuality();
   });
+  window.addEventListener("foodfight:palettechange", (event) => {
+    const next = (event as CustomEvent<{ palette?: TeamPalette }>).detail?.palette;
+    if (next === "default" || next === "color-safe") applyTeamPalette(next);
+  });
   applyQuality(quality);
+  applyTeamPalette(teamPalette);
 
   function setObjectiveState(owner: TeamName, contested: boolean) {
     const state = contested ? "contested" : owner;
@@ -236,7 +266,9 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     const skinMaterial = makeMaterial(new pc.Color(0.92, 0.68, 0.52), 0.34);
     const whiteMaterial = makeMaterial(new pc.Color(0.96, 0.93, 0.9), 0.28);
     const shoeMaterial = makeMaterial(new pc.Color(0.08, 0.065, 0.09), 0.28);
-    const teamMaterial = makeMaterial(team === 0 ? PALETTE.blue : PALETTE.red, 0.5);
+    const colors = teamColors(teamPalette);
+    const teamMaterial = makeMaterial(team === 0 ? colors.blue : colors.red, 0.5);
+    playerTeamMaterials.push({ material: teamMaterial, team });
 
     addPrimitive(root, "head", "sphere", skinMaterial, [0.72, 0.72, 0.72], [0, 0.75, 0]);
     addPrimitive(root, "apron", "box", whiteMaterial, [0.72, 0.68, 0.24], [0, 0.03, -0.42]);
@@ -246,6 +278,11 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     addPrimitive(root, "shoe-left", "sphere", shoeMaterial, [0.42, 0.23, 0.58], [-0.34, -0.75, -0.08]);
     addPrimitive(root, "shoe-right", "sphere", shoeMaterial, [0.42, 0.23, 0.58], [0.34, -0.75, -0.08]);
     addPrimitive(root, "team-ring", "cylinder", teamMaterial, [1.16, 0.045, 1.16], [0, -0.79, 0]);
+    if (team === 0) {
+      addPrimitive(root, "team-shape-diamond", "box", teamMaterial, [0.34, 0.11, 0.34], [0, 1.82, 0], [0, 45, 0]);
+    } else {
+      addPrimitive(root, "team-shape-disc", "cylinder", teamMaterial, [0.34, 0.11, 0.34], [0, 1.82, 0]);
+    }
   }
 
   return {
@@ -264,6 +301,21 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     cycleQuality,
     getQuality: () => quality,
   };
+}
+
+function teamColors(palette: TeamPalette) {
+  return palette === "color-safe"
+    ? { blue: PALETTE.colorSafeBlue, red: PALETTE.colorSafeOrange }
+    : { blue: PALETTE.blue, red: PALETTE.red };
+}
+
+function readTeamPalette(): TeamPalette {
+  try {
+    if (window.localStorage.getItem("foodfight.teamPalette") === "color-safe") return "color-safe";
+  } catch {
+    // Ignore storage failures and use the default palette.
+  }
+  return "default";
 }
 
 function readQuality(): VisualQuality {

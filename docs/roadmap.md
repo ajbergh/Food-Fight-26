@@ -79,8 +79,9 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Responsive gameplay HUD across desktop, phone/tablet widths, short landscape viewports, and display safe areas.
 - Persistent HUD scale and reduced-motion accessibility controls with keyboard shortcuts and operating-system motion preference defaulting.
 - Semantic live status treatment, minimum touch targets, keyboard focus styling, higher-contrast handling, and mobile E2E coverage for presentation settings.
+- Persistent color-safe blue/orange team palette with matching HUD/3D objective/player materials and hue-independent diamond/circle team markers.
 - Next: responsive lobby/party flow once lobby interaction is promoted beyond the current direct-match prototype.
-- Next: color-vision palette presets and input remapping/accessibility control depth.
+- Next: input remapping/accessibility control depth and formal color-vision validation on production art.
 - Eight-character readable set or modular variants.
 - Deploy the tested container/static artifacts to hosted staging regions.
 - Crash/client-performance/network observability dashboards.
