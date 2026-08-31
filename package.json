@@ -15,7 +15,7 @@
     "test": "pnpm -r test",
     "test:e2e": "playwright test",
     "perf:budget": "pnpm --filter @foodfight/perf-budget check:client",
-    "assets:audit": "pnpm --filter @foodfight/asset-audit audit",
+    "assets:audit": "pnpm --filter @foodfight/asset-audit run audit",
     "benchmark:room": "pnpm --filter @foodfight/load-benchmark start",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
