@@ -1,6 +1,7 @@
 import * as pc from "playcanvas";
 import { foodCourtMap } from "@foodfight/maps";
 import type { TeamName } from "@foodfight/protocol";
+import { createCharacterVisual, type CharacterVisual } from "./characterVisual";
 
 export type VisualQuality = "low" | "medium" | "high";
 export type TeamPalette = "default" | "color-safe";
@@ -97,7 +98,6 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   const foliageMaterial = makeMaterial(PALETTE.foliage, 0.2);
   const creamMaterial = makeMaterial(PALETTE.cream, 0.52);
 
-  // A quiet inset under the active arena separates gameplay from the decorative food court.
   addPrimitive(
     environmentRoot,
     "arena-inset",
@@ -107,7 +107,6 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     [0, -0.12, 0],
   );
 
-  // Perimeter walls and restaurant blocks stay outside the playable bounds.
   addPrimitive(environmentRoot, "north-wall", "box", wallMaterial, [foodCourtMap.width + 7, 2.2, 0.7], [0, 1, -11]);
   addPrimitive(environmentRoot, "south-wall", "box", wallMaterial, [foodCourtMap.width + 7, 2.2, 0.7], [0, 1, 11]);
   addPrimitive(environmentRoot, "west-wall", "box", wallMaterial, [0.7, 2.2, foodCourtMap.height + 4], [-17, 1, 0]);
@@ -123,7 +122,6 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     addPrimitive(stall, "sign", "box", index % 2 === 0 ? pinkMaterial : mintMaterial, [3.6, 0.52, 0.18], [0, 2.25, -0.35]);
   });
 
-  // Sparse tables and planters live in the visual perimeter, not the combat lanes.
   const tablePositions: Array<[number, number]> = [
     [-14.9, -7.7], [-14.9, 7.7], [14.9, -7.7], [14.9, 7.7],
     [-13.8, 0], [13.8, 0],
@@ -145,7 +143,6 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     addPrimitive(planter, "leaves", "sphere", foliageMaterial, [1.1, 1.25, 1.1], [0, 1.18, 0]);
   });
 
-  // Add readable trim to the existing gameplay benches without changing collision geometry.
   for (const obstacle of foodCourtMap.obstacles) {
     const obstacleEntity = app.root.findByName(obstacle.id) as pc.Entity | null;
     if (!obstacleEntity) continue;
@@ -159,7 +156,6 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     );
   }
 
-  // Turn the gray cylinder objective into a readable oversized sundae silhouette.
   addPrimitive(sundae, "glass-cup", "cone", creamMaterial, [0.7, 0.82, 0.7], [0, 0.58, 0], [180, 0, 0]);
   addPrimitive(sundae, "vanilla-scoop", "sphere", creamMaterial, [0.72, 0.55, 0.72], [-0.16, 1.02, 0.02]);
   addPrimitive(sundae, "berry-scoop", "sphere", pinkMaterial, [0.66, 0.52, 0.66], [0.28, 1.05, 0.04]);
@@ -175,6 +171,8 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     contested: makeMaterial(PALETTE.gold, 0.58),
   };
   const playerTeamMaterials: Array<{ material: pc.StandardMaterial; team: number }> = [];
+  const playerCharacters = new Map<string, CharacterVisual>();
+  const knownProjectileNames = new Set<string>();
   const ringEntities = new Map<string, pc.Entity>();
   for (const [state, ringMaterial] of Object.entries(ringMaterials)) {
     const ring = new pc.Entity(`objective-ring-${state}`);
@@ -262,26 +260,57 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   }
 
   function decoratePlayer(root: pc.Entity, accent: pc.Color, team: number) {
-    const accentMaterial = makeMaterial(accent, 0.42);
-    const skinMaterial = makeMaterial(new pc.Color(0.92, 0.68, 0.52), 0.34);
-    const whiteMaterial = makeMaterial(new pc.Color(0.96, 0.93, 0.9), 0.28);
-    const shoeMaterial = makeMaterial(new pc.Color(0.08, 0.065, 0.09), 0.28);
+    if (root.render) root.render.enabled = false;
+
+    const sessionId = root.name.startsWith("player-") ? root.name.slice("player-".length) : root.name;
+    playerCharacters.set(sessionId, createCharacterVisual({ root, accent, sessionId }));
+
     const colors = teamColors(teamPalette);
     const teamMaterial = makeMaterial(team === 0 ? colors.blue : colors.red, 0.5);
     playerTeamMaterials.push({ material: teamMaterial, team });
-
-    addPrimitive(root, "head", "sphere", skinMaterial, [0.72, 0.72, 0.72], [0, 0.75, 0]);
-    addPrimitive(root, "apron", "box", whiteMaterial, [0.72, 0.68, 0.24], [0, 0.03, -0.42]);
-    addPrimitive(root, "hat-band", "cylinder", accentMaterial, [0.62, 0.18, 0.62], [0, 1.22, 0]);
-    addPrimitive(root, "hat-puff-a", "sphere", whiteMaterial, [0.46, 0.34, 0.46], [-0.22, 1.45, 0]);
-    addPrimitive(root, "hat-puff-b", "sphere", whiteMaterial, [0.5, 0.38, 0.5], [0.18, 1.48, 0.02]);
-    addPrimitive(root, "shoe-left", "sphere", shoeMaterial, [0.42, 0.23, 0.58], [-0.34, -0.75, -0.08]);
-    addPrimitive(root, "shoe-right", "sphere", shoeMaterial, [0.42, 0.23, 0.58], [0.34, -0.75, -0.08]);
     addPrimitive(root, "team-ring", "cylinder", teamMaterial, [1.16, 0.045, 1.16], [0, -0.79, 0]);
     if (team === 0) {
       addPrimitive(root, "team-shape-diamond", "box", teamMaterial, [0.34, 0.11, 0.34], [0, 1.82, 0], [0, 45, 0]);
     } else {
       addPrimitive(root, "team-shape-disc", "cylinder", teamMaterial, [0.34, 0.11, 0.34], [0, 1.82, 0]);
+    }
+  }
+
+  function updateCharacterThrows() {
+    const activeProjectiles = new Set<string>();
+    for (const node of app.root.children) {
+      const projectile = node as pc.Entity;
+      if (!projectile.name.startsWith("projectile-")) continue;
+      activeProjectiles.add(projectile.name);
+      if (knownProjectileNames.has(projectile.name)) continue;
+      knownProjectileNames.add(projectile.name);
+
+      const projectilePosition = projectile.getPosition();
+      let nearest: CharacterVisual | undefined;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      for (const character of playerCharacters.values()) {
+        if (!character.root.parent) continue;
+        const playerPosition = character.root.getPosition();
+        const dx = projectilePosition.x - playerPosition.x;
+        const dz = projectilePosition.z - playerPosition.z;
+        const distance = dx * dx + dz * dz;
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearest = character;
+        }
+      }
+
+      if (nearest) {
+        const playerPosition = nearest.root.getPosition();
+        nearest.triggerThrow({
+          x: projectilePosition.x - playerPosition.x,
+          z: projectilePosition.z - playerPosition.z,
+        });
+      }
+    }
+
+    for (const name of knownProjectileNames) {
+      if (!activeProjectiles.has(name)) knownProjectileNames.delete(name);
     }
   }
 
@@ -297,6 +326,15 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
         foodCourtMap.objective.radius * 2.08 * pulse,
       );
       cherry.rotateLocal(0, 45 * dt, 0);
+
+      updateCharacterThrows();
+      for (const [sessionId, character] of playerCharacters) {
+        if (!character.root.parent) {
+          playerCharacters.delete(sessionId);
+          continue;
+        }
+        character.update(dt);
+      }
     },
     cycleQuality,
     getQuality: () => quality,
