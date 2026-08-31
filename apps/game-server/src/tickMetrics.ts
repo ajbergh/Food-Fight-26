@@ -30,6 +30,16 @@ export class TickDurationReporter {
   }
 }
 
+export function samplesForReportWindow(tickDelayMs: number, reportWindowMs: number): number {
+  if (!Number.isFinite(tickDelayMs) || tickDelayMs <= 0) {
+    throw new Error("tickDelayMs must be positive");
+  }
+  if (!Number.isFinite(reportWindowMs) || reportWindowMs <= 0) {
+    throw new Error("reportWindowMs must be positive");
+  }
+  return Math.max(1, Math.round(reportWindowMs / tickDelayMs));
+}
+
 export function summarizeTickDurations(durations: readonly number[]): TickDurationSummary | undefined {
   const sorted = durations
     .filter((duration) => Number.isFinite(duration) && duration >= 0)

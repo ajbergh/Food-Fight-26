@@ -79,9 +79,20 @@ Establish device-specific limits through real browser profiling. Texture compres
 
 A 30 Hz room has ~33 ms tick interval, but normal simulation work should consume a small fraction of that to support many rooms/process and absorb GC/network jitter.
 
-The game server measures the authoritative simulation callback directly. Each active room emits a structured `room_tick_perf` JSON event after roughly 60 seconds of valid tick samples with `samples`, `tickBudgetMs`, `p50Ms`, `p95Ms`, `p99Ms`, and `maxMs`. Percentiles use nearest-rank semantics so operational dashboards and local logs can compare the same values.
+The game server measures the authoritative simulation callback directly. Each active room emits a structured `room_tick_perf` JSON event after roughly 60 seconds of valid tick samples with `samples`, `tickBudgetMs`, `p50Ms`, `p95Ms`, `p99Ms`, and `maxMs`. Percentiles use nearest-rank semantics so operational dashboards and local logs can compare the same values. `TICK_METRICS_REPORT_MS` may shorten the reporting window for controlled diagnostics; production should normally retain the 60-second default.
 
-This is runtime observability rather than a CI pass/fail benchmark. Do not set a hard tick-duration gate from unloaded CI runners. Establish warning/critical thresholds only after representative eight-player load data exists; the design target remains for p99 simulation work to stay comfortably below the full tick interval.
+CI runs `pnpm benchmark:room` after the production build. That benchmark launches an isolated server, fills one room with eight protocol-level clients, drives continuous gameplay input for 10 seconds, and requests 2-second telemetry windows. The run fails if the room cannot populate or if usable tick telemetry is not produced. It reports worst observed p50/p95/p99/max values plus p99 as a percentage of the authoritative tick interval.
+
+The hosted-run timing numbers are **not** a hard release threshold because shared CI hardware is noisy. Use benchmark history for regression investigation, then establish warning/critical thresholds from staging data on known machine classes. The design target remains for p99 simulation work to stay comfortably below the full tick interval.
+
+For a local load sample:
+
+```bash
+pnpm build
+pnpm benchmark:room
+```
+
+Longer diagnostic runs can use `LOAD_BENCHMARK_SECONDS` and `LOAD_BENCHMARK_REPORT_MS` without changing production defaults.
 
 ## Network budget
 
