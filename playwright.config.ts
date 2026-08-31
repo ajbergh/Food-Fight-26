@@ -17,6 +17,12 @@ export default defineConfig({
   },
   webServer: [
     {
+      command: "pnpm --filter @foodfight/platform-api dev",
+      url: "http://127.0.0.1:3000/health",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
       command: "pnpm --filter @foodfight/game-server dev",
       url: "http://127.0.0.1:2567",
       reuseExistingServer: !process.env.CI,
@@ -27,6 +33,7 @@ export default defineConfig({
       url: "http://127.0.0.1:5174",
       env: {
         VITE_GAME_SERVER_URL: "http://127.0.0.1:2567",
+        VITE_PLATFORM_API_URL: "http://127.0.0.1:3000",
       },
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
