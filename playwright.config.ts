@@ -23,7 +23,7 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
-      command: "pnpm --filter @foodfight/game-client dev -- --host 127.0.0.1",
+      command: "pnpm --filter @foodfight/game-client exec vite --host 127.0.0.1 --port 5174",
       url: "http://127.0.0.1:5174",
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
