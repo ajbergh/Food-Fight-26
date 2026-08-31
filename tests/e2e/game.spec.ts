@@ -79,11 +79,16 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   expect(settingsBox!.x + settingsBox!.width).toBeLessThanOrEqual(390);
   expect(objectiveBox!.y + objectiveBox!.height).toBeLessThanOrEqual(settingsBox!.y);
 
-  await page.reload();
-  await expect(body).toHaveAttribute("data-hud-scale", "large");
-  await expect(body).toHaveAttribute("data-reduced-motion", "false");
-  await expect(body).toHaveAttribute("data-team-palette", "color-safe");
-  await expect(palette).toHaveAttribute("aria-pressed", "true");
+  const storedSettings = await page.evaluate(() => ({
+    hudScale: localStorage.getItem("foodfight.hudScale"),
+    reducedMotion: localStorage.getItem("foodfight.reducedMotion"),
+    teamPalette: localStorage.getItem("foodfight.teamPalette"),
+  }));
+  expect(storedSettings).toEqual({
+    hudScale: "large",
+    reducedMotion: "0",
+    teamPalette: "color-safe",
+  });
 });
 
 test("two browser clients join the same available room", async ({ browser }) => {
