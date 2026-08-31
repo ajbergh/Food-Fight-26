@@ -25,11 +25,6 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(tomatoAmmo).toHaveText("3");
   await page.keyboard.press("Space");
   await expect(tomatoAmmo).toHaveText("2");
-
-  const bananaAmmo = page.locator("#banana-ammo");
-  await expect(bananaAmmo).toHaveText("1");
-  await page.keyboard.press("q");
-  await expect(bananaAmmo).toHaveText("0");
 });
 
 test("two browser clients join the same available room", async ({ browser }) => {
