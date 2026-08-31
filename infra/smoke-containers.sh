@@ -57,10 +57,20 @@ wait_http() {
   return 1
 }
 
+assert_contains() {
+  local value="$1"
+  local expected="$2"
+  if [[ "$value" != *"$expected"* ]]; then
+    echo "Expected response to contain: $expected" >&2
+    echo "Actual response:" >&2
+    echo "$value" >&2
+    return 1
+  fi
+}
+
 build_target game-server "$game_server_image"
 build_target platform-api "$platform_api_image"
-build_target game-client-static "$game_client_image" \
-  --build-arg "VITE_GAME_SERVER_URL=http://localhost:2567"
+build_target game-client-static "$game_client_image"
 build_target web-static "$web_image"
 
 docker run --detach \
@@ -75,6 +85,9 @@ docker run --detach \
 
 docker run --detach \
   --name "$game_client_container" \
+  --env GAME_SERVER_PUBLIC_URL=https://match.smoke.example \
+  --env PLATFORM_API_PUBLIC_URL=https://api.smoke.example \
+  --env FOOD_FIGHT_RELEASE=sha-smoke-test \
   --publish 38081:8080 \
   "$game_client_image" >/dev/null
 
@@ -86,6 +99,11 @@ docker run --detach \
 wait_http http://127.0.0.1:33000/health "$platform_api_container"
 wait_http http://127.0.0.1:38081/healthz "$game_client_container"
 wait_http http://127.0.0.1:38080/healthz "$web_container"
+
+runtime_config="$(curl --fail --silent --show-error http://127.0.0.1:38081/runtime-config.js)"
+assert_contains "$runtime_config" 'gameServerUrl: "https://match.smoke.example"'
+assert_contains "$runtime_config" 'platformApiUrl: "https://api.smoke.example"'
+assert_contains "$runtime_config" 'release: "sha-smoke-test"'
 
 GAME_SERVER_URL=http://127.0.0.1:32567 \
 BOT_COUNT=2 \
