@@ -16,6 +16,7 @@
     "@foodfight/protocol": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "latest",
     "tsx": "latest"
   }
 }
