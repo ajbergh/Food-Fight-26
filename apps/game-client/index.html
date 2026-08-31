@@ -3,17 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Food Fight 26 — Prototype</title>
+    <title>Food Fight 26 — Network Prototype</title>
   </head>
   <body>
     <canvas id="game"></canvas>
     <div class="hud">
-      <div><b>BLUE 0</b></div>
-      <div class="timer">3:00</div>
-      <div><b>RED 0</b></div>
+      <div><b>BLUE <span id="blue-score">0</span></b></div>
+      <div id="timer" class="timer">3:00</div>
+      <div><b>RED <span id="red-score">0</span></b></div>
     </div>
     <div class="objective">HOLD THE SUNDAE</div>
-    <div id="network" class="network">offline prototype</div>
+    <div class="controls">WASD / arrows · move</div>
+    <div id="network" class="network">connecting…</div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
