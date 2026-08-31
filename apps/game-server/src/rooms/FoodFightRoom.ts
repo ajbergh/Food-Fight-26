@@ -23,6 +23,8 @@ class PlayerState extends Schema {
   lastInputSeq = 0;
   stunRemaining = 0;
   dodgeRemaining = 0;
+  tomatoAmmo = GAME.tomatoAmmoStart;
+  bananaAmmo = GAME.bananaAmmoStart;
   moveX = 0;
   moveY = 0;
   dodgeX = 0;
@@ -42,6 +44,8 @@ defineTypes(PlayerState, {
   lastInputSeq: "uint32",
   stunRemaining: "number",
   dodgeRemaining: "number",
+  tomatoAmmo: "uint8",
+  bananaAmmo: "uint8",
 });
 
 class ProjectileState extends Schema {
@@ -84,10 +88,27 @@ defineTypes(BananaState, {
   kind: "string",
 });
 
+class PickupState extends Schema {
+  x = 0;
+  y = 0;
+  kind = "tomato";
+  available = true;
+  respawnRemaining = 0;
+}
+
+defineTypes(PickupState, {
+  x: "number",
+  y: "number",
+  kind: "string",
+  available: "boolean",
+  respawnRemaining: "number",
+});
+
 class FoodFightState extends Schema {
   players = new MapSchema<PlayerState>();
   projectiles = new MapSchema<ProjectileState>();
   bananas = new MapSchema<BananaState>();
+  pickups = new MapSchema<PickupState>();
   blueScore = 0;
   redScore = 0;
   timeRemaining: number = GAME.roundSeconds;
@@ -98,6 +119,7 @@ defineTypes(FoodFightState, {
   players: { map: PlayerState },
   projectiles: { map: ProjectileState },
   bananas: { map: BananaState },
+  pickups: { map: PickupState },
   blueScore: "uint16",
   redScore: "uint16",
   timeRemaining: "number",
@@ -111,6 +133,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   private nextBananaId = 1;
 
   onCreate() {
+    this.initializePickups();
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
     this.setSimulationInterval((deltaMs) => this.tick(deltaMs / 1000), 1000 / GAME.serverHz);
   }
@@ -128,6 +151,16 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
   onLeave(client: Client) {
     this.state.players.delete(client.sessionId);
+  }
+
+  private initializePickups() {
+    for (const spawn of foodCourtMap.pickupSpawns) {
+      const pickup = new PickupState();
+      pickup.x = spawn.x;
+      pickup.y = spawn.y;
+      pickup.kind = spawn.kind;
+      this.state.pickups.set(spawn.id, pickup);
+    }
   }
 
   private handleInput(client: Client, input: PlayerInputMessage) {
@@ -159,7 +192,14 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   }
 
   private tryThrowTomato(ownerSessionId: string, player: PlayerState) {
-    if (player.throwCooldown > 0 || player.stunRemaining > 0 || player.dodgeRemaining > 0) return;
+    if (
+      player.tomatoAmmo <= 0 ||
+      player.throwCooldown > 0 ||
+      player.stunRemaining > 0 ||
+      player.dodgeRemaining > 0
+    ) {
+      return;
+    }
 
     const aim = normalizeAim({ x: player.aimX, y: player.aimY });
     if (aim.x === 0 && aim.y === 0) return;
@@ -177,11 +217,19 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     projectile.lifetime = tomato.lifetimeSeconds;
 
     this.state.projectiles.set(`tomato-${this.nextProjectileId++}`, projectile);
+    player.tomatoAmmo -= 1;
     player.throwCooldown = tomato.cooldownSeconds;
   }
 
   private tryDropBanana(ownerSessionId: string, player: PlayerState) {
-    if (player.bananaCooldown > 0 || player.stunRemaining > 0 || player.dodgeRemaining > 0) return;
+    if (
+      player.bananaAmmo <= 0 ||
+      player.bananaCooldown > 0 ||
+      player.stunRemaining > 0 ||
+      player.dodgeRemaining > 0
+    ) {
+      return;
+    }
 
     let aim = normalizeAim({ x: player.aimX, y: player.aimY });
     if (aim.x === 0 && aim.y === 0) aim = { x: 1, y: 0 };
@@ -205,6 +253,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     banana.ownerSessionId = ownerSessionId;
     banana.lifetime = ITEMS.banana.lifetimeSeconds;
     this.state.bananas.set(`banana-${this.nextBananaId++}`, banana);
+    player.bananaAmmo -= 1;
     player.bananaCooldown = ITEMS.banana.cooldownSeconds;
   }
 
@@ -242,6 +291,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
     this.tickProjectiles(dt);
     this.tickBananas(dt);
+    this.tickPickups(dt);
     if (this.state.timeRemaining <= 0) this.state.phase = "finished";
   }
 
@@ -334,6 +384,36 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       this.state.bananas.delete(bananaId);
       this.broadcast("impact", impact);
     }
+  }
+
+  private tickPickups(dt: number) {
+    this.state.pickups.forEach((pickup: PickupState) => {
+      if (!pickup.available) {
+        pickup.respawnRemaining = Math.max(0, pickup.respawnRemaining - dt);
+        if (pickup.respawnRemaining <= 0) pickup.available = true;
+        return;
+      }
+
+      let collector: PlayerState | undefined;
+      this.state.players.forEach((player: PlayerState) => {
+        if (collector || player.stunRemaining > 0) return;
+        const needsPickup = pickup.kind === "tomato"
+          ? player.tomatoAmmo < GAME.tomatoAmmoMax
+          : player.bananaAmmo < GAME.bananaAmmoMax;
+        if (!needsPickup) return;
+        if (!circlesOverlap(pickup, GAME.pickupRadius, player, GAME.playerRadius)) return;
+        collector = player;
+      });
+
+      if (!collector) return;
+      if (pickup.kind === "tomato") {
+        collector.tomatoAmmo = Math.min(GAME.tomatoAmmoMax, collector.tomatoAmmo + 2);
+      } else {
+        collector.bananaAmmo = Math.min(GAME.bananaAmmoMax, collector.bananaAmmo + 1);
+      }
+      pickup.available = false;
+      pickup.respawnRemaining = GAME.pickupRespawnSeconds;
+    });
   }
 }
 

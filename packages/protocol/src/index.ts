@@ -19,6 +19,8 @@ export interface PlayerSnapshot {
   lastInputSeq: number;
   stunRemaining: number;
   dodgeRemaining: number;
+  tomatoAmmo: number;
+  bananaAmmo: number;
 }
 
 export interface ProjectileSnapshot {
@@ -41,6 +43,14 @@ export interface BananaSnapshot {
   kind: "banana";
 }
 
+export interface PickupSnapshot {
+  x: number;
+  y: number;
+  kind: "tomato" | "banana";
+  available: boolean;
+  respawnRemaining: number;
+}
+
 export interface ImpactMessage {
   x: number;
   y: number;
@@ -52,6 +62,7 @@ export interface MatchStateShape {
   players: Record<string, PlayerSnapshot>;
   projectiles: Record<string, ProjectileSnapshot>;
   bananas: Record<string, BananaSnapshot>;
+  pickups: Record<string, PickupSnapshot>;
   blueScore: number;
   redScore: number;
   timeRemaining: number;

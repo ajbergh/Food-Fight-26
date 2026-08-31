@@ -1,6 +1,6 @@
 # DiscoveringGodot Food Fight repository review
 
-Source reviewed: `DiscoveringGodot/6_Food_Fight` (GitHub).
+Source reviewed: `DiscoveringGodot/6_Food_Fight` (GitHub), current `master` commit `bc328c51576873f60306bcad0912fc836a095625` at the time of review.
 
 ## License
 
@@ -8,13 +8,13 @@ The repository declares the MIT License, copyright 2018 Discovering Godot. Any c
 
 ## Useful ideas and candidate assets
 
-The project is a third-person 3D food-throwing game and contains a surprisingly useful prototype asset set. In particular:
+The project is a third-person 3D food-throwing game and contains a useful prototype asset set. In particular:
 
 - a generic projectile scene/template;
 - food ammunition variants including burger, cookie, cupcake, hotdog, ice cream, milkshake, soda, and doughnut;
 - furniture and architecture sets that may be useful as blockout references for cafeteria/food-court maps;
-- projectile whoosh audio and other SFX candidates;
-- ammo refill-zone mechanics;
+- projectile/hit audio and other SFX candidates;
+- an ammo refill system, which informed Food Fight 26's first server-authoritative respawning food pickup pads;
 - character customization and runtime material/texture swapping examples;
 - life/status UI patterns and world-space status displays.
 
