@@ -25,6 +25,9 @@ export default defineConfig({
     {
       command: "pnpm --filter @foodfight/game-client exec vite --host 127.0.0.1 --port 5174",
       url: "http://127.0.0.1:5174",
+      env: {
+        VITE_GAME_SERVER_URL: "http://127.0.0.1:2567",
+      },
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
     },
