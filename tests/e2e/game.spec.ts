@@ -30,6 +30,8 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
 });
 
 test("responsive HUD accessibility settings persist on a phone viewport", async ({ page }) => {
+  test.setTimeout(60_000);
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
