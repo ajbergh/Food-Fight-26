@@ -1,16 +1,22 @@
 type Cue = "tomato" | "banana" | "dodge" | "round" | "overtime" | "objective" | "finish";
+type HudScale = "compact" | "normal" | "large";
 
 const audioButton = document.querySelector<HTMLButtonElement>("#audio");
+const hudScaleButton = document.querySelector<HTMLButtonElement>("#hud-scale");
+const motionButton = document.querySelector<HTMLButtonElement>("#motion");
 const performanceLabel = document.querySelector<HTMLDivElement>("#performance");
 const eventToast = document.querySelector<HTMLDivElement>("#event-toast");
 const objective = document.querySelector<HTMLDivElement>("#objective");
 const actionFlash = document.querySelector<HTMLDivElement>("#action-flash");
 const canvas = document.querySelector<HTMLCanvasElement>("#game");
-const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+const motionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
 let audioContext: AudioContext | undefined;
 let masterGain: GainNode | undefined;
 let muted = readMuted();
+let hudScale = readHudScale();
+let motionOverride = readMotionOverride();
+let reducedMotion = motionOverride ?? motionMedia?.matches ?? false;
 let previousToast = "";
 let previousObjectiveState = objective?.dataset.state ?? "none";
 let lastGamepadThrow = false;
@@ -105,7 +111,7 @@ function playCue(cue: Cue) {
 }
 
 function flash(cue: Cue) {
-  if (!actionFlash || reduceMotion) return;
+  if (!actionFlash || reducedMotion) return;
   actionFlash.className = "action-flash";
   void actionFlash.offsetWidth;
   actionFlash.classList.add("visible", cue);
@@ -142,10 +148,89 @@ function readMuted() {
   }
 }
 
+function readHudScale(): HudScale {
+  try {
+    const stored = window.localStorage.getItem("foodfight.hudScale");
+    if (stored === "compact" || stored === "normal" || stored === "large") return stored;
+  } catch {
+    // Use the default scale when storage is unavailable.
+  }
+  return "normal";
+}
+
+function applyHudScale(next: HudScale, persist = true) {
+  hudScale = next;
+  document.body.dataset.hudScale = next;
+  if (hudScaleButton) {
+    hudScaleButton.textContent = `hud · ${next}`;
+    hudScaleButton.setAttribute("aria-label", `HUD scale: ${next}. Activate to cycle scale.`);
+  }
+  if (!persist) return;
+  try {
+    window.localStorage.setItem("foodfight.hudScale", next);
+  } catch {
+    // HUD scaling still works for the current session.
+  }
+}
+
+function cycleHudScale() {
+  const next: Record<HudScale, HudScale> = {
+    compact: "normal",
+    normal: "large",
+    large: "compact",
+  };
+  applyHudScale(next[hudScale]);
+}
+
+function readMotionOverride(): boolean | undefined {
+  try {
+    const stored = window.localStorage.getItem("foodfight.reducedMotion");
+    if (stored === "1") return true;
+    if (stored === "0") return false;
+  } catch {
+    // Fall through to the operating-system preference.
+  }
+  return undefined;
+}
+
+function applyReducedMotion(next: boolean, persist = true) {
+  reducedMotion = next;
+  document.body.dataset.reducedMotion = String(next);
+  if (motionButton) {
+    motionButton.textContent = next ? "motion · reduced" : "motion · full";
+    motionButton.setAttribute("aria-pressed", String(next));
+    motionButton.setAttribute("aria-label", next ? "Reduced motion enabled" : "Reduced motion disabled");
+  }
+  if (!persist) return;
+  motionOverride = next;
+  try {
+    window.localStorage.setItem("foodfight.reducedMotion", next ? "1" : "0");
+  } catch {
+    // Motion preference still works for the current session.
+  }
+}
+
+function toggleReducedMotion() {
+  applyReducedMotion(!reducedMotion);
+}
+
+function handleSystemMotionChange(event: MediaQueryListEvent) {
+  if (motionOverride !== undefined) return;
+  applyReducedMotion(event.matches, false);
+}
+
 function handleKeyboard(event: KeyboardEvent) {
   if (event.repeat) return;
   if (event.code === "KeyM") {
     toggleMute();
+    return;
+  }
+  if (event.code === "KeyH") {
+    cycleHudScale();
+    return;
+  }
+  if (event.code === "KeyR") {
+    toggleReducedMotion();
     return;
   }
   if (event.code === "Space") triggerLocalAction("tomato");
@@ -211,7 +296,12 @@ function startPerformanceMeter() {
 }
 
 updateAudioButton();
+applyHudScale(hudScale, false);
+applyReducedMotion(reducedMotion, false);
 audioButton?.addEventListener("click", toggleMute);
+hudScaleButton?.addEventListener("click", cycleHudScale);
+motionButton?.addEventListener("click", toggleReducedMotion);
+motionMedia?.addEventListener?.("change", handleSystemMotionChange);
 window.addEventListener("keydown", handleKeyboard);
 canvas?.addEventListener("pointerdown", () => triggerLocalAction("tomato"));
 if (eventToast) new MutationObserver(handleToastMutation).observe(eventToast, { childList: true, characterData: true, subtree: true });
