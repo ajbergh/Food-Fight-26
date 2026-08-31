@@ -68,10 +68,13 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Automated game-client bundle-size regression budgets enforced in CI with build-summary reporting.
 - Structured authoritative room tick-duration p50/p95/p99/max telemetry.
 - Automated eight-client authoritative-room benchmark that validates room population and tick telemetry in CI.
+- Production-shaped container targets for game server, platform API, game client, and web shell.
+- CI container smoke that boots deployable images and exercises the containerized match server with real bot clients.
+- Local staging compose stack with Postgres/Redis and explicit static health probes.
 - Eight-character readable set or modular variants.
 - Responsive HUD/lobby.
 - Accessibility controls.
-- Deployment to staging regions.
+- Deploy the tested container/static artifacts to hosted staging regions.
 - Crash/client-performance/network observability dashboards.
 - Structured external playtest.
 
