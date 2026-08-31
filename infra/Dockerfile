@@ -37,7 +37,9 @@ CMD ["node", "dist/index.js"]
 
 FROM workspace AS game-client-build
 ARG VITE_GAME_SERVER_URL=http://localhost:2567
-ENV VITE_GAME_SERVER_URL=${VITE_GAME_SERVER_URL}
+ARG VITE_PLATFORM_API_URL=http://localhost:3000
+ENV VITE_GAME_SERVER_URL=${VITE_GAME_SERVER_URL} \
+    VITE_PLATFORM_API_URL=${VITE_PLATFORM_API_URL}
 RUN pnpm --filter @foodfight/game-client build
 
 FROM nginx:1.27-alpine AS game-client-static
