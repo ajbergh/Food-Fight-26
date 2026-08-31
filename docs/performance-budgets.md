@@ -77,7 +77,11 @@ Establish device-specific limits through real browser profiling. Texture compres
 
 ## Server budget
 
-A 30 Hz room has ~33 ms tick interval, but normal simulation work should consume a small fraction of that to support many rooms/process and absorb GC/network jitter. Record p50/p95/p99 tick duration.
+A 30 Hz room has ~33 ms tick interval, but normal simulation work should consume a small fraction of that to support many rooms/process and absorb GC/network jitter.
+
+The game server measures the authoritative simulation callback directly. Each active room emits a structured `room_tick_perf` JSON event after roughly 60 seconds of valid tick samples with `samples`, `tickBudgetMs`, `p50Ms`, `p95Ms`, `p99Ms`, and `maxMs`. Percentiles use nearest-rank semantics so operational dashboards and local logs can compare the same values.
+
+This is runtime observability rather than a CI pass/fail benchmark. Do not set a hard tick-duration gate from unloaded CI runners. Establish warning/critical thresholds only after representative eight-player load data exists; the design target remains for p99 simulation work to stay comfortably below the full tick interval.
 
 ## Network budget
 
