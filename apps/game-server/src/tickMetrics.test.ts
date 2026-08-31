@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { TickDurationReporter, summarizeTickDurations } from "./tickMetrics";
+import {
+  samplesForReportWindow,
+  TickDurationReporter,
+  summarizeTickDurations,
+} from "./tickMetrics";
 
 describe("tick duration metrics", () => {
   it("reports nearest-rank p50/p95/p99 and max values", () => {
@@ -53,8 +57,16 @@ describe("tick duration metrics", () => {
     expect(reporter.record(1)).toMatchObject({ samples: 2, maxMs: 1 });
   });
 
-  it("rejects invalid report-window sizes", () => {
+  it("converts report windows to deterministic sample counts", () => {
+    expect(samplesForReportWindow(1000 / 30, 60_000)).toBe(1800);
+    expect(samplesForReportWindow(1000 / 30, 2_000)).toBe(60);
+    expect(samplesForReportWindow(40, 10)).toBe(1);
+  });
+
+  it("rejects invalid report-window configuration", () => {
     expect(() => new TickDurationReporter(0)).toThrow(/positive integer/);
     expect(() => new TickDurationReporter(1.5)).toThrow(/positive integer/);
+    expect(() => samplesForReportWindow(0, 1000)).toThrow(/tickDelayMs/);
+    expect(() => samplesForReportWindow(10, Number.NaN)).toThrow(/reportWindowMs/);
   });
 });
