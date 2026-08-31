@@ -1,5 +1,5 @@
 import { Client, Room } from "colyseus";
-import { MapSchema, Schema, defineTypes } from "@colyseus/schema";
+import { schema, t, type SchemaType } from "@colyseus/schema";
 import {
   GAME,
   ITEMS,
@@ -20,128 +20,90 @@ import type {
   TeamName,
 } from "@foodfight/protocol";
 
-class PlayerState extends Schema {
-  x = 0;
-  y = 0;
-  aimX = 1;
-  aimY = 0;
-  team = 0;
-  displayName = "Guest";
-  lastInputSeq = 0;
-  stunRemaining = 0;
-  dodgeRemaining = 0;
-  tomatoAmmo = GAME.tomatoAmmoStart;
-  bananaAmmo = GAME.bananaAmmoStart;
-  moveX = 0;
-  moveY = 0;
-  dodgeX = 0;
-  dodgeY = 0;
-  throwCooldown = 0;
-  bananaCooldown = 0;
-  dodgeCooldown = 0;
-}
+const PlayerState = schema(
+  {
+    x: t.number().default(0),
+    y: t.number().default(0),
+    aimX: t.number().default(1),
+    aimY: t.number().default(0),
+    team: t.uint8().default(0),
+    displayName: t.string().default("Guest"),
+    lastInputSeq: t.uint32().default(0),
+    stunRemaining: t.number().default(0),
+    dodgeRemaining: t.number().default(0),
+    tomatoAmmo: t.uint8().default(GAME.tomatoAmmoStart),
+    bananaAmmo: t.uint8().default(GAME.bananaAmmoStart),
+    moveX: t.number().default(0).noSync(),
+    moveY: t.number().default(0).noSync(),
+    dodgeX: t.number().default(0).noSync(),
+    dodgeY: t.number().default(0).noSync(),
+    throwCooldown: t.number().default(0).noSync(),
+    bananaCooldown: t.number().default(0).noSync(),
+    dodgeCooldown: t.number().default(0).noSync(),
+  },
+  "PlayerState",
+);
+type PlayerState = SchemaType<typeof PlayerState>;
 
-defineTypes(PlayerState, {
-  x: "number",
-  y: "number",
-  aimX: "number",
-  aimY: "number",
-  team: "uint8",
-  displayName: "string",
-  lastInputSeq: "uint32",
-  stunRemaining: "number",
-  dodgeRemaining: "number",
-  tomatoAmmo: "uint8",
-  bananaAmmo: "uint8",
-});
+const ProjectileState = schema(
+  {
+    x: t.number().default(0),
+    y: t.number().default(0),
+    vx: t.number().default(0),
+    vy: t.number().default(0),
+    team: t.uint8().default(0),
+    ownerSessionId: t.string().default(""),
+    lifetime: t.number().default(0),
+    kind: t.string().default("tomato"),
+  },
+  "ProjectileState",
+);
+type ProjectileState = SchemaType<typeof ProjectileState>;
 
-class ProjectileState extends Schema {
-  x = 0;
-  y = 0;
-  vx = 0;
-  vy = 0;
-  team = 0;
-  ownerSessionId = "";
-  lifetime = 0;
-  kind = "tomato";
-}
+const BananaState = schema(
+  {
+    x: t.number().default(0),
+    y: t.number().default(0),
+    team: t.uint8().default(0),
+    ownerSessionId: t.string().default(""),
+    lifetime: t.number().default(0),
+    kind: t.string().default("banana"),
+  },
+  "BananaState",
+);
+type BananaState = SchemaType<typeof BananaState>;
 
-defineTypes(ProjectileState, {
-  x: "number",
-  y: "number",
-  vx: "number",
-  vy: "number",
-  team: "uint8",
-  ownerSessionId: "string",
-  lifetime: "number",
-  kind: "string",
-});
+const PickupState = schema(
+  {
+    x: t.number().default(0),
+    y: t.number().default(0),
+    kind: t.string().default("tomato"),
+    available: t.boolean().default(true),
+    respawnRemaining: t.number().default(0),
+  },
+  "PickupState",
+);
+type PickupState = SchemaType<typeof PickupState>;
 
-class BananaState extends Schema {
-  x = 0;
-  y = 0;
-  team = 0;
-  ownerSessionId = "";
-  lifetime = 0;
-  kind = "banana";
-}
-
-defineTypes(BananaState, {
-  x: "number",
-  y: "number",
-  team: "uint8",
-  ownerSessionId: "string",
-  lifetime: "number",
-  kind: "string",
-});
-
-class PickupState extends Schema {
-  x = 0;
-  y = 0;
-  kind = "tomato";
-  available = true;
-  respawnRemaining = 0;
-}
-
-defineTypes(PickupState, {
-  x: "number",
-  y: "number",
-  kind: "string",
-  available: "boolean",
-  respawnRemaining: "number",
-});
-
-class FoodFightState extends Schema {
-  players = new MapSchema<PlayerState>();
-  projectiles = new MapSchema<ProjectileState>();
-  bananas = new MapSchema<BananaState>();
-  pickups = new MapSchema<PickupState>();
-  blueScore: number = 0;
-  redScore: number = 0;
-  timeRemaining: number = GAME.roundSeconds;
-  phase = "waiting";
-  phaseRemaining: number = GAME.preRoundSeconds;
-  objectiveOwner = "none";
-  objectiveContested = false;
-  winner = "none";
-  roundNumber = 1;
-}
-
-defineTypes(FoodFightState, {
-  players: { map: PlayerState },
-  projectiles: { map: ProjectileState },
-  bananas: { map: BananaState },
-  pickups: { map: PickupState },
-  blueScore: "uint16",
-  redScore: "uint16",
-  timeRemaining: "number",
-  phase: "string",
-  phaseRemaining: "number",
-  objectiveOwner: "string",
-  objectiveContested: "boolean",
-  winner: "string",
-  roundNumber: "uint16",
-});
+const FoodFightState = schema(
+  {
+    players: t.map(PlayerState),
+    projectiles: t.map(ProjectileState),
+    bananas: t.map(BananaState),
+    pickups: t.map(PickupState),
+    blueScore: t.uint16().default(0),
+    redScore: t.uint16().default(0),
+    timeRemaining: t.number().default(GAME.roundSeconds),
+    phase: t.string().default("waiting"),
+    phaseRemaining: t.number().default(GAME.preRoundSeconds),
+    objectiveOwner: t.string().default("none"),
+    objectiveContested: t.boolean().default(false),
+    winner: t.string().default("none"),
+    roundNumber: t.uint16().default(1),
+  },
+  "FoodFightState",
+);
+type FoodFightState = SchemaType<typeof FoodFightState>;
 
 export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   state = new FoodFightState();

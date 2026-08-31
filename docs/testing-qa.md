@@ -12,7 +12,16 @@ Serialization compatibility, malformed input rejection, authoritative state tran
 Multiple simulated clients join/leave, move, throw, score, disconnect, and finish rounds.
 
 ### Browser integration
-Automated Chromium flows for load -> connect -> input -> visible state. Add Firefox/WebKit coverage for critical regressions as the client matures.
+Playwright Chromium smoke tests launch the real Vite client and Colyseus game server, then validate load -> connect -> synchronized room population -> live diagnostics -> graphics/audio controls -> active-round combat input. CI installs Chromium and runs `pnpm test:e2e` after type-checks, unit tests, and production builds. Failed runs retain a short-lived Playwright report artifact. Add Firefox/WebKit coverage for critical regressions as the client matures.
+
+For a local browser smoke run:
+
+```bash
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Playwright starts the game server and game client automatically unless compatible local servers are already running.
 
 ### Manual gameplay QA
 Game-feel, readability, controller behavior, audio mix, accessibility settings, network degradation, and multi-monitor/viewport edge cases.
