@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Food Fight 26 — Combat Prototype</title>
+    <title>Food Fight 26 — Sundae Control</title>
   </head>
   <body>
     <canvas id="game"></canvas>
@@ -16,7 +16,9 @@
       <span>🍅 <b id="tomato-ammo">3</b></span>
       <span>🍌 <b id="banana-ammo">1</b></span>
     </div>
-    <div class="objective">HOLD THE SUNDAE</div>
+    <div id="match-banner" class="match-banner"></div>
+    <div id="event-toast" class="event-toast"></div>
+    <div id="objective" class="objective">HOLD THE SUNDAE</div>
     <div class="controls">WASD / stick · move &nbsp; SPACE / A · tomato &nbsp; Q / B · banana &nbsp; SHIFT / RB · dodge</div>
     <div id="network" class="network">connecting…</div>
     <script type="module" src="/src/main.ts"></script>

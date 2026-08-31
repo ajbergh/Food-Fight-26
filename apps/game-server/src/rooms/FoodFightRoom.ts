@@ -9,9 +9,16 @@ import {
   normalizeAim,
   projectileHitsObstacle,
   projectileOutsideBounds,
+  resolveObjectiveControl,
+  type ObjectiveParticipant,
 } from "@foodfight/game-core";
 import { foodCourtMap } from "@foodfight/maps";
-import type { ImpactMessage, PlayerInputMessage } from "@foodfight/protocol";
+import type {
+  ImpactMessage,
+  MatchEventMessage,
+  PlayerInputMessage,
+  TeamName,
+} from "@foodfight/protocol";
 
 class PlayerState extends Schema {
   x = 0;
@@ -109,10 +116,15 @@ class FoodFightState extends Schema {
   projectiles = new MapSchema<ProjectileState>();
   bananas = new MapSchema<BananaState>();
   pickups = new MapSchema<PickupState>();
-  blueScore = 0;
-  redScore = 0;
+  blueScore: number = 0;
+  redScore: number = 0;
   timeRemaining: number = GAME.roundSeconds;
-  phase = "playing";
+  phase = "waiting";
+  phaseRemaining: number = GAME.preRoundSeconds;
+  objectiveOwner = "none";
+  objectiveContested = false;
+  winner = "none";
+  roundNumber = 1;
 }
 
 defineTypes(FoodFightState, {
@@ -124,6 +136,11 @@ defineTypes(FoodFightState, {
   redScore: "uint16",
   timeRemaining: "number",
   phase: "string",
+  phaseRemaining: "number",
+  objectiveOwner: "string",
+  objectiveContested: "boolean",
+  winner: "string",
+  roundNumber: "uint16",
 });
 
 export class FoodFightRoom extends Room<{ state: FoodFightState }> {
@@ -131,6 +148,8 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   maxClients = GAME.maxPlayers;
   private nextProjectileId = 1;
   private nextBananaId = 1;
+  private blueScoreExact = 0;
+  private redScoreExact = 0;
 
   onCreate() {
     this.initializePickups();
@@ -172,9 +191,14 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     player.aimX = clampAxis(input.aimX);
     player.aimY = clampAxis(input.aimY);
 
+    if (!this.isRoundActive()) return;
     if (input.dodgePressed) this.tryDodge(player);
     if (input.throwPressed) this.tryThrowTomato(client.sessionId, player);
     if (input.bananaPressed) this.tryDropBanana(client.sessionId, player);
+  }
+
+  private isRoundActive() {
+    return this.state.phase === "playing" || this.state.phase === "overtime";
   }
 
   private tryDodge(player: PlayerState) {
@@ -258,9 +282,71 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   }
 
   private tick(dt: number) {
-    if (this.state.phase !== "playing") return;
-    this.state.timeRemaining = Math.max(0, this.state.timeRemaining - dt);
+    if (this.state.phase === "waiting") {
+      this.tickWaiting(dt);
+      return;
+    }
+    if (this.state.phase === "finished") {
+      this.tickFinished(dt);
+      return;
+    }
 
+    if (this.state.phase === "playing") {
+      this.state.timeRemaining = Math.max(0, this.state.timeRemaining - dt);
+    }
+
+    this.tickPlayers(dt);
+    this.tickProjectiles(dt);
+    this.tickBananas(dt);
+    this.tickPickups(dt);
+    this.tickObjective(dt);
+
+    if (this.state.blueScore >= GAME.scoreToWin) {
+      this.finishRound("blue", "score_limit");
+      return;
+    }
+    if (this.state.redScore >= GAME.scoreToWin) {
+      this.finishRound("red", "score_limit");
+      return;
+    }
+
+    if (this.state.phase === "overtime" && this.state.blueScore !== this.state.redScore) {
+      this.finishRound(this.state.blueScore > this.state.redScore ? "blue" : "red", "overtime_control");
+      return;
+    }
+
+    if (this.state.phase === "playing" && this.state.timeRemaining <= 0) {
+      if (this.state.blueScore === this.state.redScore) {
+        this.state.phase = "overtime";
+        this.state.objectiveOwner = "none";
+        this.state.objectiveContested = false;
+        this.broadcastMatchEvent({ type: "overtime", roundNumber: this.state.roundNumber });
+      } else {
+        this.finishRound(this.state.blueScore > this.state.redScore ? "blue" : "red", "time");
+      }
+    }
+  }
+
+  private tickWaiting(dt: number) {
+    if (this.state.players.size === 0) {
+      this.state.phaseRemaining = GAME.preRoundSeconds;
+      return;
+    }
+    this.state.phaseRemaining = Math.max(0, this.state.phaseRemaining - dt);
+    if (this.state.phaseRemaining > 0) return;
+    this.state.phase = "playing";
+    this.state.phaseRemaining = 0;
+    this.state.timeRemaining = GAME.roundSeconds;
+    this.broadcastMatchEvent({ type: "round_started", roundNumber: this.state.roundNumber });
+  }
+
+  private tickFinished(dt: number) {
+    this.state.phaseRemaining = Math.max(0, this.state.phaseRemaining - dt);
+    if (this.state.phaseRemaining > 0) return;
+    this.prepareNextRound();
+  }
+
+  private tickPlayers(dt: number) {
     this.state.players.forEach((player: PlayerState) => {
       const dodging = player.dodgeRemaining > 0;
       player.throwCooldown = Math.max(0, player.throwCooldown - dt);
@@ -288,11 +374,6 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       player.x = next.x;
       player.y = next.y;
     });
-
-    this.tickProjectiles(dt);
-    this.tickBananas(dt);
-    this.tickPickups(dt);
-    if (this.state.timeRemaining <= 0) this.state.phase = "finished";
   }
 
   private tickProjectiles(dt: number) {
@@ -414,6 +495,95 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       pickup.available = false;
       pickup.respawnRemaining = GAME.pickupRespawnSeconds;
     });
+  }
+
+  private tickObjective(dt: number) {
+    const participants: ObjectiveParticipant[] = [];
+    this.state.players.forEach((player: PlayerState) => {
+      participants.push({ x: player.x, y: player.y, team: player.team });
+    });
+
+    const control = resolveObjectiveControl(
+      participants,
+      foodCourtMap.objective,
+      foodCourtMap.objective.radius,
+    );
+    const previousOwner = this.state.objectiveOwner;
+    this.state.objectiveOwner = control.owner;
+    this.state.objectiveContested = control.contested;
+
+    if (control.owner !== "none" && control.owner !== previousOwner) {
+      this.broadcastMatchEvent({
+        type: "objective_control",
+        roundNumber: this.state.roundNumber,
+        team: control.owner,
+      });
+    }
+
+    if (control.owner === "blue") {
+      this.blueScoreExact += GAME.objectivePointsPerSecond * dt;
+      this.state.blueScore = Math.floor(this.blueScoreExact);
+    } else if (control.owner === "red") {
+      this.redScoreExact += GAME.objectivePointsPerSecond * dt;
+      this.state.redScore = Math.floor(this.redScoreExact);
+    }
+  }
+
+  private finishRound(winner: Exclude<TeamName, "none">, reason: string) {
+    if (this.state.phase === "finished") return;
+    this.state.phase = "finished";
+    this.state.phaseRemaining = GAME.postRoundSeconds;
+    this.state.winner = winner;
+    this.broadcastMatchEvent({
+      type: "round_finished",
+      roundNumber: this.state.roundNumber,
+      team: winner,
+      reason,
+    });
+  }
+
+  private prepareNextRound() {
+    this.state.roundNumber += 1;
+    this.state.phase = "waiting";
+    this.state.phaseRemaining = GAME.preRoundSeconds;
+    this.state.timeRemaining = GAME.roundSeconds;
+    this.state.blueScore = 0;
+    this.state.redScore = 0;
+    this.blueScoreExact = 0;
+    this.redScoreExact = 0;
+    this.state.objectiveOwner = "none";
+    this.state.objectiveContested = false;
+    this.state.winner = "none";
+    this.state.projectiles.clear();
+    this.state.bananas.clear();
+
+    this.state.pickups.forEach((pickup: PickupState) => {
+      pickup.available = true;
+      pickup.respawnRemaining = 0;
+    });
+
+    let index = 0;
+    this.state.players.forEach((player: PlayerState) => {
+      const spawn = foodCourtMap.spawns[index % foodCourtMap.spawns.length]!;
+      player.x = spawn.x;
+      player.y = spawn.y;
+      player.aimX = player.team === 0 ? 1 : -1;
+      player.aimY = 0;
+      player.moveX = 0;
+      player.moveY = 0;
+      player.stunRemaining = 0;
+      player.dodgeRemaining = 0;
+      player.throwCooldown = 0;
+      player.bananaCooldown = 0;
+      player.dodgeCooldown = 0;
+      player.tomatoAmmo = GAME.tomatoAmmoStart;
+      player.bananaAmmo = GAME.bananaAmmoStart;
+      index += 1;
+    });
+  }
+
+  private broadcastMatchEvent(event: MatchEventMessage) {
+    this.broadcast("match_event", event);
   }
 }
 

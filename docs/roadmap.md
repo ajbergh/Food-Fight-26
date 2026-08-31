@@ -1,8 +1,8 @@
 # Roadmap
 
-This roadmap is milestone-based. Dates should be assigned only after the prototype velocity is measured.
+This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured.
 
-## M0 — Repository and architecture
+## M0 — Repository and architecture — complete
 
 - Monorepo scaffold.
 - PlayCanvas visual graybox.
@@ -13,56 +13,56 @@ This roadmap is milestone-based. Dates should be assigned only after the prototy
 
 **Exit:** repository installs/builds and basic clients can connect to a room.
 
-## M1 — Networked movement
+## M1 — Networked movement — complete
 
 - Keyboard/gamepad input abstraction.
 - Local prediction/reconciliation.
 - Remote interpolation.
 - Simplified collision against arena geometry.
-- Player name/number markers.
-- network diagnostics overlay.
+- Player name markers.
+- Network diagnostics overlay.
 
 **Exit:** eight colored capsules move smoothly under representative latency.
 
-## M2 — Combat vertical slice
+## M2 — Combat vertical slice — complete at graybox level
 
-- Pickup authority.
-- Tomato projectile prediction/reconciliation.
-- Server hit detection.
-- Banana hazard.
-- Dodge.
-- hit/slip states.
-- local VFX/audio hooks.
+- Authoritative food pickup economy.
+- Tomato projectile authority and hit detection.
+- Banana hazards.
+- Dodge with temporary hazard immunity.
+- Hit/slip states.
+- Local procedural VFX hooks.
 
-**Exit:** eight-player graybox is genuinely fun with no final character art.
+**Exit:** the core eight-player graybox rules are implemented; external playtesting is still required to establish whether the loop is genuinely fun.
 
-## M3 — Sundae Control
+## M3 — Sundae Control — in progress
 
 - Objective ownership/scoring.
-- round lifecycle/overtime/results/rematch.
-- respawn/recovery.
-- telemetry events.
+- Round countdown, timer, overtime, results, and automatic rematch loop.
+- Round recovery/reset.
+- Match-event telemetry hooks.
+- Future: knockout-specific respawn if a health/KO system is introduced.
 
 **Exit:** complete repeatable three-minute match loop.
 
 ## M4 — Art prototype
 
 - One production-quality hero rig/style.
-- food-court environment kit.
-- tomato/banana/pie production assets.
-- first final VFX/audio language.
-- performance-quality settings.
+- Food-court environment kit.
+- Tomato/banana/pie production assets.
+- First final VFX/audio language.
+- Performance-quality settings.
 
 **Exit:** visual direction validated without blowing performance/download budgets.
 
 ## M5 — First polished playtest
 
 - Eight-character readable set or modular variants.
-- responsive HUD/lobby.
-- accessibility controls.
-- deployment to staging regions.
-- crash/performance/network observability.
-- structured external playtest.
+- Responsive HUD/lobby.
+- Accessibility controls.
+- Deployment to staging regions.
+- Crash/performance/network observability.
+- Structured external playtest.
 
 **Exit:** retention/rematch/readability data supports continued content investment.
 

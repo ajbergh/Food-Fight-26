@@ -1,3 +1,6 @@
+export type MatchPhase = "waiting" | "playing" | "overtime" | "finished";
+export type TeamName = "none" | "blue" | "red";
+
 export interface PlayerInputMessage {
   seq: number;
   moveX: number;
@@ -58,6 +61,13 @@ export interface ImpactMessage {
   targetSessionId?: string;
 }
 
+export interface MatchEventMessage {
+  type: "round_started" | "objective_control" | "overtime" | "round_finished";
+  roundNumber: number;
+  team?: "blue" | "red";
+  reason?: string;
+}
+
 export interface MatchStateShape {
   players: Record<string, PlayerSnapshot>;
   projectiles: Record<string, ProjectileSnapshot>;
@@ -66,5 +76,10 @@ export interface MatchStateShape {
   blueScore: number;
   redScore: number;
   timeRemaining: number;
-  phase: "waiting" | "playing" | "finished";
+  phase: MatchPhase;
+  phaseRemaining: number;
+  objectiveOwner: TeamName;
+  objectiveContested: boolean;
+  winner: TeamName;
+  roundNumber: number;
 }

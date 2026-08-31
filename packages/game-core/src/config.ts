@@ -18,4 +18,8 @@ export const GAME = {
   bananaAmmoStart: 1 as number,
   bananaAmmoMax: 2,
   objectiveRadius: 3,
+  objectivePointsPerSecond: 1.5,
+  scoreToWin: 100,
+  preRoundSeconds: 3,
+  postRoundSeconds: 6,
 } as const;
