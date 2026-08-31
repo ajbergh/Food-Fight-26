@@ -22,9 +22,14 @@ class PlayerState extends Schema {
   displayName = "Guest";
   lastInputSeq = 0;
   stunRemaining = 0;
+  dodgeRemaining = 0;
   moveX = 0;
   moveY = 0;
+  dodgeX = 0;
+  dodgeY = 0;
   throwCooldown = 0;
+  bananaCooldown = 0;
+  dodgeCooldown = 0;
 }
 
 defineTypes(PlayerState, {
@@ -36,6 +41,7 @@ defineTypes(PlayerState, {
   displayName: "string",
   lastInputSeq: "uint32",
   stunRemaining: "number",
+  dodgeRemaining: "number",
 });
 
 class ProjectileState extends Schema {
@@ -60,9 +66,28 @@ defineTypes(ProjectileState, {
   kind: "string",
 });
 
+class BananaState extends Schema {
+  x = 0;
+  y = 0;
+  team = 0;
+  ownerSessionId = "";
+  lifetime = 0;
+  kind = "banana";
+}
+
+defineTypes(BananaState, {
+  x: "number",
+  y: "number",
+  team: "uint8",
+  ownerSessionId: "string",
+  lifetime: "number",
+  kind: "string",
+});
+
 class FoodFightState extends Schema {
   players = new MapSchema<PlayerState>();
   projectiles = new MapSchema<ProjectileState>();
+  bananas = new MapSchema<BananaState>();
   blueScore = 0;
   redScore = 0;
   timeRemaining: number = GAME.roundSeconds;
@@ -72,6 +97,7 @@ class FoodFightState extends Schema {
 defineTypes(FoodFightState, {
   players: { map: PlayerState },
   projectiles: { map: ProjectileState },
+  bananas: { map: BananaState },
   blueScore: "uint16",
   redScore: "uint16",
   timeRemaining: "number",
@@ -82,6 +108,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   state = new FoodFightState();
   maxClients = GAME.maxPlayers;
   private nextProjectileId = 1;
+  private nextBananaId = 1;
 
   onCreate() {
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
@@ -112,11 +139,27 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     player.aimX = clampAxis(input.aimX);
     player.aimY = clampAxis(input.aimY);
 
+    if (input.dodgePressed) this.tryDodge(player);
     if (input.throwPressed) this.tryThrowTomato(client.sessionId, player);
+    if (input.bananaPressed) this.tryDropBanana(client.sessionId, player);
+  }
+
+  private tryDodge(player: PlayerState) {
+    if (player.dodgeCooldown > 0 || player.stunRemaining > 0 || player.dodgeRemaining > 0) return;
+    let direction = normalizeAim({ x: player.moveX, y: player.moveY });
+    if (direction.x === 0 && direction.y === 0) {
+      direction = normalizeAim({ x: player.aimX, y: player.aimY });
+    }
+    if (direction.x === 0 && direction.y === 0) return;
+
+    player.dodgeX = direction.x;
+    player.dodgeY = direction.y;
+    player.dodgeRemaining = GAME.dodgeSeconds;
+    player.dodgeCooldown = GAME.dodgeCooldownSeconds;
   }
 
   private tryThrowTomato(ownerSessionId: string, player: PlayerState) {
-    if (player.throwCooldown > 0 || player.stunRemaining > 0) return;
+    if (player.throwCooldown > 0 || player.stunRemaining > 0 || player.dodgeRemaining > 0) return;
 
     const aim = normalizeAim({ x: player.aimX, y: player.aimY });
     if (aim.x === 0 && aim.y === 0) return;
@@ -137,27 +180,68 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     player.throwCooldown = tomato.cooldownSeconds;
   }
 
+  private tryDropBanana(ownerSessionId: string, player: PlayerState) {
+    if (player.bananaCooldown > 0 || player.stunRemaining > 0 || player.dodgeRemaining > 0) return;
+
+    let aim = normalizeAim({ x: player.aimX, y: player.aimY });
+    if (aim.x === 0 && aim.y === 0) aim = { x: 1, y: 0 };
+    const distance = GAME.playerRadius + GAME.bananaRadius + 0.18;
+    const position = {
+      x: player.x - aim.x * distance,
+      y: player.y - aim.y * distance,
+    };
+
+    if (
+      projectileOutsideBounds(position, foodCourtMap.bounds, GAME.bananaRadius) ||
+      projectileHitsObstacle(position, GAME.bananaRadius, foodCourtMap.obstacles)
+    ) {
+      return;
+    }
+
+    const banana = new BananaState();
+    banana.x = position.x;
+    banana.y = position.y;
+    banana.team = player.team;
+    banana.ownerSessionId = ownerSessionId;
+    banana.lifetime = ITEMS.banana.lifetimeSeconds;
+    this.state.bananas.set(`banana-${this.nextBananaId++}`, banana);
+    player.bananaCooldown = ITEMS.banana.cooldownSeconds;
+  }
+
   private tick(dt: number) {
     if (this.state.phase !== "playing") return;
     this.state.timeRemaining = Math.max(0, this.state.timeRemaining - dt);
 
     this.state.players.forEach((player: PlayerState) => {
+      const dodging = player.dodgeRemaining > 0;
       player.throwCooldown = Math.max(0, player.throwCooldown - dt);
+      player.bananaCooldown = Math.max(0, player.bananaCooldown - dt);
+      player.dodgeCooldown = Math.max(0, player.dodgeCooldown - dt);
       player.stunRemaining = Math.max(0, player.stunRemaining - dt);
-      if (player.stunRemaining > 0) return;
+      player.dodgeRemaining = Math.max(0, player.dodgeRemaining - dt);
+      if (player.stunRemaining > 0) {
+        player.dodgeRemaining = 0;
+        return;
+      }
 
+      const direction = dodging
+        ? { x: player.dodgeX, y: player.dodgeY }
+        : { x: player.moveX, y: player.moveY };
+      const speed = GAME.playerSpeed * (dodging ? GAME.dodgeSpeedMultiplier : 1);
       const next = movePlayerWithObstacles(
         { x: player.x, y: player.y },
-        { x: player.moveX, y: player.moveY },
+        direction,
         dt,
         foodCourtMap.bounds,
         foodCourtMap.obstacles,
+        speed,
       );
       player.x = next.x;
       player.y = next.y;
     });
 
     this.tickProjectiles(dt);
+    this.tickBananas(dt);
     if (this.state.timeRemaining <= 0) this.state.phase = "finished";
   }
 
@@ -181,7 +265,14 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
       let targetSessionId: string | undefined;
       this.state.players.forEach((target: PlayerState, sessionId: string) => {
-        if (targetSessionId || sessionId === projectile.ownerSessionId || target.team === projectile.team) return;
+        if (
+          targetSessionId ||
+          sessionId === projectile.ownerSessionId ||
+          target.team === projectile.team ||
+          target.dodgeRemaining > 0
+        ) {
+          return;
+        }
         if (!circlesOverlap(projectile, GAME.projectileRadius, target, GAME.playerRadius)) return;
         targetSessionId = sessionId;
         target.stunRemaining = Math.max(target.stunRemaining, ITEMS.tomato.stunSeconds ?? 0);
@@ -199,6 +290,48 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
     for (const [projectileId, impact] of removals) {
       this.state.projectiles.delete(projectileId);
+      this.broadcast("impact", impact);
+    }
+  }
+
+  private tickBananas(dt: number) {
+    const removals = new Map<string, ImpactMessage>();
+
+    this.state.bananas.forEach((banana: BananaState, bananaId: string) => {
+      banana.lifetime = Math.max(0, banana.lifetime - dt);
+      if (banana.lifetime <= 0) {
+        removals.set(bananaId, { x: banana.x, y: banana.y, kind: "banana" });
+        return;
+      }
+
+      let targetSessionId: string | undefined;
+      this.state.players.forEach((target: PlayerState, sessionId: string) => {
+        if (
+          targetSessionId ||
+          sessionId === banana.ownerSessionId ||
+          target.team === banana.team ||
+          target.dodgeRemaining > 0 ||
+          target.stunRemaining > 0
+        ) {
+          return;
+        }
+        if (!circlesOverlap(banana, GAME.bananaRadius, target, GAME.playerRadius)) return;
+        targetSessionId = sessionId;
+        target.stunRemaining = Math.max(target.stunRemaining, ITEMS.banana.stunSeconds ?? 0);
+      });
+
+      if (targetSessionId) {
+        removals.set(bananaId, {
+          x: banana.x,
+          y: banana.y,
+          kind: "banana",
+          targetSessionId,
+        });
+      }
+    });
+
+    for (const [bananaId, impact] of removals) {
+      this.state.bananas.delete(bananaId);
       this.broadcast("impact", impact);
     }
   }
