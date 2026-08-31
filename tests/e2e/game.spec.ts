@@ -27,6 +27,51 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(tomatoAmmo).toHaveText("2");
 });
 
+test("responsive HUD accessibility settings persist on a phone viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const body = page.locator("body");
+  const network = page.locator("#network");
+  const settings = page.locator(".settings");
+  const objective = page.locator("#objective");
+  const motion = page.locator("#motion");
+  const hudScale = page.locator("#hud-scale");
+
+  await expect(network).toContainText("online");
+  await expect(settings).toBeVisible();
+  await expect(body).toHaveAttribute("data-reduced-motion", "true");
+  await expect(motion).toHaveAttribute("aria-pressed", "true");
+
+  await motion.click();
+  await expect(body).toHaveAttribute("data-reduced-motion", "false");
+  await expect(motion).toHaveAttribute("aria-pressed", "false");
+
+  await expect(body).toHaveAttribute("data-hud-scale", "normal");
+  await hudScale.click();
+  await expect(body).toHaveAttribute("data-hud-scale", "large");
+  await expect(hudScale).toHaveAttribute("aria-label", /HUD scale: large/);
+
+  for (const button of await settings.locator("button").all()) {
+    const box = await button.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  }
+
+  const settingsBox = await settings.boundingBox();
+  const objectiveBox = await objective.boundingBox();
+  expect(settingsBox).not.toBeNull();
+  expect(objectiveBox).not.toBeNull();
+  expect(settingsBox!.x).toBeGreaterThanOrEqual(0);
+  expect(settingsBox!.x + settingsBox!.width).toBeLessThanOrEqual(390);
+  expect(objectiveBox!.y + objectiveBox!.height).toBeLessThanOrEqual(settingsBox!.y);
+
+  await page.reload();
+  await expect(body).toHaveAttribute("data-hud-scale", "large");
+  await expect(body).toHaveAttribute("data-reduced-motion", "false");
+});
+
 test("two browser clients join the same available room", async ({ browser }) => {
   const firstContext = await browser.newContext();
   const secondContext = await browser.newContext();
