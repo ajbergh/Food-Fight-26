@@ -56,7 +56,12 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Reduced-motion-compatible peripheral action feedback.
 - Live FPS/frame-time instrumentation for art iteration.
 - Open-asset source shortlist and intake policy.
-- Next: evaluate one production external food pack and one production hero rig/style.
+- Repository-level third-party provenance manifest with source approval/hold states.
+- Automated CI asset audit for provenance, SHA-256 integrity, runtime formats, per-file byte ceilings, and first-play asset buckets.
+- Kenney Food Kit approved as the first controlled food-pack candidate; Quaternius Ultimate Food Pack remains on hold pending explicit license/provenance resolution.
+- Next: import a small selected Kenney Food Kit derivative set through Blender -> GLB/KTX2 and replace representative procedural food props without changing gameplay authority.
+- Next: add GLB geometry/material/texture introspection after the first production derivatives exist.
+- Next: evaluate one production hero rig/style.
 - Next: benchmark production-asset download size, draw-call pressure, and frame pacing on target laptops/tablets.
 
 **Exit:** visual direction validated without blowing performance/download budgets.
