@@ -82,6 +82,8 @@ try {
   for (let index = 0; index < botCount; index += 1) {
     const client = new Client(endpoint);
     const room = await client.joinOrCreate("food_fight", { displayName: `Load-${index + 1}` });
+    room.onMessage("impact", () => undefined);
+    room.onMessage("match_event", () => undefined);
     rooms.push(room);
   }
 
