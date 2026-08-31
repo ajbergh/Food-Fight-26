@@ -20,6 +20,8 @@ jobs:
       - run: pnpm build
       - run: pnpm perf:budget
       - run: pnpm benchmark:room
+      - name: Build and smoke staging containers
+        run: bash infra/smoke-containers.sh
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - name: Upload Playwright report on failure

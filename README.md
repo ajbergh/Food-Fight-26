@@ -27,7 +27,8 @@ packages/
   game-core/      Shared rules, constants, item definitions, simulation helpers
   protocol/       Network message contracts
   maps/           Data-driven arena definitions
-infra/            Local infrastructure and database bootstrap
+infra/            Local/staging containers and database bootstrap
+tools/            Bot/load/performance automation
 docs/             Product, game, art, UX, networking, operations, and ADR documents
 ```
 
@@ -49,6 +50,23 @@ Local services:
 - Game client: http://localhost:5174
 - Platform API: http://localhost:3000
 - Game server: ws/http on localhost:2567
+
+## Production-shaped container smoke
+
+The repository also builds four deployable container targets: authoritative game server, platform API, game-client static site, and web static site. To build and boot all four targets and verify them with health probes plus real Colyseus bot clients:
+
+```bash
+bash infra/smoke-containers.sh
+```
+
+To run the fuller staging-shaped stack with local Postgres and Redis:
+
+```bash
+PUBLIC_GAME_SERVER_URL=http://localhost:2567 \
+  docker compose -f infra/compose.staging.yml up --build
+```
+
+That exposes the web shell on `:8080`, game client on `:8081`, platform API on `:3000`, and game server on `:2567`. See `docs/deployment-and-operations.md` before adapting this stack for a hosted environment.
 
 ## First vertical-slice acceptance criteria
 
