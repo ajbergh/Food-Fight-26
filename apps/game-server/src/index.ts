@@ -3,9 +3,14 @@ import { performance } from "node:perf_hooks";
 import { Server } from "colyseus";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { FoodFightRoom } from "./rooms/FoodFightRoom";
-import { TickDurationReporter, type TickDurationSummary } from "./tickMetrics";
+import {
+  samplesForReportWindow,
+  TickDurationReporter,
+  type TickDurationSummary,
+} from "./tickMetrics";
 
 const port = Number(process.env.GAME_SERVER_PORT ?? 2567);
+const tickMetricsReportMs = readPositiveNumber("TICK_METRICS_REPORT_MS", 60_000);
 const httpServer = createServer();
 const gameServer = new Server({
   transport: new WebSocketTransport({ server: httpServer }),
@@ -21,7 +26,7 @@ class InstrumentedFoodFightRoom extends FoodFightRoom {
   ): void {
     this.tickBudgetMs = delay;
     this.tickDurationReporter = new TickDurationReporter(
-      Math.max(1, Math.round(60_000 / Math.max(1, delay))),
+      samplesForReportWindow(delay, tickMetricsReportMs),
     );
 
     super.setSimulationInterval((deltaTime) => {
@@ -57,4 +62,9 @@ console.log(`Food Fight game server listening on :${port}`);
 
 function roundMetric(value: number): number {
   return Math.round(value * 1000) / 1000;
+}
+
+function readPositiveNumber(name: string, fallback: number): number {
+  const value = Number(process.env[name]);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
 }
