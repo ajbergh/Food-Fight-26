@@ -1,6 +1,6 @@
 import { Client, Room } from "colyseus";
 import { MapSchema, Schema, defineTypes } from "@colyseus/schema";
-import { GAME, movePlayer } from "@foodfight/game-core";
+import { GAME, movePlayerWithObstacles } from "@foodfight/game-core";
 import { foodCourtMap } from "@foodfight/maps";
 import type { PlayerInputMessage } from "@foodfight/protocol";
 
@@ -74,7 +74,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     player.moveY = clampAxis(input.moveY);
     player.aimX = clampAxis(input.aimX);
     player.aimY = clampAxis(input.aimY);
-    // TODO(vertical-slice): validate throw cooldown and spawn authoritative tomato entity.
+    // TODO(M2): validate throw cooldown and spawn authoritative tomato entity.
   }
 
   private tick(dt: number) {
@@ -82,11 +82,12 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     this.state.timeRemaining = Math.max(0, this.state.timeRemaining - dt);
 
     this.state.players.forEach((player: PlayerState) => {
-      const next = movePlayer(
+      const next = movePlayerWithObstacles(
         { x: player.x, y: player.y },
         { x: player.moveX, y: player.moveY },
         dt,
         foodCourtMap.bounds,
+        foodCourtMap.obstacles,
       );
       player.x = next.x;
       player.y = next.y;
