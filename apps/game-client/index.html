@@ -7,6 +7,7 @@
   </head>
   <body>
     <canvas id="game"></canvas>
+    <div id="action-flash" class="action-flash" aria-hidden="true"></div>
     <div class="hud">
       <div class="blue-score"><b>BLUE <span id="blue-score">0</span></b></div>
       <div id="timer" class="timer">3:00</div>
@@ -16,12 +17,17 @@
       <span>🍅 <b id="tomato-ammo">3</b></span>
       <span>🍌 <b id="banana-ammo">1</b></span>
     </div>
-    <button id="quality" class="quality" type="button" title="Cycle graphics quality (G)">graphics · medium</button>
+    <div class="settings">
+      <button id="audio" type="button" title="Toggle audio (M)" aria-pressed="false">audio · on</button>
+      <button id="quality" type="button" title="Cycle graphics quality (G)">graphics · medium</button>
+    </div>
+    <div id="performance" class="performance" aria-label="Rendering performance">-- fps</div>
     <div id="match-banner" class="match-banner"></div>
     <div id="event-toast" class="event-toast"></div>
     <div id="objective" class="objective" data-state="none">HOLD THE SUNDAE</div>
-    <div class="controls">WASD / stick · move &nbsp; SPACE / A · tomato &nbsp; Q / B · banana &nbsp; SHIFT / RB · dodge &nbsp; G · graphics</div>
+    <div class="controls">WASD / stick · move &nbsp; SPACE / A · tomato &nbsp; Q / B · banana &nbsp; SHIFT / RB · dodge &nbsp; G · graphics &nbsp; M · audio</div>
     <div id="network" class="network">connecting…</div>
     <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/gameFeel.ts"></script>
   </body>
 </html>
