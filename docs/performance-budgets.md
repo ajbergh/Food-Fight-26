@@ -52,6 +52,10 @@ The third-party provenance manifest in `assets/third-party/manifest.json` carrie
 
 CI runs `pnpm assets:audit` before the production build. The audit counts the committed runtime file size for assets marked `firstPlay: true`, which is intentionally conservative for already-compressed GLB/KTX2/audio derivatives. It also requires each runtime derivative to declare a per-file `maxBytes` ceiling and matching SHA-256 digest, so a replaced asset cannot silently grow or change provenance.
 
+Model derivatives must additionally declare per-file ceilings for triangles, mesh primitives, materials, textures, and animations. The audit parses both JSON glTF and binary GLB 2.0, estimates rendered triangle count from primitive accessors, and fails when those structural ceilings are exceeded. These are change-review guards rather than universal art targets: a hero rig and a tomato prop should carry different explicit limits based on their role.
+
+For JSON `.gltf`, buffer/image dependencies must either be embedded data URIs or committed locally beside the model; remote resources and parent-directory traversal are rejected. This keeps a model's measured repository footprint and provenance self-contained instead of allowing runtime downloads to bypass the manifest.
+
 These buckets do not grant an extra 40 MiB on top of the overall first-play target. They are guardrails for third-party content entering the repository; final first-play accounting still includes code, first-party art, maps, UI, and audio together.
 
 For a local check:
