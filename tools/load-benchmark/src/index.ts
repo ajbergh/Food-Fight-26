@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync } from "node:fs";
 import { once } from "node:events";
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { createInterface } from "node:readline";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,11 +30,11 @@ if (!existsSync(serverEntry)) {
 const telemetry: RoomTickPerfEvent[] = [];
 const rooms: Room[] = [];
 const inputIntervals: NodeJS.Timeout[] = [];
-let server: ChildProcessWithoutNullStreams | undefined;
+let server: ChildProcess | undefined;
 const stderrLines: string[] = [];
 
 try {
-  server = spawn(process.execPath, [serverEntry], {
+  const launchedServer = spawn(process.execPath, [serverEntry], {
     cwd: repoRoot,
     env: {
       ...process.env,
@@ -43,9 +43,14 @@ try {
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
+  server = launchedServer;
 
-  const stdout = createInterface({ input: server.stdout });
-  const stderr = createInterface({ input: server.stderr });
+  if (!launchedServer.stdout || !launchedServer.stderr) {
+    throw new Error("Game server process did not expose stdout/stderr pipes.");
+  }
+
+  const stdout = createInterface({ input: launchedServer.stdout });
+  const stderr = createInterface({ input: launchedServer.stderr });
   let markReady: (() => void) | undefined;
   const ready = new Promise<void>((resolveReady) => {
     markReady = resolveReady;
@@ -63,7 +68,7 @@ try {
 
   await Promise.race([
     ready,
-    once(server, "exit").then(([code, signal]) => {
+    once(launchedServer, "exit").then(([code, signal]) => {
       throw new Error(`Game server exited before readiness (code ${String(code)}, signal ${String(signal)}).`);
     }),
     sleep(10_000).then(() => {
