@@ -17,8 +17,13 @@ class PlayerState extends Schema {
 }
 
 defineTypes(PlayerState, {
-  x: "number", y: "number", aimX: "number", aimY: "number",
-  team: "uint8", displayName: "string", lastInputSeq: "uint32",
+  x: "number",
+  y: "number",
+  aimX: "number",
+  aimY: "number",
+  team: "uint8",
+  displayName: "string",
+  lastInputSeq: "uint32",
 });
 
 class FoodFightState extends Schema {
@@ -37,11 +42,11 @@ defineTypes(FoodFightState, {
   phase: "string",
 });
 
-export class FoodFightRoom extends Room<FoodFightState> {
+export class FoodFightRoom extends Room<{ state: FoodFightState }> {
+  state = new FoodFightState();
   maxClients = GAME.maxPlayers;
 
   onCreate() {
-    this.setState(new FoodFightState());
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
     this.setSimulationInterval((deltaMs) => this.tick(deltaMs / 1000), 1000 / GAME.serverHz);
   }
@@ -76,7 +81,7 @@ export class FoodFightRoom extends Room<FoodFightState> {
     if (this.state.phase !== "playing") return;
     this.state.timeRemaining = Math.max(0, this.state.timeRemaining - dt);
 
-    this.state.players.forEach((player) => {
+    this.state.players.forEach((player: PlayerState) => {
       const next = movePlayer(
         { x: player.x, y: player.y },
         { x: player.moveX, y: player.moveY },
