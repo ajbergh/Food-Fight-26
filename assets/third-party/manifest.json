@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "runtimeRoot": "apps/game-client/public/assets/third-party",
+  "budgets": {
+    "arena": 10485760,
+    "characters": 10485760,
+    "audio": 5242880,
+    "other": 10485760,
+    "total": 41943040
+  },
+  "sources": [
+    {
+      "id": "kenney-food-kit",
+      "name": "Food Kit",
+      "provider": "Kenney",
+      "sourceUrl": "https://kenney.nl/assets/food-kit",
+      "licenseId": "CC0-1.0",
+      "licenseEvidenceUrl": "https://kenney.nl/assets/food-kit",
+      "verifiedOn": "2026-08-31",
+      "status": "approved",
+      "notes": "The publisher page currently identifies this 3D pack as Creative Commons CC0. Import only optimized runtime derivatives, not the complete source archive."
+    },
+    {
+      "id": "quaternius-ultimate-food",
+      "name": "Ultimate Food Pack",
+      "provider": "Quaternius",
+      "sourceUrl": "https://quaternius.com/packs/ultimatefood.html",
+      "licenseId": "REVIEW_REQUIRED",
+      "licenseEvidenceUrl": "https://quaternius.com/license.html",
+      "verifiedOn": "2026-08-31",
+      "status": "hold",
+      "notes": "The pack page currently labels the pack CC0 while the publisher's general license page now presents QAL v1.0 dated 2026-08-28. Do not import this source until provenance and applicable terms are explicitly resolved."
+    }
+  ],
+  "assets": []
+}
