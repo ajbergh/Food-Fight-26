@@ -76,9 +76,12 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Production-shaped container targets for game server, platform API, game client, and web shell.
 - CI container smoke that boots deployable images and exercises the containerized match server with real bot clients.
 - Local staging compose stack with Postgres/Redis and explicit static health probes.
+- Responsive gameplay HUD across desktop, phone/tablet widths, short landscape viewports, and display safe areas.
+- Persistent HUD scale and reduced-motion accessibility controls with keyboard shortcuts and operating-system motion preference defaulting.
+- Semantic live status treatment, minimum touch targets, keyboard focus styling, higher-contrast handling, and mobile E2E coverage for presentation settings.
+- Next: responsive lobby/party flow once lobby interaction is promoted beyond the current direct-match prototype.
+- Next: color-vision palette presets and input remapping/accessibility control depth.
 - Eight-character readable set or modular variants.
-- Responsive HUD/lobby.
-- Accessibility controls.
 - Deploy the tested container/static artifacts to hosted staging regions.
 - Crash/client-performance/network observability dashboards.
 - Structured external playtest.
