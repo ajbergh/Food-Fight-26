@@ -2,6 +2,9 @@
 
 FROM node:22-bookworm-slim AS workspace
 WORKDIR /workspace
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
 COPY . .
 RUN pnpm install --no-frozen-lockfile
