@@ -2,6 +2,7 @@ import * as pc from "playcanvas";
 import { GAME, movePlayerWithObstacles } from "@foodfight/game-core";
 import { foodCourtMap } from "@foodfight/maps";
 import type {
+  BananaSnapshot,
   ImpactMessage,
   MatchStateShape,
   PlayerSnapshot,
@@ -49,7 +50,10 @@ function material(color: pc.Color) {
 
 const tomatoMaterial = material(new pc.Color(0.9, 0.08, 0.05));
 const tomatoStemMaterial = material(new pc.Color(0.15, 0.6, 0.2));
-const impactMaterial = material(new pc.Color(1, 0.15, 0.08));
+const tomatoImpactMaterial = material(new pc.Color(1, 0.15, 0.08));
+const bananaMaterial = material(new pc.Color(1, 0.82, 0.05));
+const bananaStemMaterial = material(new pc.Color(0.35, 0.18, 0.05));
+const bananaImpactMaterial = material(new pc.Color(1, 0.72, 0.04));
 
 const floor = new pc.Entity("arena-floor");
 floor.addComponent("render", { type: "box", material: material(new pc.Color(0.36, 0.3, 0.39)) });
@@ -94,9 +98,10 @@ interface PlayerVisual {
   label: HTMLDivElement;
   local: boolean;
   stunned: boolean;
+  dodging: boolean;
 }
 
-interface ProjectileVisual {
+interface MovingVisual {
   entity: pc.Entity;
   target: pc.Vec3;
 }
@@ -107,22 +112,33 @@ interface ImpactVisual {
 }
 
 const playerVisuals = new Map<string, PlayerVisual>();
-const projectileVisuals = new Map<string, ProjectileVisual>();
+const projectileVisuals = new Map<string, MovingVisual>();
+const bananaVisuals = new Map<string, pc.Entity>();
 const impactVisuals: ImpactVisual[] = [];
 let connection: MatchConnection | undefined;
 let inputSequence = 0;
 let inputAccumulator = 0;
 let lastAim = { x: 1, y: 0 };
 let throwQueued = false;
+let bananaQueued = false;
+let dodgeQueued = false;
 let lastGamepadThrow = false;
+let lastGamepadBanana = false;
+let lastGamepadDodge = false;
 let lastStateAt = performance.now();
 let smoothedPatchHz = 0;
 let currentPlayerCount = 0;
+let currentBananaCount = 0;
 
 window.addEventListener("keydown", (event) => {
-  if (event.code === "Space" && !event.repeat) {
+  if (event.repeat) return;
+  if (event.code === "Space") {
     event.preventDefault();
     throwQueued = true;
+  } else if (event.code === "KeyQ") {
+    bananaQueued = true;
+  } else if (event.code === "ShiftLeft" || event.code === "ShiftRight") {
+    dodgeQueued = true;
   }
 });
 canvas.addEventListener("pointerdown", () => {
@@ -138,8 +154,13 @@ function colorForSession(sessionId: string): pc.Color {
 function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVisual {
   const existing = playerVisuals.get(sessionId);
   if (existing) {
-    existing.label.textContent = player.stunRemaining > 0 ? `${player.displayName} · SPLAT!` : player.displayName;
+    existing.label.textContent = player.stunRemaining > 0
+      ? `${player.displayName} · SLIP!`
+      : player.dodgeRemaining > 0
+        ? `${player.displayName} · DODGE!`
+        : player.displayName;
     existing.stunned = player.stunRemaining > 0;
+    existing.dodging = player.dodgeRemaining > 0;
     return existing;
   }
 
@@ -162,6 +183,7 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
     label,
     local: connection?.room.sessionId === sessionId,
     stunned: player.stunRemaining > 0,
+    dodging: player.dodgeRemaining > 0,
   };
   playerVisuals.set(sessionId, visual);
   return visual;
@@ -169,18 +191,35 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
 
 function createTomatoEntity(projectileId: string) {
   const root = new pc.Entity(`projectile-${projectileId}`);
-
   const fruit = new pc.Entity("fruit");
   fruit.addComponent("render", { type: "sphere", material: tomatoMaterial });
   fruit.setLocalScale(0.56, 0.56, 0.56);
   root.addChild(fruit);
-
   const stem = new pc.Entity("stem");
   stem.addComponent("render", { type: "cone", material: tomatoStemMaterial });
   stem.setLocalScale(0.18, 0.15, 0.18);
   stem.setLocalPosition(0, 0.28, 0);
   root.addChild(stem);
+  app.root.addChild(root);
+  return root;
+}
 
+function createBananaEntity(bananaId: string) {
+  const root = new pc.Entity(`hazard-${bananaId}`);
+  const angles = [-34, 0, 34];
+  for (let index = 0; index < angles.length; index += 1) {
+    const peel = new pc.Entity(`peel-${index}`);
+    peel.addComponent("render", { type: "capsule", material: bananaMaterial });
+    peel.setLocalScale(0.18, 0.55, 0.18);
+    peel.setLocalEulerAngles(68, 0, angles[index]!);
+    peel.setLocalPosition((index - 1) * 0.18, 0.12, Math.abs(index - 1) * 0.06);
+    root.addChild(peel);
+  }
+  const stem = new pc.Entity("stem");
+  stem.addComponent("render", { type: "cylinder", material: bananaStemMaterial });
+  stem.setLocalScale(0.09, 0.12, 0.09);
+  stem.setLocalPosition(0, 0.12, 0);
+  root.addChild(stem);
   app.root.addChild(root);
   return root;
 }
@@ -195,16 +234,15 @@ function syncState(state: MatchStateShape) {
   const players = state.players as unknown as StateCollection<PlayerSnapshot>;
   currentPlayerCount = players.size;
   const seenPlayers = new Set<string>();
-
   players.forEach((player, sessionId) => {
     seenPlayers.add(sessionId);
     const visual = ensurePlayerVisual(sessionId, player);
     visual.local = connection?.room.sessionId === sessionId;
     visual.stunned = player.stunRemaining > 0;
+    visual.dodging = player.dodgeRemaining > 0;
     visual.target.set(player.x, 0.9, player.y);
     visual.authoritative.copy(visual.target);
   });
-
   for (const [sessionId, visual] of playerVisuals) {
     if (seenPlayers.has(sessionId)) continue;
     visual.entity.destroy();
@@ -225,11 +263,28 @@ function syncState(state: MatchStateShape) {
     }
     visual.target.set(projectile.x, 0.45, projectile.y);
   });
-
   for (const [projectileId, visual] of projectileVisuals) {
     if (seenProjectiles.has(projectileId)) continue;
     visual.entity.destroy();
     projectileVisuals.delete(projectileId);
+  }
+
+  const bananas = state.bananas as unknown as StateCollection<BananaSnapshot>;
+  currentBananaCount = bananas.size;
+  const seenBananas = new Set<string>();
+  bananas.forEach((banana, bananaId) => {
+    seenBananas.add(bananaId);
+    let entity = bananaVisuals.get(bananaId);
+    if (!entity) {
+      entity = createBananaEntity(bananaId);
+      bananaVisuals.set(bananaId, entity);
+    }
+    entity.setPosition(banana.x, 0.06, banana.y);
+  });
+  for (const [bananaId, entity] of bananaVisuals) {
+    if (seenBananas.has(bananaId)) continue;
+    entity.destroy();
+    bananaVisuals.delete(bananaId);
   }
 
   blueScoreLabel.textContent = String(state.blueScore);
@@ -254,11 +309,20 @@ function readMovement() {
       x = gamepadX;
       y = gamepadY;
     }
+
     const gamepadThrow = Boolean(gamepad.buttons[0]?.pressed);
+    const gamepadBanana = Boolean(gamepad.buttons[1]?.pressed);
+    const gamepadDodge = Boolean(gamepad.buttons[5]?.pressed);
     if (gamepadThrow && !lastGamepadThrow) throwQueued = true;
+    if (gamepadBanana && !lastGamepadBanana) bananaQueued = true;
+    if (gamepadDodge && !lastGamepadDodge) dodgeQueued = true;
     lastGamepadThrow = gamepadThrow;
+    lastGamepadBanana = gamepadBanana;
+    lastGamepadDodge = gamepadDodge;
   } else {
     lastGamepadThrow = false;
+    lastGamepadBanana = false;
+    lastGamepadDodge = false;
   }
 
   const length = Math.hypot(x, y);
@@ -287,7 +351,6 @@ function updateLabels() {
   if (!cameraComponent) return;
   const markerWorld = new pc.Vec3();
   const markerScreen = new pc.Vec3();
-
   for (const visual of playerVisuals.values()) {
     markerWorld.copy(visual.entity.getPosition());
     markerWorld.y += 1.7;
@@ -295,12 +358,16 @@ function updateLabels() {
     visual.label.style.transform = `translate(-50%, -100%) translate(${markerScreen.x}px, ${markerScreen.y}px)`;
     visual.label.classList.toggle("local", visual.local);
     visual.label.classList.toggle("stunned", visual.stunned);
+    visual.label.classList.toggle("dodging", visual.dodging);
   }
 }
 
 function spawnImpact(message: ImpactMessage) {
-  const entity = new pc.Entity("tomato-impact");
-  entity.addComponent("render", { type: "cylinder", material: impactMaterial });
+  const entity = new pc.Entity(`${message.kind}-impact`);
+  entity.addComponent("render", {
+    type: "cylinder",
+    material: message.kind === "banana" ? bananaImpactMaterial : tomatoImpactMaterial,
+  });
   entity.setLocalScale(0.2, 0.035, 0.2);
   entity.setPosition(message.x, 0.04, message.y);
   app.root.addChild(entity);
@@ -320,7 +387,7 @@ function tickImpacts(dt: number) {
 }
 
 function updateNetworkLabel(phase = "playing", projectileCount = projectileVisuals.size) {
-  networkLabel.textContent = `online · ${currentPlayerCount}/${GAME.maxPlayers} · ${projectileCount} tomatoes · ${smoothedPatchHz.toFixed(0)} patch/s · ${phase}`;
+  networkLabel.textContent = `online · ${currentPlayerCount}/${GAME.maxPlayers} · ${projectileCount} tomatoes · ${currentBananaCount} bananas · ${smoothedPatchHz.toFixed(0)} patch/s · ${phase}`;
 }
 
 function formatTime(seconds: number) {
@@ -335,12 +402,14 @@ app.on("update", (dt: number) => {
 
   if (localVisual && !localVisual.stunned) {
     const current = localVisual.entity.getPosition();
+    const speed = GAME.playerSpeed * (localVisual.dodging ? GAME.dodgeSpeedMultiplier : 1);
     const predicted = movePlayerWithObstacles(
       { x: current.x, y: current.z },
       move,
       dt,
       foodCourtMap.bounds,
       foodCourtMap.obstacles,
+      speed,
     );
     localVisual.entity.setPosition(predicted.x, 0.9, predicted.y);
 
@@ -348,18 +417,30 @@ app.on("update", (dt: number) => {
     if (correctionDistance > 2.5) {
       localVisual.entity.setPosition(localVisual.authoritative);
     } else {
-      smoothPosition(localVisual.entity, localVisual.authoritative, 8, dt);
+      smoothPosition(localVisual.entity, localVisual.authoritative, localVisual.dodging ? 14 : 8, dt);
     }
   }
 
   for (const visual of playerVisuals.values()) {
-    if (!visual.local) smoothPosition(visual.entity, visual.target, 14, dt);
-    visual.entity.setEulerAngles(0, 0, visual.stunned ? Math.sin(performance.now() * 0.025) * 12 : 0);
+    if (!visual.local) smoothPosition(visual.entity, visual.target, visual.dodging ? 20 : 14, dt);
+    if (visual.stunned) {
+      visual.entity.setEulerAngles(0, 0, Math.sin(performance.now() * 0.025) * 12);
+      visual.entity.setLocalScale(0.95, 1.02, 0.95);
+    } else if (visual.dodging) {
+      visual.entity.setEulerAngles(0, 0, 0);
+      visual.entity.setLocalScale(1.08, 0.9, 1.08);
+    } else {
+      visual.entity.setEulerAngles(0, 0, 0);
+      visual.entity.setLocalScale(0.85, 1.2, 0.85);
+    }
   }
 
   for (const visual of projectileVisuals.values()) {
     smoothPosition(visual.entity, visual.target, 24, dt);
     visual.entity.rotateLocal(240 * dt, 180 * dt, 0);
+  }
+  for (const entity of bananaVisuals.values()) {
+    entity.rotateLocal(0, 20 * dt, 0);
   }
 
   tickImpacts(dt);
@@ -377,8 +458,12 @@ app.on("update", (dt: number) => {
       aimX: lastAim.x,
       aimY: lastAim.y,
       throwPressed: throwQueued,
+      bananaPressed: bananaQueued,
+      dodgePressed: dodgeQueued,
     });
     throwQueued = false;
+    bananaQueued = false;
+    dodgeQueued = false;
   }
 });
 

@@ -23,10 +23,16 @@ export function normalizeInput(input: Vec2): Vec2 {
   return { x: input.x / length, y: input.y / length };
 }
 
-export function movePlayer(position: Vec2, input: Vec2, dt: number, bounds: ArenaBounds): Vec2 {
+export function movePlayer(
+  position: Vec2,
+  input: Vec2,
+  dt: number,
+  bounds: ArenaBounds,
+  speed: number = GAME.playerSpeed,
+): Vec2 {
   const normalized = normalizeInput(input);
-  const x = position.x + normalized.x * GAME.playerSpeed * dt;
-  const y = position.y + normalized.y * GAME.playerSpeed * dt;
+  const x = position.x + normalized.x * speed * dt;
+  const y = position.y + normalized.y * speed * dt;
   return clampToBounds({ x, y }, bounds, GAME.playerRadius);
 }
 
@@ -36,8 +42,9 @@ export function movePlayerWithObstacles(
   dt: number,
   bounds: ArenaBounds,
   obstacles: readonly RectObstacle[],
+  speed: number = GAME.playerSpeed,
 ): Vec2 {
-  return resolveAgainstObstacles(movePlayer(position, input, dt, bounds), obstacles, GAME.playerRadius);
+  return resolveAgainstObstacles(movePlayer(position, input, dt, bounds, speed), obstacles, GAME.playerRadius);
 }
 
 export function resolveAgainstObstacles(

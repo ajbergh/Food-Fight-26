@@ -7,5 +7,9 @@ export const GAME = {
   playerSpeed: 7.5,
   playerRadius: 0.55,
   projectileRadius: 0.28,
+  bananaRadius: 0.5,
+  dodgeSeconds: 0.24,
+  dodgeCooldownSeconds: 1.05,
+  dodgeSpeedMultiplier: 2.25,
   objectiveRadius: 3,
 } as const;
