@@ -30,7 +30,7 @@ class FoodFightState extends Schema {
   players = new MapSchema<PlayerState>();
   blueScore = 0;
   redScore = 0;
-  timeRemaining = GAME.roundSeconds;
+  timeRemaining: number = GAME.roundSeconds;
   phase = "playing";
 }
 
