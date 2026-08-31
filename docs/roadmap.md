@@ -49,7 +49,10 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 ## M4 — Art prototype — in progress
 
 - Procedural food-court perimeter and clearer environment hierarchy.
-- Stylized chef silhouettes layered over networked player capsules.
+- Articulated stylized chef characters replace the visible player capsule treatment while retaining the existing gameplay collision model.
+- Deterministic eight-player character variation across skin tone, proportions, hair, and chef headwear.
+- Procedural idle/walk/run locomotion with articulated hips, knees, shoulders, elbows, body lean, and directional facing.
+- Layered overhand tomato throw animation with wind-up, release, and recovery while locomotion continues.
 - More readable sundae objective and team-control ring.
 - Low/medium/high visual-quality toggles.
 - Prototype action/match audio language using browser-synthesized cues.
@@ -60,9 +63,11 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Automated CI asset audit for provenance, SHA-256 integrity, runtime formats, per-file byte ceilings, and first-play asset buckets.
 - Automated glTF/GLB structural inspection with triangle/primitive/material/texture/animation ceilings and local-resource safety checks.
 - Kenney Food Kit approved as the first controlled food-pack candidate; Quaternius Ultimate Food Pack remains on hold pending explicit license/provenance resolution.
+- Quaternius Universal Base Characters/Animation Library and KayKit Adventurers/Character Animations documented as CC0 production-rig candidates.
+- Next: replace projectile-nearest throw inference with explicit authoritative owner presentation events before competitive validation.
+- Next: evaluate/import one production skinned GLB hero rig and retarget the established locomotion/throw motion language.
 - Next: import a small selected Kenney Food Kit derivative set through Blender -> GLB/KTX2 and replace representative procedural food props without changing gameplay authority.
-- Next: evaluate one production hero rig/style.
-- Next: benchmark production-asset download size, draw-call pressure, and frame pacing on target laptops/tablets.
+- Next: benchmark production-asset download size, draw-call pressure, skinning cost, and frame pacing on target laptops/tablets.
 
 **Exit:** visual direction validated without blowing performance/download budgets.
 
