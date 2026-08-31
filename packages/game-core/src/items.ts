@@ -10,7 +10,14 @@ export interface ItemDefinition {
 }
 
 export const ITEMS: Record<ItemId, ItemDefinition> = {
-  tomato: { id: "tomato", kind: "projectile", cooldownSeconds: 0.65, speed: 14, lifetimeSeconds: 2.2 },
+  tomato: {
+    id: "tomato",
+    kind: "projectile",
+    cooldownSeconds: 0.65,
+    speed: 14,
+    stunSeconds: 0.4,
+    lifetimeSeconds: 2.2,
+  },
   banana: { id: "banana", kind: "trap", cooldownSeconds: 1.1, stunSeconds: 1.1, lifetimeSeconds: 12 },
   pie: { id: "pie", kind: "projectile", cooldownSeconds: 1.25, speed: 9, stunSeconds: 0.55, lifetimeSeconds: 3 },
   watermelon: { id: "watermelon", kind: "rolling", cooldownSeconds: 2.2, speed: 8, stunSeconds: 0.8, lifetimeSeconds: 6 },
