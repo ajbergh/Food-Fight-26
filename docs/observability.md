@@ -6,7 +6,7 @@ Food Fight 26 treats observability as part of the playable vertical slice rather
 
 ### Browser client
 
-When `VITE_PLATFORM_API_URL` is configured, the game client emits a small versioned telemetry envelope to `POST /api/v1/telemetry/client`.
+When a platform API URL is configured, the game client emits a small versioned telemetry envelope to `POST /api/v1/telemetry/client`. Container/runtime configuration uses `PLATFORM_API_PUBLIC_URL`; Vite's `VITE_PLATFORM_API_URL` remains a development fallback.
 
 Supported event kinds:
 
@@ -16,7 +16,7 @@ Supported event kinds:
 - `unhandled_rejection` — bounded rejection message;
 - `page_hidden` — elapsed page lifetime when the document becomes hidden.
 
-The client never waits for telemetry delivery and telemetry failure must not affect gameplay. Delivery prefers `navigator.sendBeacon()` and falls back to a keepalive `fetch()`.
+Every emitted event also carries the bounded runtime release identifier supplied by `FOOD_FIGHT_RELEASE`. The client never waits for telemetry delivery and telemetry failure must not affect gameplay. Delivery prefers `navigator.sendBeacon()` and falls back to a keepalive `fetch()`.
 
 ### Platform API
 
@@ -27,6 +27,7 @@ The platform API validates the versioned envelope, applies byte and field-count 
 - accepted event count;
 - unique ephemeral browser sessions since process start;
 - counts by event kind;
+- counts by release identifier, bounded to a small number of release buckets;
 - frame sample count;
 - FPS p50 and p05;
 - p95-frame-time p50 and p95;
@@ -54,13 +55,21 @@ If accounts are introduced, telemetry identity must remain separately reviewed r
 
 ## Staging configuration
 
-Local development:
+Local development can use Vite fallbacks:
 
 ```text
 VITE_PLATFORM_API_URL=http://localhost:3000
 ```
 
-Containerized staging uses `PUBLIC_PLATFORM_API_URL` as the game-client build argument source. Because Vite environment values are compiled into the browser bundle, hosted staging must build the client with a browser-reachable platform API URL.
+The production-shaped game-client image is environment-neutral. At container startup nginx rewrites `/runtime-config.js` from:
+
+```text
+GAME_SERVER_PUBLIC_URL=https://match.staging.example
+PLATFORM_API_PUBLIC_URL=https://api.staging.example
+FOOD_FIGHT_RELEASE=sha-<git-sha>
+```
+
+This allows the exact same tested static image to move between environments while preserving a release identity for telemetry comparisons.
 
 ## Operational interpretation
 
@@ -69,6 +78,7 @@ For playtests, use the browser and server signals together:
 - server tick p99 is healthy but browser FPS p05 is low -> rendering/content issue;
 - both server tick p99 and browser frame time degrade -> load or host-level contention may be involved;
 - error/rejection counts increase while frame metrics remain healthy -> client correctness/regression issue;
+- a new release bucket regresses while the prior release remains healthy -> canary/build regression;
 - browser telemetry disappears while matches still run -> telemetry routing/configuration problem rather than a gameplay outage.
 
 The in-memory aggregate is intentionally a staging bridge, not a production analytics warehouse.
@@ -79,6 +89,5 @@ Before a broad external playtest:
 
 1. ship structured logs to a hosted log backend;
 2. export platform/game-server service metrics to a durable metrics backend;
-3. add dashboard panels for active rooms, tick p95/p99, browser FPS p05/p50, browser p95 frame time, client error rate, and match completion/rematch rate;
-4. add release/build identifiers to telemetry after the deployment pipeline produces immutable release IDs;
-5. define retention and deletion policy before storing any durable per-session event data.
+3. add dashboard panels for active rooms, tick p95/p99, browser FPS p05/p50, browser p95 frame time, client error rate, and match completion/rematch rate, grouped by release where useful;
+4. define retention and deletion policy before storing any durable per-session event data.

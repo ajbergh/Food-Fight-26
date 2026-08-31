@@ -1,7 +1,8 @@
+import { getRuntimeConfig } from "./runtimeConfig";
 import { createTelemetryEnvelope, percentile, type ClientTelemetryKind } from "./telemetryCore";
 
-const configuredBaseUrl = (import.meta.env.VITE_PLATFORM_API_URL as string | undefined)?.trim().replace(/\/$/, "");
-const endpoint = configuredBaseUrl ? `${configuredBaseUrl}/api/v1/telemetry/client` : "";
+const runtimeConfig = getRuntimeConfig();
+const endpoint = runtimeConfig.platformApiUrl ? `${runtimeConfig.platformApiUrl}/api/v1/telemetry/client` : "";
 const sessionId = crypto.randomUUID?.() ?? `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 const SAMPLE_INTERVAL_MS = 15_000;
 const frameTimes: number[] = [];
@@ -11,7 +12,7 @@ let windowStartedAt = lastFrameAt;
 
 function send(kind: ClientTelemetryKind, payload: Record<string, unknown>) {
   if (!endpoint) return;
-  const event = createTelemetryEnvelope(kind, sessionId, payload, { route: window.location.pathname });
+  const event = createTelemetryEnvelope(kind, sessionId, { ...payload, release: runtimeConfig.release }, { route: window.location.pathname });
   const body = JSON.stringify(event);
 
   try {

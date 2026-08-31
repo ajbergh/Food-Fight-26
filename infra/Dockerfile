@@ -36,15 +36,16 @@ USER node
 CMD ["node", "dist/index.js"]
 
 FROM workspace AS game-client-build
-ARG VITE_GAME_SERVER_URL=http://localhost:2567
-ARG VITE_PLATFORM_API_URL=http://localhost:3000
-ENV VITE_GAME_SERVER_URL=${VITE_GAME_SERVER_URL} \
-    VITE_PLATFORM_API_URL=${VITE_PLATFORM_API_URL}
 RUN pnpm --filter @foodfight/game-client build
 
 FROM nginx:1.27-alpine AS game-client-static
+ENV GAME_SERVER_PUBLIC_URL=http://localhost:2567 \
+    PLATFORM_API_PUBLIC_URL=http://localhost:3000 \
+    FOOD_FIGHT_RELEASE=dev
 COPY infra/nginx-static.conf /etc/nginx/conf.d/default.conf
+COPY infra/40-foodfight-runtime-config.sh /docker-entrypoint.d/40-foodfight-runtime-config.sh
 COPY --from=game-client-build /workspace/apps/game-client/dist /usr/share/nginx/html
+RUN chmod +x /docker-entrypoint.d/40-foodfight-runtime-config.sh
 EXPOSE 8080
 
 FROM workspace AS web-build

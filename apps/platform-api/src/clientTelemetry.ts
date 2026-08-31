@@ -26,6 +26,7 @@ const MAX_ROUTE_LENGTH = 120;
 const MAX_PAYLOAD_KEYS = 24;
 const MAX_STRING_LENGTH = 240;
 const MAX_FPS_SAMPLES = 600;
+const MAX_RELEASE_BUCKETS = 32;
 
 function cleanString(value: unknown, max: number) {
   if (typeof value !== "string") return null;
@@ -75,6 +76,7 @@ export class ClientTelemetryStore {
   private received = 0;
   private sessions = new Set<string>();
   private byKind = new Map<ClientTelemetryKind, number>();
+  private byRelease = new Map<string, number>();
   private fpsSamples: number[] = [];
   private p95FrameSamples: number[] = [];
   private lastReceivedAt: string | null = null;
@@ -84,6 +86,10 @@ export class ClientTelemetryStore {
     this.sessions.add(event.sessionId);
     this.byKind.set(event.kind, (this.byKind.get(event.kind) ?? 0) + 1);
     this.lastReceivedAt = new Date().toISOString();
+
+    const release = typeof event.payload.release === "string" && event.payload.release ? event.payload.release.slice(0, 80) : "unknown";
+    const releaseBucket = this.byRelease.has(release) || this.byRelease.size < MAX_RELEASE_BUCKETS ? release : "other";
+    this.byRelease.set(releaseBucket, (this.byRelease.get(releaseBucket) ?? 0) + 1);
 
     if (event.kind === "performance_sample") {
       const fps = event.payload.fps;
@@ -98,6 +104,7 @@ export class ClientTelemetryStore {
       received: this.received,
       uniqueSessions: this.sessions.size,
       byKind: Object.fromEntries(this.byKind),
+      byRelease: Object.fromEntries(this.byRelease),
       frame: {
         samples: this.fpsSamples.length,
         fpsP50: percentile(this.fpsSamples, 0.5),
