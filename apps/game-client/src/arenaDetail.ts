@@ -34,7 +34,7 @@ function material(color: pc.Color, gloss = 0.35, metalness = 0.02, emissive = fa
   value.metalness = metalness;
   if (emissive) {
     value.emissive = new pc.Color(color.r, color.g, color.b, color.a);
-    value.emissiveIntensity = 1.2;
+    value.emissiveIntensity = 1.15;
   }
   value.update();
   return value;
@@ -69,47 +69,52 @@ function kiosk(
   accent: pc.Material,
   body: pc.Material,
   metal: pc.Material,
-  cream: pc.Material,
   dark: pc.Material,
 ) {
   const root = new pc.Entity(name);
-  root.setLocalPosition(x, 0, 10.5);
+  root.setLocalPosition(x, 0, 10.55);
   root.setLocalEulerAngles(0, 180, 0);
   parent.addChild(root);
-  primitive(root, "body", "box", body, [5.25, 2.6, 1.55], [0, 1.25, 0.45]);
-  primitive(root, "counter", "box", metal, [5.5, 0.18, 1.85], [0, 1.28, -0.25]);
-  primitive(root, "service-window", "box", dark, [3.9, 1.1, 0.08], [0, 2.25, -0.36]);
-  primitive(root, "header", "box", accent, [4.65, 0.52, 0.16], [0, 3.18, -0.34]);
-  primitive(root, "awning", "box", cream, [5.35, 0.16, 1.05], [0, 3.62, -0.06], [-8, 0, 0]);
-  primitive(root, "menu", "box", dark, [2.7, 0.68, 0.08], [0, 2.25, 0.29]);
+  primitive(root, "body", "box", body, [5.3, 2.8, 1.45], [0, 1.32, 0.48]);
+  primitive(root, "counter", "box", metal, [5.55, 0.18, 1.8], [0, 1.3, -0.24]);
+  primitive(root, "window", "box", dark, [3.9, 1.08, 0.08], [0, 2.25, -0.32]);
+  primitive(root, "header", "box", accent, [4.75, 0.56, 0.18], [0, 3.24, -0.3]);
 }
 
-function booth(parent: pc.Entity, x: number, z: number, facing: number, seat: pc.Material, wood: pc.Material) {
-  const root = new pc.Entity(`booth-${x}-${z}`);
-  root.setLocalPosition(x, 0, z);
-  root.setLocalEulerAngles(0, facing, 0);
-  parent.addChild(root);
-  primitive(root, "bench", "box", seat, [2.7, 1.05, 0.75], [0, 0.52, 0.48]);
-  primitive(root, "table", "box", wood, [2.35, 0.12, 1.05], [0, 0.72, -0.55]);
-}
-
-function tableCluster(parent: pc.Entity, x: number, z: number, top: pc.Material, metal: pc.Material, seat: pc.Material, index: number) {
-  const root = new pc.Entity(`table-cluster-${index}`);
-  root.setLocalPosition(x, 0, z);
-  parent.addChild(root);
-  primitive(root, "top", "cylinder", top, [1.22, 0.11, 1.22], [0, 0.74, 0]);
-  primitive(root, "pedestal", "cylinder", metal, [0.17, 0.68, 0.17], [0, 0.35, 0]);
-  primitive(root, "chair-a", "box", seat, [0.72, 0.68, 0.72], [1.23, 0.36, 0]);
-  primitive(root, "chair-b", "box", seat, [0.72, 0.68, 0.72], [-1.23, 0.36, 0]);
-}
-
-function utilityStation(parent: pc.Entity, name: string, x: number, z: number, body: pc.Material, accent: pc.Material, dark: pc.Material) {
+function seatingCluster(
+  parent: pc.Entity,
+  name: string,
+  x: number,
+  z: number,
+  rotation: number,
+  seat: pc.Material,
+  table: pc.Material,
+  metal: pc.Material,
+) {
   const root = new pc.Entity(name);
   root.setLocalPosition(x, 0, z);
+  root.setLocalEulerAngles(0, rotation, 0);
   parent.addChild(root);
-  primitive(root, "body", "box", body, [1.35, 1.65, 0.8], [0, 0.78, 0]);
-  primitive(root, "face", "box", accent, [0.95, 0.78, 0.06], [0, 1.08, -0.43]);
-  primitive(root, "slot", "box", dark, [0.62, 0.15, 0.06], [0, 0.38, -0.43]);
+  primitive(root, "booth", "box", seat, [2.5, 1, 0.72], [0, 0.5, 0.62]);
+  primitive(root, "table", "box", table, [2.2, 0.12, 1.08], [0, 0.72, -0.45]);
+  primitive(root, "table-base", "box", metal, [0.22, 0.68, 0.6], [0, 0.35, -0.45]);
+}
+
+function utilityStation(
+  parent: pc.Entity,
+  name: string,
+  x: number,
+  z: number,
+  rotation: number,
+  body: pc.Material,
+  accent: pc.Material,
+) {
+  const root = new pc.Entity(name);
+  root.setLocalPosition(x, 0, z);
+  root.setLocalEulerAngles(0, rotation, 0);
+  parent.addChild(root);
+  primitive(root, "body", "box", body, [1.35, 1.75, 0.82], [0, 0.84, 0]);
+  primitive(root, "face", "box", accent, [0.95, 0.9, 0.06], [0, 1.08, -0.44]);
 }
 
 export function createArenaDetail(options: ArenaDetailOptions) {
@@ -124,88 +129,73 @@ export function createArenaDetail(options: ArenaDetailOptions) {
   const red = material(C.red, 0.45);
   const yellow = material(C.yellow, 0.44);
   const mint = material(C.mint, 0.42);
-  const aqua = material(C.aqua, 0.48, 0.05, true);
-  const pink = material(C.pink, 0.48, 0.05, true);
+  const aqua = material(C.aqua, 0.45, 0.04, true);
+  const pink = material(C.pink, 0.45, 0.04, true);
   const purple = material(C.purple, 0.4);
   const green = material(C.green, 0.28);
   const dark = material(C.dark, 0.12);
   const white = material(C.white, 0.4);
 
-  // Two broad concourse slabs establish a tiled mall floor without hundreds of individual tiles.
-  primitive(highDetailRoot, "north-concourse", "box", floor, [30, 0.035, 2.35], [0, -0.02, -10.15]);
-  primitive(highDetailRoot, "south-concourse", "box", floorAccent, [30, 0.035, 2.35], [0, -0.02, 10.15]);
-  for (const x of [-12, -8, -4, 0, 4, 8, 12]) {
-    primitive(highDetailRoot, `north-tile-line-${x}`, "box", floorAccent, [0.055, 0.038, 2.3], [x, -0.002, -10.15]);
-    primitive(highDetailRoot, `south-tile-line-${x}`, "box", floor, [0.055, 0.038, 2.3], [x, -0.002, 10.15]);
+  // Medium quality: large architectural masses only. These establish place without increasing combat clutter.
+  primitive(mediumDetailRoot, "north-wall-band", "box", wall, [30, 1.8, 0.16], [0, 1.25, -10.7]);
+  primitive(mediumDetailRoot, "south-wall-band", "box", wall, [30, 1.8, 0.16], [0, 1.25, 10.7]);
+  for (const x of [-13.4, -9, -4.5, 0, 4.5, 9, 13.4]) {
+    primitive(mediumDetailRoot, `north-column-${x}`, "box", metal, [0.16, 2.5, 0.2], [x, 1.3, -10.55]);
   }
 
-  // Repeating wall bays break up the box-shaped arena at medium quality.
-  for (const z of [-10.72, 10.72]) {
-    for (const x of [-12, -4, 4, 12]) {
-      primitive(mediumDetailRoot, `wall-bay-${x}-${z}`, "box", wall, [6.8, 1.7, 0.12], [x, 1.2, z]);
-      primitive(mediumDetailRoot, `wall-column-${x}-${z}`, "box", metal, [0.16, 2.4, 0.18], [x - 3.55, 1.25, z]);
-    }
-  }
+  kiosk(mediumDetailRoot, "pizza-kiosk", -9, red, purple, metal, dark);
+  kiosk(mediumDetailRoot, "burger-kiosk", 0, yellow, wall, metal, dark);
+  kiosk(mediumDetailRoot, "shake-kiosk", 9, mint, purple, metal, dark);
 
-  kiosk(mediumDetailRoot, "pizza-kiosk", -9, red, purple, metal, cream, dark);
-  kiosk(mediumDetailRoot, "burger-kiosk", 0, yellow, wall, metal, cream, dark);
-  kiosk(mediumDetailRoot, "shake-kiosk", 9, mint, purple, metal, cream, dark);
-
-  // Booths and tables remain outside the authoritative x/z limits, so they never imply collision that does not exist.
-  for (const side of [-1, 1] as const) {
-    const x = side * 15.35;
-    for (const z of [-5.7, 0, 5.7]) {
-      booth(highDetailRoot, x, z, side < 0 ? 90 : -90, side < 0 ? pink : aqua, wood);
-    }
-  }
-
-  const tables: Array<[number, number]> = [
-    [-15.05, -8], [-15.05, 8], [15.05, -8], [15.05, 8],
-    [-6.4, -10.1], [6.4, -10.1], [-6.4, 10.1], [6.4, 10.1],
-  ];
-  tables.forEach(([x, z], index) => tableCluster(highDetailRoot, x, z, cream, metal, index % 2 === 0 ? pink : aqua, index));
-
-  utilityStation(highDetailRoot, "vending-west", -15.45, 2.2, wall, aqua, dark);
-  utilityStation(highDetailRoot, "vending-east", 15.45, -2.2, wall, pink, dark);
-  utilityStation(highDetailRoot, "recycling-west", -15.45, -2.2, wall, green, dark);
-  utilityStation(highDetailRoot, "recycling-east", 15.45, 2.2, wall, green, dark);
-
-  // Condiment silhouettes provide recognizable food-court clutter at almost no visual ambiguity.
-  for (const [x, z, rotation] of [[-14.6, -5.1, 90], [14.6, 5.1, -90]] as const) {
-    const station = new pc.Entity(`condiment-${x}-${z}`);
-    station.setLocalPosition(x, 0, z);
-    station.setLocalEulerAngles(0, rotation, 0);
-    highDetailRoot.addChild(station);
-    primitive(station, "cabinet", "box", wall, [1.45, 1.05, 0.72], [0, 0.5, 0]);
-    primitive(station, "ketchup", "cylinder", red, [0.16, 0.48, 0.16], [-0.24, 1.25, 0]);
-    primitive(station, "mustard", "cylinder", yellow, [0.16, 0.48, 0.16], [0.24, 1.25, 0]);
-  }
-
-  // Large landmark sign: readable at gameplay camera distance and cheap enough for medium quality.
   const sign = new pc.Entity("food-fight-landmark-sign");
-  sign.setLocalPosition(0, 0, -9.5);
+  sign.setLocalPosition(0, 0, -9.48);
   mediumDetailRoot.addChild(sign);
-  primitive(sign, "beam-left", "box", metal, [0.18, 2.65, 0.18], [-4.25, 2.35, 0]);
-  primitive(sign, "beam-right", "box", metal, [0.18, 2.65, 0.18], [4.25, 2.35, 0]);
-  primitive(sign, "panel", "box", dark, [8.75, 1.22, 0.28], [0, 4.15, 0]);
-  primitive(sign, "neon-left", "box", pink, [3.55, 0.17, 0.08], [-2.02, 4.17, -0.18]);
-  primitive(sign, "neon-right", "box", aqua, [3.55, 0.17, 0.08], [2.02, 4.17, -0.18]);
-  primitive(sign, "food-disc", "cylinder", yellow, [0.58, 0.16, 0.58], [0, 4.17, -0.2], [90, 0, 0]);
+  primitive(sign, "beam-left", "box", metal, [0.18, 2.6, 0.18], [-4.2, 2.35, 0]);
+  primitive(sign, "beam-right", "box", metal, [0.18, 2.6, 0.18], [4.2, 2.35, 0]);
+  primitive(sign, "panel", "box", dark, [8.7, 1.2, 0.28], [0, 4.12, 0]);
+  primitive(sign, "neon-left", "box", pink, [3.55, 0.17, 0.08], [-2.02, 4.14, -0.18]);
+  primitive(sign, "neon-right", "box", aqua, [3.55, 0.17, 0.08], [2.02, 4.14, -0.18]);
 
-  // Chunky counter-food silhouettes survive the pulled-back camera better than small realistic props.
+  // High quality: broad floor detail rather than a grid of individual tile meshes.
+  primitive(highDetailRoot, "north-concourse", "box", floor, [30, 0.035, 2.25], [0, -0.02, -10.1]);
+  primitive(highDetailRoot, "south-concourse", "box", floorAccent, [30, 0.035, 2.25], [0, -0.02, 10.1]);
+  for (const x of [-12, -8, -4, 0, 4, 8, 12]) {
+    primitive(highDetailRoot, `north-tile-line-${x}`, "box", floorAccent, [0.05, 0.038, 2.2], [x, -0.002, -10.1]);
+  }
+
+  // Four readable furniture clusters suggest a full food court without filling the renderer with tiny chair parts.
+  seatingCluster(highDetailRoot, "seating-nw", -15.15, -6.2, 90, pink, wood, metal);
+  seatingCluster(highDetailRoot, "seating-sw", -15.15, 6.2, 90, pink, wood, metal);
+  seatingCluster(highDetailRoot, "seating-ne", 15.15, -6.2, -90, aqua, wood, metal);
+  seatingCluster(highDetailRoot, "seating-se", 15.15, 6.2, -90, aqua, wood, metal);
+
+  utilityStation(highDetailRoot, "vending-west", -15.45, 1.8, 90, wall, aqua);
+  utilityStation(highDetailRoot, "recycling-west", -15.45, -2.3, 90, wall, green);
+  utilityStation(highDetailRoot, "vending-east", 15.45, -1.8, -90, wall, pink);
+  utilityStation(highDetailRoot, "recycling-east", 15.45, 2.3, -90, wall, green);
+
+  // Large, chunky food silhouettes survive the gameplay camera and are cheaper than detailed prop sets.
   const displays: Array<[number, pc.Material, "sphere" | "cylinder"]> = [
-    [-9.7, red, "sphere"], [-8.4, cream, "sphere"], [-0.65, yellow, "sphere"],
-    [0.65, green, "sphere"], [8.55, pink, "cylinder"], [9.75, mint, "cylinder"],
+    [-9.7, red, "sphere"],
+    [-8.5, cream, "sphere"],
+    [-0.6, yellow, "sphere"],
+    [0.65, green, "sphere"],
+    [8.6, pink, "cylinder"],
+    [9.75, mint, "cylinder"],
   ];
   displays.forEach(([x, mat, type], index) => {
-    const item = primitive(highDetailRoot, `counter-food-${index}`, type, mat, type === "cylinder" ? [0.3, 0.56, 0.3] : [0.45, 0.34, 0.45], [x, 1.55, 9.45]);
-    if (type === "cylinder") primitive(item, "straw", "cylinder", white, [0.045, 0.48, 0.045], [0.08, 0.48, 0], [0, 0, -12]);
+    primitive(
+      highDetailRoot,
+      `counter-food-${index}`,
+      type,
+      mat,
+      type === "cylinder" ? [0.3, 0.56, 0.3] : [0.45, 0.34, 0.45],
+      [x, 1.55, 9.45],
+    );
   });
 
-  // A few emissive ceiling cards imply the larger mall ceiling without dynamic-light cost.
-  for (const x of [-9, -3, 3, 9]) {
-    primitive(highDetailRoot, `ceiling-north-${x}`, "box", white, [3.2, 0.05, 0.48], [x, 5.4, -8.8]);
-    primitive(highDetailRoot, `ceiling-south-${x}`, "box", white, [3.2, 0.05, 0.48], [x, 5.4, 8.8]);
+  for (const x of [-8, -2.7, 2.7, 8]) {
+    primitive(highDetailRoot, `ceiling-card-${x}`, "box", white, [3.3, 0.05, 0.48], [x, 5.35, 8.65]);
   }
 
   return { playableBounds: foodCourtMap.bounds };
