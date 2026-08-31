@@ -1,0 +1,12 @@
+{
+  "name": "@foodfight/perf-budget",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --check src/budget.mjs && node --check src/check-build.mjs",
+    "check": "node --check src/budget.mjs && node --check src/check-build.mjs",
+    "test": "node --test",
+    "check:client": "node src/check-build.mjs ../../apps/game-client/dist"
+  }
+}
