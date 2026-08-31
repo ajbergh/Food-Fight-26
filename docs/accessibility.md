@@ -36,3 +36,29 @@ Accessibility is a design constraint from the first prototype, not a polish pass
 ## Motion comfort
 
 The default camera is stable and does not rotate continuously. Camera shake is brief, localized, and adjustable to zero. Avoid large full-screen distortion from hits.
+
+## Prototype implementation status
+
+The current game client implements a first accessibility/readability slice rather than claiming complete accessibility coverage.
+
+Implemented now:
+
+- persistent `compact`, `normal`, and `large` HUD scales, with the `H` shortcut;
+- persistent reduced-motion override, with the operating-system reduced-motion preference used as the initial default and `R` as the shortcut;
+- reduced-motion suppression of full-screen action flashes and HUD transition animation;
+- semantic status/live-region treatment for match banners, objective changes, and event toasts;
+- text alternatives for emoji-only inventory cues;
+- 44 px minimum presentation-control targets with visible keyboard focus treatment;
+- responsive HUD layout for phone/tablet widths, short landscape viewports, and display safe areas;
+- increased-contrast and forced-colors CSS handling for platform/browser accessibility modes;
+- visual equivalents remain present for important prototype audio cues such as objective state, combat action feedback, and match events.
+
+Still required before an accessibility-focused external playtest:
+
+- color-vision-safe palette presets and validation of every player/team identification cue;
+- keyboard/gamepad remapping plus left-handed pointer layouts;
+- aim sensitivity and any future hold/toggle alternatives;
+- separate master/music/effects/voice/UI volume controls once production audio replaces the synthesized prototype layer;
+- captions/subtitles if spoken announcer or voice content is introduced;
+- screen-reader and keyboard-only testing of lobby/settings flows once the lobby becomes interactive;
+- device-level testing with browser zoom/text scaling, mobile assistive technology, and representative high-contrast modes.
