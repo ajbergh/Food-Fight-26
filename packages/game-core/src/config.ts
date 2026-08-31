@@ -13,9 +13,9 @@ export const GAME = {
   dodgeSpeedMultiplier: 2.25,
   pickupRadius: 0.65,
   pickupRespawnSeconds: 5,
-  tomatoAmmoStart: 3,
+  tomatoAmmoStart: 3 as number,
   tomatoAmmoMax: 5,
-  bananaAmmoStart: 1,
+  bananaAmmoStart: 1 as number,
   bananaAmmoMax: 2,
   objectiveRadius: 3,
 } as const;
