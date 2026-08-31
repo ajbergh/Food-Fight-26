@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm --parallel --filter @foodfight/web --filter @foodfight/game-client --filter @foodfight/game-server --filter @foodfight/platform-api dev",
+    "bots": "pnpm --filter @foodfight/bot-harness start",
     "build": "pnpm -r build",
     "check": "pnpm -r check",
     "test": "pnpm -r test",

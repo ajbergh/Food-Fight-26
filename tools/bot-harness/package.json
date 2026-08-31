@@ -1,0 +1,22 @@
+{
+  "name": "@foodfight/bot-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc --noEmit",
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@colyseus/sdk": "latest",
+    "@foodfight/game-core": "workspace:*",
+    "@foodfight/maps": "workspace:*",
+    "@foodfight/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsx": "latest"
+  }
+}
