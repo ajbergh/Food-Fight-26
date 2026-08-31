@@ -10,10 +10,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@colyseus/sdk": "latest",
     "@foodfight/game-core": "workspace:*",
     "@foodfight/maps": "workspace:*",
     "@foodfight/protocol": "workspace:*",
-    "colyseus.js": "latest",
     "playcanvas": "latest",
     "vite": "latest"
   }
