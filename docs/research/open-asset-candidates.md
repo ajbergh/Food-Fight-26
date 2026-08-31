@@ -22,6 +22,27 @@ Decision: preferred first external pack to evaluate because its clean stylized l
 
 Decision: strong fallback/secondary source. Prefer a small curated subset rather than mixing the full pack with another visual language.
 
+## Quaternius Universal Base Characters + Universal Animation Library
+
+- Sources: `https://quaternius.com/packs/universalbasecharacters.html` and the Quaternius Universal Animation Library.
+- Publisher: Quaternius.
+- License: Creative Commons CC0.
+- Base pack: six rigged humanoid base characters, approximately 13k triangles per model, with glTF and FBX exports.
+- Animation library: 120+ reusable humanoid clips including multi-direction locomotion, jogging, sprinting, actions, and reactions.
+- Intended use: production chef mesh customization in Blender on a common skeleton, followed by retargeted Food Fight-specific throw/hit clips.
+
+Decision: preferred production-rig candidate if we want to own the final chef silhouettes while keeping a mature reusable animation skeleton.
+
+## KayKit Adventurers + Character Animations
+
+- Sources: KayKit Adventurers and KayKit Character Animations from Kay Lousberg / KayKit.
+- Publisher: Kay Lousberg.
+- License: Creative Commons CC0.
+- Formats include GLTF/GLB and FBX; the animation packs provide reusable humanoid movement/action clips.
+- Intended use: rapid production-rig evaluation and a possible final low-poly stylized character foundation.
+
+Decision: strong alternate character family. The clean, chunky low-poly proportions are close to the current browser art prototype. If selected, ingest from an authoritative KayKit distribution, preserve source/version provenance, and author a dedicated food-throw animation rather than treating a generic attack clip as final.
+
 ## Kenney UI Pack
 
 - Source: `https://kenney.nl/assets/ui-pack`
@@ -32,7 +53,7 @@ Decision: strong fallback/secondary source. Prefer a small curated subset rather
 
 ## DiscoveringGodot / 6_Food_Fight
 
-See `discovering-godot-food-fight.md`. The MIT-licensed repository remains useful for food-model, SFX, furniture, ammo-refill, and customization references. Its Godot-native assets require conversion/review before browser use.
+See `discovering-godot-food-fight.md`. The MIT-licensed repository remains useful for food-model, SFX, furniture, ammo-refill, bystander-animation, and customization references. Its Godot-native assets require conversion/review before browser use. In particular, its bystander model directory contains separate walking/running pose resources, which reinforces the need for readable locomotion but is not a preferred production character pipeline for this project.
 
 ## Intake policy
 
