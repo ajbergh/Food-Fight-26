@@ -18,8 +18,12 @@ export function inspectModelFile(fullPath) {
     return { errors, metrics: emptyMetrics() };
   }
 
-  if (!document.asset || typeof document.asset.version !== "string" || !document.asset.version.startsWith("2.")) {
-    errors.push("glTF asset.version must identify glTF 2.x.");
+  if (!isObject(document)) {
+    errors.push("glTF root must be a JSON object.");
+    return { errors, metrics: emptyMetrics() };
+  }
+  if (!isObject(document.asset) || document.asset.version !== "2.0") {
+    errors.push("glTF asset.version must be exactly '2.0'.");
   }
 
   errors.push(...validateResourceUris(document, fullPath));
@@ -49,19 +53,27 @@ export function parseGlb(buffer) {
   if (declaredLength !== buffer.length) {
     throw new Error(`GLB declared length ${declaredLength} does not match file length ${buffer.length}.`);
   }
+  if (declaredLength % 4 !== 0) throw new Error("GLB file length must be 4-byte aligned.");
 
   let offset = 12;
   let jsonChunk;
+  let chunkIndex = 0;
   while (offset < buffer.length) {
     if (offset + 8 > buffer.length) throw new Error("GLB chunk header is truncated.");
     const chunkLength = buffer.readUInt32LE(offset);
     const chunkType = buffer.readUInt32LE(offset + 4);
     offset += 8;
+    if (chunkLength % 4 !== 0) throw new Error("GLB chunk lengths must be 4-byte aligned.");
     if (offset + chunkLength > buffer.length) throw new Error("GLB chunk extends beyond the declared file length.");
-    if (chunkType === GLB_JSON_CHUNK && jsonChunk === undefined) {
+    if (chunkIndex === 0 && chunkType !== GLB_JSON_CHUNK) {
+      throw new Error("GLB first chunk must be the JSON chunk.");
+    }
+    if (chunkType === GLB_JSON_CHUNK) {
+      if (jsonChunk !== undefined) throw new Error("GLB contains more than one JSON chunk.");
       jsonChunk = buffer.subarray(offset, offset + chunkLength);
     }
     offset += chunkLength;
+    chunkIndex += 1;
   }
 
   if (offset !== buffer.length) throw new Error("GLB chunk layout does not consume the complete file.");
@@ -108,6 +120,14 @@ export function validateResourceUris(document, fullPath) {
     ...collectUris(document.buffers, "buffer"),
     ...collectUris(document.images, "image"),
   ];
+
+  if (extname(fullPath).toLowerCase() === ".gltf" && Array.isArray(document.buffers)) {
+    document.buffers.forEach((buffer, index) => {
+      if (isObject(buffer) && typeof buffer.uri !== "string") {
+        errors.push(`buffer[${index}] in a .gltf file must declare a local or embedded URI.`);
+      }
+    });
+  }
 
   for (const resource of resources) {
     const { uri, label } = resource;
@@ -172,4 +192,8 @@ function arrayLength(value) {
 
 function emptyMetrics() {
   return { meshes: 0, primitives: 0, triangles: 0, materials: 0, textures: 0, images: 0, animations: 0, skins: 0 };
+}
+
+function isObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
