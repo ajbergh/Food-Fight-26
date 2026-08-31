@@ -135,7 +135,7 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
 
   // Add readable trim to the existing gameplay benches without changing collision geometry.
   for (const obstacle of foodCourtMap.obstacles) {
-    const obstacleEntity = app.root.findByName(obstacle.id);
+    const obstacleEntity = app.root.findByName(obstacle.id) as pc.Entity | null;
     if (!obstacleEntity) continue;
     addPrimitive(
       obstacleEntity,
