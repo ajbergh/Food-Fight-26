@@ -61,8 +61,9 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 
 **Exit:** visual direction validated without blowing performance/download budgets.
 
-## M5 — First polished playtest
+## M5 — First polished playtest — in progress
 
+- Repeatable multiplayer bot harness for local eight-player smoke/load tests.
 - Eight-character readable set or modular variants.
 - Responsive HUD/lobby.
 - Accessibility controls.

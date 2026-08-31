@@ -17,6 +17,20 @@ Automated Chromium flows for load -> connect -> input -> visible state. Add Fire
 ### Manual gameplay QA
 Game-feel, readability, controller behavior, audio mix, accessibility settings, network degradation, and multi-monitor/viewport edge cases.
 
+## Multiplayer bot harness
+
+`tools/bot-harness` provides lightweight Colyseus clients for repeatable local multiplayer smoke tests. With the server running, `pnpm bots` starts seven objective-seeking bots by default. Open a human browser client before starting the harness for an eight-player human-plus-bots session.
+
+The harness deliberately sends the same public `input` protocol as a browser client. It must not use privileged room internals; that keeps it useful for detecting protocol, validation, combat, scoring, and lifecycle regressions.
+
+Useful overrides:
+
+```bash
+BOT_COUNT=4 BOT_DURATION_SECONDS=60 GAME_SERVER_URL=http://localhost:2567 pnpm bots
+```
+
+Bot behavior is deterministic in shape but intentionally jittered in action timing. Do not use it as a gameplay-balance benchmark or substitute for human network/readability testing.
+
 ## Deterministic simulation tests
 
 Given the same starting state and authoritative input sequence, pure gameplay helpers should produce predictable results within defined floating-point tolerances. This makes regressions easy to reproduce.
