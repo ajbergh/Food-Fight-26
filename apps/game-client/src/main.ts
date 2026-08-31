@@ -5,6 +5,7 @@ import type {
   BananaSnapshot,
   ImpactMessage,
   MatchStateShape,
+  PickupSnapshot,
   PlayerSnapshot,
   ProjectileSnapshot,
 } from "@foodfight/protocol";
@@ -16,6 +17,8 @@ const networkLabel = document.querySelector<HTMLDivElement>("#network")!;
 const timerLabel = document.querySelector<HTMLDivElement>("#timer")!;
 const blueScoreLabel = document.querySelector<HTMLSpanElement>("#blue-score")!;
 const redScoreLabel = document.querySelector<HTMLSpanElement>("#red-score")!;
+const tomatoAmmoLabel = document.querySelector<HTMLElement>("#tomato-ammo")!;
+const bananaAmmoLabel = document.querySelector<HTMLElement>("#banana-ammo")!;
 const keyboard = new pc.Keyboard(window);
 
 const app = new pc.Application(canvas, {
@@ -54,6 +57,7 @@ const tomatoImpactMaterial = material(new pc.Color(1, 0.15, 0.08));
 const bananaMaterial = material(new pc.Color(1, 0.82, 0.05));
 const bananaStemMaterial = material(new pc.Color(0.35, 0.18, 0.05));
 const bananaImpactMaterial = material(new pc.Color(1, 0.72, 0.04));
+const pickupPadMaterial = material(new pc.Color(0.12, 0.75, 0.82));
 
 const floor = new pc.Entity("arena-floor");
 floor.addComponent("render", { type: "box", material: material(new pc.Color(0.36, 0.3, 0.39)) });
@@ -106,6 +110,12 @@ interface MovingVisual {
   target: pc.Vec3;
 }
 
+interface PickupVisual {
+  entity: pc.Entity;
+  baseY: number;
+  phase: number;
+}
+
 interface ImpactVisual {
   entity: pc.Entity;
   age: number;
@@ -114,6 +124,7 @@ interface ImpactVisual {
 const playerVisuals = new Map<string, PlayerVisual>();
 const projectileVisuals = new Map<string, MovingVisual>();
 const bananaVisuals = new Map<string, pc.Entity>();
+const pickupVisuals = new Map<string, PickupVisual>();
 const impactVisuals: ImpactVisual[] = [];
 let connection: MatchConnection | undefined;
 let inputSequence = 0;
@@ -129,6 +140,7 @@ let lastStateAt = performance.now();
 let smoothedPatchHz = 0;
 let currentPlayerCount = 0;
 let currentBananaCount = 0;
+let currentPickupCount = 0;
 
 window.addEventListener("keydown", (event) => {
   if (event.repeat) return;
@@ -189,37 +201,47 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
   return visual;
 }
 
-function createTomatoEntity(projectileId: string) {
-  const root = new pc.Entity(`projectile-${projectileId}`);
+function createTomatoEntity(name: string, scale = 1) {
+  const root = new pc.Entity(name);
   const fruit = new pc.Entity("fruit");
   fruit.addComponent("render", { type: "sphere", material: tomatoMaterial });
-  fruit.setLocalScale(0.56, 0.56, 0.56);
+  fruit.setLocalScale(0.56 * scale, 0.56 * scale, 0.56 * scale);
   root.addChild(fruit);
   const stem = new pc.Entity("stem");
   stem.addComponent("render", { type: "cone", material: tomatoStemMaterial });
-  stem.setLocalScale(0.18, 0.15, 0.18);
-  stem.setLocalPosition(0, 0.28, 0);
+  stem.setLocalScale(0.18 * scale, 0.15 * scale, 0.18 * scale);
+  stem.setLocalPosition(0, 0.28 * scale, 0);
   root.addChild(stem);
-  app.root.addChild(root);
   return root;
 }
 
-function createBananaEntity(bananaId: string) {
-  const root = new pc.Entity(`hazard-${bananaId}`);
+function createBananaEntity(name: string, scale = 1) {
+  const root = new pc.Entity(name);
   const angles = [-34, 0, 34];
   for (let index = 0; index < angles.length; index += 1) {
     const peel = new pc.Entity(`peel-${index}`);
     peel.addComponent("render", { type: "capsule", material: bananaMaterial });
-    peel.setLocalScale(0.18, 0.55, 0.18);
+    peel.setLocalScale(0.18 * scale, 0.55 * scale, 0.18 * scale);
     peel.setLocalEulerAngles(68, 0, angles[index]!);
-    peel.setLocalPosition((index - 1) * 0.18, 0.12, Math.abs(index - 1) * 0.06);
+    peel.setLocalPosition((index - 1) * 0.18 * scale, 0.12 * scale, Math.abs(index - 1) * 0.06 * scale);
     root.addChild(peel);
   }
   const stem = new pc.Entity("stem");
   stem.addComponent("render", { type: "cylinder", material: bananaStemMaterial });
-  stem.setLocalScale(0.09, 0.12, 0.09);
-  stem.setLocalPosition(0, 0.12, 0);
+  stem.setLocalScale(0.09 * scale, 0.12 * scale, 0.09 * scale);
+  stem.setLocalPosition(0, 0.12 * scale, 0);
   root.addChild(stem);
+  return root;
+}
+
+function createPickupEntity(pickupId: string, kind: PickupSnapshot["kind"]) {
+  const root = new pc.Entity(`pickup-${pickupId}`);
+  const pad = new pc.Entity("pad");
+  pad.addComponent("render", { type: "cylinder", material: pickupPadMaterial });
+  pad.setLocalScale(0.95, 0.08, 0.95);
+  pad.setLocalPosition(0, -0.24, 0);
+  root.addChild(pad);
+  root.addChild(kind === "tomato" ? createTomatoEntity("food", 1.15) : createBananaEntity("food", 1.1));
   app.root.addChild(root);
   return root;
 }
@@ -242,6 +264,10 @@ function syncState(state: MatchStateShape) {
     visual.dodging = player.dodgeRemaining > 0;
     visual.target.set(player.x, 0.9, player.y);
     visual.authoritative.copy(visual.target);
+    if (visual.local) {
+      tomatoAmmoLabel.textContent = String(player.tomatoAmmo);
+      bananaAmmoLabel.textContent = String(player.bananaAmmo);
+    }
   });
   for (const [sessionId, visual] of playerVisuals) {
     if (seenPlayers.has(sessionId)) continue;
@@ -256,7 +282,8 @@ function syncState(state: MatchStateShape) {
     seenProjectiles.add(projectileId);
     let visual = projectileVisuals.get(projectileId);
     if (!visual) {
-      const entity = createTomatoEntity(projectileId);
+      const entity = createTomatoEntity(`projectile-${projectileId}`);
+      app.root.addChild(entity);
       entity.setPosition(projectile.x, 0.45, projectile.y);
       visual = { entity, target: new pc.Vec3(projectile.x, 0.45, projectile.y) };
       projectileVisuals.set(projectileId, visual);
@@ -276,7 +303,8 @@ function syncState(state: MatchStateShape) {
     seenBananas.add(bananaId);
     let entity = bananaVisuals.get(bananaId);
     if (!entity) {
-      entity = createBananaEntity(bananaId);
+      entity = createBananaEntity(`hazard-${bananaId}`);
+      app.root.addChild(entity);
       bananaVisuals.set(bananaId, entity);
     }
     entity.setPosition(banana.x, 0.06, banana.y);
@@ -285,6 +313,27 @@ function syncState(state: MatchStateShape) {
     if (seenBananas.has(bananaId)) continue;
     entity.destroy();
     bananaVisuals.delete(bananaId);
+  }
+
+  const pickups = state.pickups as unknown as StateCollection<PickupSnapshot>;
+  currentPickupCount = 0;
+  const seenPickups = new Set<string>();
+  pickups.forEach((pickup, pickupId) => {
+    seenPickups.add(pickupId);
+    let visual = pickupVisuals.get(pickupId);
+    if (!visual) {
+      const entity = createPickupEntity(pickupId, pickup.kind);
+      entity.setPosition(pickup.x, 0.48, pickup.y);
+      visual = { entity, baseY: 0.48, phase: Math.random() * Math.PI * 2 };
+      pickupVisuals.set(pickupId, visual);
+    }
+    visual.entity.enabled = pickup.available;
+    if (pickup.available) currentPickupCount += 1;
+  });
+  for (const [pickupId, visual] of pickupVisuals) {
+    if (seenPickups.has(pickupId)) continue;
+    visual.entity.destroy();
+    pickupVisuals.delete(pickupId);
   }
 
   blueScoreLabel.textContent = String(state.blueScore);
@@ -386,8 +435,18 @@ function tickImpacts(dt: number) {
   }
 }
 
+function tickPickups(dt: number) {
+  const time = performance.now() / 1000;
+  for (const visual of pickupVisuals.values()) {
+    if (!visual.entity.enabled) continue;
+    const position = visual.entity.getPosition();
+    visual.entity.setPosition(position.x, visual.baseY + Math.sin(time * 3 + visual.phase) * 0.08, position.z);
+    visual.entity.rotateLocal(0, 55 * dt, 0);
+  }
+}
+
 function updateNetworkLabel(phase = "playing", projectileCount = projectileVisuals.size) {
-  networkLabel.textContent = `online · ${currentPlayerCount}/${GAME.maxPlayers} · ${projectileCount} tomatoes · ${currentBananaCount} bananas · ${smoothedPatchHz.toFixed(0)} patch/s · ${phase}`;
+  networkLabel.textContent = `online · ${currentPlayerCount}/${GAME.maxPlayers} · ${projectileCount} tomatoes · ${currentBananaCount} bananas · ${currentPickupCount} pickups · ${smoothedPatchHz.toFixed(0)} patch/s · ${phase}`;
 }
 
 function formatTime(seconds: number) {
@@ -443,6 +502,7 @@ app.on("update", (dt: number) => {
     entity.rotateLocal(0, 20 * dt, 0);
   }
 
+  tickPickups(dt);
   tickImpacts(dt);
   updateLabels();
 
