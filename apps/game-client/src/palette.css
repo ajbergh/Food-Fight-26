@@ -1,0 +1,63 @@
+body[data-team-palette="color-safe"] .hud .blue-score {
+  border-color: rgba(0, 114, 178, .96);
+  box-shadow: 0 0 0 1px rgba(0, 114, 178, .2), 0 10px 28px rgba(0, 0, 0, .24);
+}
+
+body[data-team-palette="color-safe"] .hud .red-score {
+  border-color: rgba(230, 159, 0, .98);
+  box-shadow: 0 0 0 1px rgba(230, 159, 0, .2), 0 10px 28px rgba(0, 0, 0, .24);
+}
+
+body[data-team-palette="color-safe"] .match-banner[data-team="blue"] {
+  text-shadow: 0 3px 18px rgba(0, 114, 178, .95);
+}
+
+body[data-team-palette="color-safe"] .match-banner[data-team="red"] {
+  text-shadow: 0 3px 18px rgba(230, 159, 0, .95);
+}
+
+body[data-team-palette="color-safe"] .event-toast[data-team="blue"] {
+  border-color: rgba(0, 114, 178, 1);
+}
+
+body[data-team-palette="color-safe"] .event-toast[data-team="red"] {
+  border-color: rgba(230, 159, 0, 1);
+}
+
+body[data-team-palette="color-safe"] .objective[data-state="blue"] {
+  border-color: rgba(0, 114, 178, 1);
+  box-shadow: 0 0 24px rgba(0, 114, 178, .36);
+}
+
+body[data-team-palette="color-safe"] .objective[data-state="red"] {
+  border-color: rgba(230, 159, 0, 1);
+  box-shadow: 0 0 24px rgba(230, 159, 0, .34);
+}
+
+@media (max-width: 920px) {
+  .settings {
+    flex-wrap: wrap;
+  }
+
+  .settings button {
+    flex: 1 1 calc(33.333% - 8px);
+  }
+
+  .objective {
+    bottom: calc(158px + var(--safe-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  .settings button {
+    font-size: calc(9px * var(--hud-scale));
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .objective {
+    bottom: calc(154px + var(--safe-bottom));
+  }
+}
