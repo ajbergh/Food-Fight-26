@@ -16,6 +16,7 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@types/node": "latest",
     "prettier": "latest",
     "typescript": "latest",
     "vitest": "latest"
