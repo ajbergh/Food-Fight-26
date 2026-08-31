@@ -38,14 +38,22 @@ build_target() {
 
 wait_http() {
   local url="$1"
-  local attempts="${2:-30}"
+  local container="$2"
+  local attempts="${3:-30}"
   for ((attempt = 1; attempt <= attempts; attempt += 1)); do
     if curl --fail --silent --show-error "$url" >/dev/null 2>&1; then
       return 0
     fi
+    if ! docker inspect "$container" >/dev/null 2>&1; then
+      echo "Container $container exited before $url became healthy." >&2
+      docker logs "$container" 2>&1 || true
+      return 1
+    fi
     sleep 1
   done
   echo "Timed out waiting for $url" >&2
+  echo "Recent logs from $container:" >&2
+  docker logs --tail 100 "$container" 2>&1 || true
   return 1
 }
 
@@ -55,29 +63,29 @@ build_target game-client-static "$game_client_image" \
   --build-arg "VITE_GAME_SERVER_URL=http://localhost:2567"
 build_target web-static "$web_image"
 
-docker run --detach --rm \
+docker run --detach \
   --name "$game_server_container" \
   --publish 32567:2567 \
   "$game_server_image" >/dev/null
 
-docker run --detach --rm \
+docker run --detach \
   --name "$platform_api_container" \
   --publish 33000:3000 \
   "$platform_api_image" >/dev/null
 
-docker run --detach --rm \
+docker run --detach \
   --name "$game_client_container" \
   --publish 38081:8080 \
   "$game_client_image" >/dev/null
 
-docker run --detach --rm \
+docker run --detach \
   --name "$web_container" \
   --publish 38080:8080 \
   "$web_image" >/dev/null
 
-wait_http http://127.0.0.1:33000/health
-wait_http http://127.0.0.1:38081/healthz
-wait_http http://127.0.0.1:38080/healthz
+wait_http http://127.0.0.1:33000/health "$platform_api_container"
+wait_http http://127.0.0.1:38081/healthz "$game_client_container"
+wait_http http://127.0.0.1:38080/healthz "$web_container"
 
 GAME_SERVER_URL=http://127.0.0.1:32567 \
 BOT_COUNT=2 \
