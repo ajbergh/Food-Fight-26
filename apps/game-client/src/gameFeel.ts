@@ -1,9 +1,13 @@
+import "./palette.css";
+
 type Cue = "tomato" | "banana" | "dodge" | "round" | "overtime" | "objective" | "finish";
 type HudScale = "compact" | "normal" | "large";
+type TeamPalette = "default" | "color-safe";
 
 const audioButton = document.querySelector<HTMLButtonElement>("#audio");
 const hudScaleButton = document.querySelector<HTMLButtonElement>("#hud-scale");
 const motionButton = document.querySelector<HTMLButtonElement>("#motion");
+const paletteButton = document.querySelector<HTMLButtonElement>("#palette");
 const performanceLabel = document.querySelector<HTMLDivElement>("#performance");
 const eventToast = document.querySelector<HTMLDivElement>("#event-toast");
 const objective = document.querySelector<HTMLDivElement>("#objective");
@@ -17,6 +21,7 @@ let muted = readMuted();
 let hudScale = readHudScale();
 let motionOverride = readMotionOverride();
 let reducedMotion = motionOverride ?? motionMedia?.matches ?? false;
+let teamPalette = readTeamPalette();
 let previousToast = "";
 let previousObjectiveState = objective?.dataset.state ?? "none";
 let lastGamepadThrow = false;
@@ -219,6 +224,41 @@ function handleSystemMotionChange(event: MediaQueryListEvent) {
   applyReducedMotion(event.matches, false);
 }
 
+function readTeamPalette(): TeamPalette {
+  try {
+    if (window.localStorage.getItem("foodfight.teamPalette") === "color-safe") return "color-safe";
+  } catch {
+    // Use the default team palette when storage is unavailable.
+  }
+  return "default";
+}
+
+function applyTeamPalette(next: TeamPalette, persist = true) {
+  teamPalette = next;
+  document.body.dataset.teamPalette = next;
+  if (paletteButton) {
+    const safe = next === "color-safe";
+    paletteButton.textContent = safe ? "palette · safe" : "palette · default";
+    paletteButton.setAttribute("aria-pressed", String(safe));
+    paletteButton.setAttribute(
+      "aria-label",
+      safe ? "Color-safe blue and orange team palette enabled" : "Default blue and red team palette enabled",
+    );
+  }
+  if (persist) {
+    try {
+      window.localStorage.setItem("foodfight.teamPalette", next);
+    } catch {
+      // Team palette still works for the current session.
+    }
+  }
+  window.dispatchEvent(new CustomEvent("foodfight:palettechange", { detail: { palette: next } }));
+}
+
+function toggleTeamPalette() {
+  applyTeamPalette(teamPalette === "default" ? "color-safe" : "default");
+}
+
 function handleKeyboard(event: KeyboardEvent) {
   if (event.repeat) return;
   if (event.code === "KeyM") {
@@ -231,6 +271,10 @@ function handleKeyboard(event: KeyboardEvent) {
   }
   if (event.code === "KeyR") {
     toggleReducedMotion();
+    return;
+  }
+  if (event.code === "KeyP") {
+    toggleTeamPalette();
     return;
   }
   if (event.code === "Space") triggerLocalAction("tomato");
@@ -298,9 +342,11 @@ function startPerformanceMeter() {
 updateAudioButton();
 applyHudScale(hudScale, false);
 applyReducedMotion(reducedMotion, false);
+applyTeamPalette(teamPalette, false);
 audioButton?.addEventListener("click", toggleMute);
 hudScaleButton?.addEventListener("click", cycleHudScale);
 motionButton?.addEventListener("click", toggleReducedMotion);
+paletteButton?.addEventListener("click", toggleTeamPalette);
 motionMedia?.addEventListener?.("change", handleSystemMotionChange);
 window.addEventListener("keydown", handleKeyboard);
 canvas?.addEventListener("pointerdown", () => triggerLocalAction("tomato"));
