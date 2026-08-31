@@ -13,10 +13,12 @@
     "build": "pnpm -r build",
     "check": "pnpm -r check",
     "test": "pnpm -r test",
+    "test:e2e": "playwright test",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@playwright/test": "latest",
     "@types/node": "latest",
     "prettier": "latest",
     "typescript": "latest",
