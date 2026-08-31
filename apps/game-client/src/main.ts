@@ -1,5 +1,5 @@
 import * as pc from "playcanvas";
-import { GAME, movePlayer } from "@foodfight/game-core";
+import { GAME, movePlayerWithObstacles } from "@foodfight/game-core";
 import { foodCourtMap } from "@foodfight/maps";
 import type { MatchStateShape, PlayerSnapshot } from "@foodfight/protocol";
 import { connectToMatch, type MatchConnection } from "./network";
@@ -82,6 +82,7 @@ interface PlayerVisual {
   entity: pc.Entity;
   target: pc.Vec3;
   authoritative: pc.Vec3;
+  label: HTMLDivElement;
   local: boolean;
 }
 
@@ -90,6 +91,9 @@ let connection: MatchConnection | undefined;
 let inputSequence = 0;
 let inputAccumulator = 0;
 let lastAim = { x: 1, y: 0 };
+let lastStateAt = performance.now();
+let smoothedPatchHz = 0;
+let currentPlayerCount = 0;
 
 function colorForSession(sessionId: string): pc.Color {
   let hash = 0;
@@ -99,7 +103,10 @@ function colorForSession(sessionId: string): pc.Color {
 
 function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVisual {
   const existing = playerVisuals.get(sessionId);
-  if (existing) return existing;
+  if (existing) {
+    existing.label.textContent = player.displayName;
+    return existing;
+  }
 
   const entity = new pc.Entity(`player-${sessionId}`);
   entity.addComponent("render", { type: "capsule", material: material(colorForSession(sessionId)) });
@@ -107,11 +114,17 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
   entity.setPosition(player.x, 0.9, player.y);
   app.root.addChild(entity);
 
+  const label = document.createElement("div");
+  label.className = "player-label";
+  label.textContent = player.displayName;
+  document.body.appendChild(label);
+
   const position = new pc.Vec3(player.x, 0.9, player.y);
   const visual: PlayerVisual = {
     entity,
     target: position.clone(),
     authoritative: position.clone(),
+    label,
     local: connection?.room.sessionId === sessionId,
   };
   playerVisuals.set(sessionId, visual);
@@ -119,7 +132,14 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
 }
 
 function syncState(state: MatchStateShape) {
+  const now = performance.now();
+  const elapsed = Math.max(1, now - lastStateAt);
+  const instantaneousHz = 1000 / elapsed;
+  smoothedPatchHz = smoothedPatchHz === 0 ? instantaneousHz : smoothedPatchHz * 0.85 + instantaneousHz * 0.15;
+  lastStateAt = now;
+
   const players = state.players as unknown as PlayerCollection;
+  currentPlayerCount = players.size;
   const seen = new Set<string>();
 
   players.forEach((player, sessionId) => {
@@ -133,13 +153,14 @@ function syncState(state: MatchStateShape) {
   for (const [sessionId, visual] of playerVisuals) {
     if (seen.has(sessionId)) continue;
     visual.entity.destroy();
+    visual.label.remove();
     playerVisuals.delete(sessionId);
   }
 
   blueScoreLabel.textContent = String(state.blueScore);
   redScoreLabel.textContent = String(state.redScore);
   timerLabel.textContent = formatTime(state.timeRemaining);
-  networkLabel.textContent = `online · ${players.size}/${GAME.maxPlayers} · ${state.phase}`;
+  updateNetworkLabel(state.phase);
 }
 
 function readMovement() {
@@ -149,19 +170,55 @@ function readMovement() {
   if (keyboard.isPressed(pc.KEY_D) || keyboard.isPressed(pc.KEY_RIGHT)) x += 1;
   if (keyboard.isPressed(pc.KEY_W) || keyboard.isPressed(pc.KEY_UP)) y -= 1;
   if (keyboard.isPressed(pc.KEY_S) || keyboard.isPressed(pc.KEY_DOWN)) y += 1;
+
+  const gamepad = navigator.getGamepads?.()[0];
+  if (gamepad) {
+    const gamepadX = applyDeadzone(gamepad.axes[0] ?? 0);
+    const gamepadY = applyDeadzone(gamepad.axes[1] ?? 0);
+    if (Math.hypot(gamepadX, gamepadY) > Math.hypot(x, y)) {
+      x = gamepadX;
+      y = gamepadY;
+    }
+  }
+
   const length = Math.hypot(x, y);
   if (length > 1) {
     x /= length;
     y /= length;
   }
-  if (length > 0) lastAim = { x, y };
+  if (length > 0.05) lastAim = { x, y };
   return { x, y };
+}
+
+function applyDeadzone(value: number) {
+  const deadzone = 0.18;
+  if (Math.abs(value) <= deadzone) return 0;
+  return ((Math.abs(value) - deadzone) / (1 - deadzone)) * Math.sign(value);
 }
 
 function smoothPosition(entity: pc.Entity, target: pc.Vec3, responsiveness: number, dt: number) {
   const current = entity.getPosition().clone();
   current.lerp(current, target, 1 - Math.exp(-responsiveness * dt));
   entity.setPosition(current);
+}
+
+function updateLabels() {
+  const cameraComponent = camera.camera;
+  if (!cameraComponent) return;
+  const markerWorld = new pc.Vec3();
+  const markerScreen = new pc.Vec3();
+
+  for (const visual of playerVisuals.values()) {
+    markerWorld.copy(visual.entity.getPosition());
+    markerWorld.y += 1.7;
+    cameraComponent.worldToScreen(markerWorld, markerScreen);
+    visual.label.style.transform = `translate(-50%, -100%) translate(${markerScreen.x}px, ${markerScreen.y}px)`;
+    visual.label.classList.toggle("local", visual.local);
+  }
+}
+
+function updateNetworkLabel(phase = "playing") {
+  networkLabel.textContent = `online · ${currentPlayerCount}/${GAME.maxPlayers} · ${smoothedPatchHz.toFixed(0)} patch/s · ${phase}`;
 }
 
 function formatTime(seconds: number) {
@@ -176,11 +233,12 @@ app.on("update", (dt: number) => {
 
   if (localVisual) {
     const current = localVisual.entity.getPosition();
-    const predicted = movePlayer(
+    const predicted = movePlayerWithObstacles(
       { x: current.x, y: current.z },
       move,
       dt,
       foodCourtMap.bounds,
+      foodCourtMap.obstacles,
     );
     localVisual.entity.setPosition(predicted.x, 0.9, predicted.y);
 
@@ -196,6 +254,8 @@ app.on("update", (dt: number) => {
     if (visual.local) continue;
     smoothPosition(visual.entity, visual.target, 14, dt);
   }
+
+  updateLabels();
 
   if (!connection) return;
   inputAccumulator += dt;
