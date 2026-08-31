@@ -125,17 +125,17 @@ function addCondimentStation(parent: pc.Entity, x: number, z: number, rotation: 
   addPrimitive(root, "mustard", "cylinder", yellow, [0.16, 0.5, 0.16], [0.28, 1.48, 0]);
 }
 
-function addTrashStation(parent: pc.Entity, x: number, z: number, body: pc.Material, trim: pc.Material) {
+function addTrashStation(parent: pc.Entity, x: number, z: number, body: pc.Material, trim: pc.Material, dark: pc.Material) {
   const root = new pc.Entity(`trash-${x}-${z}`);
   root.setLocalPosition(x, 0, z);
   parent.addChild(root);
   addPrimitive(root, "left", "box", body, [0.82, 1.25, 0.82], [-0.45, 0.58, 0]);
   addPrimitive(root, "right", "box", trim, [0.82, 1.25, 0.82], [0.45, 0.58, 0]);
-  addPrimitive(root, "left-hole", "box", COLORS.dark ? makeMaterial(COLORS.dark, 0.15) : body, [0.48, 0.1, 0.48], [-0.45, 1.2, 0]);
-  addPrimitive(root, "right-hole", "box", COLORS.dark ? makeMaterial(COLORS.dark, 0.15) : body, [0.48, 0.1, 0.48], [0.45, 1.2, 0]);
+  addPrimitive(root, "left-hole", "box", dark, [0.48, 0.1, 0.48], [-0.45, 1.2, 0]);
+  addPrimitive(root, "right-hole", "box", dark, [0.48, 0.1, 0.48], [0.45, 1.2, 0]);
 }
 
-function addVendingMachine(parent: pc.Entity, x: number, z: number, rotation: number, body: pc.Material, glass: pc.Material, accent: pc.Material) {
+function addVendingMachine(parent: pc.Entity, x: number, z: number, rotation: number, body: pc.Material, glass: pc.Material, accent: pc.Material, dark: pc.Material) {
   const root = new pc.Entity(`vending-${x}-${z}`);
   root.setLocalPosition(x, 0, z);
   root.setLocalEulerAngles(0, rotation, 0);
@@ -143,7 +143,7 @@ function addVendingMachine(parent: pc.Entity, x: number, z: number, rotation: nu
   addPrimitive(root, "body", "box", body, [1.45, 2.65, 0.9], [0, 1.28, 0]);
   addPrimitive(root, "window", "box", glass, [1.08, 1.42, 0.08], [0, 1.62, -0.47]);
   addPrimitive(root, "brand", "box", accent, [1.08, 0.38, 0.08], [0, 2.43, -0.47]);
-  addPrimitive(root, "slot", "box", COLORS.dark ? makeMaterial(COLORS.dark, 0.1) : body, [0.58, 0.18, 0.08], [0, 0.54, -0.47]);
+  addPrimitive(root, "slot", "box", dark, [0.58, 0.18, 0.08], [0, 0.54, -0.47]);
 }
 
 export function createArenaDetail(options: ArenaDetailOptions) {
@@ -188,10 +188,10 @@ export function createArenaDetail(options: ArenaDetailOptions) {
     }
   }
 
-  // South-side restaurant fronts balance the existing north stalls and make the arena read as a real food court.
-  addKiosk(mediumDetailRoot, "south-pizza", [-9, 0, 10.0], 180, purple, chrome, tomato, cream, dark);
-  addKiosk(mediumDetailRoot, "south-burgers", [0, 0, 10.0], 180, wallPanel, chrome, mustard, cream, dark);
-  addKiosk(mediumDetailRoot, "south-shakes", [9, 0, 10.0], 180, purple, chrome, mint, cream, dark);
+  // South-side restaurant fronts stay behind the authoritative edge so players never visually run through them.
+  addKiosk(mediumDetailRoot, "south-pizza", [-9, 0, 10.45], 180, purple, chrome, tomato, cream, dark);
+  addKiosk(mediumDetailRoot, "south-burgers", [0, 0, 10.45], 180, wallPanel, chrome, mustard, cream, dark);
+  addKiosk(mediumDetailRoot, "south-shakes", [9, 0, 10.45], 180, purple, chrome, mint, cream, dark);
 
   // Side-wall booth seating creates depth while leaving all gameplay lanes untouched.
   for (const side of [-1, 1] as const) {
@@ -208,17 +208,17 @@ export function createArenaDetail(options: ArenaDetailOptions) {
   }
 
   const tables: Array<[number, number]> = [
-    [-13.2, -8.4], [-13.2, 8.4], [13.2, -8.4], [13.2, 8.4],
+    [-15.15, -7.4], [-15.15, 7.4], [15.15, -7.4], [15.15, 7.4],
     [-6.6, -10.15], [6.6, -10.15], [-6.6, 10.15], [6.6, 10.15],
   ];
   tables.forEach(([x, z], index) => addCafeTable(highDetailRoot, x, z, cream, metal, index % 2 === 0 ? pink : aqua, index));
 
-  addCondimentStation(highDetailRoot, -14.1, -4.2, 90, wallPanel, chrome, tomato, mustard);
-  addCondimentStation(highDetailRoot, 14.1, 4.2, -90, wallPanel, chrome, tomato, mustard);
-  addTrashStation(highDetailRoot, -14.1, 4.3, wallPanel, green);
-  addTrashStation(highDetailRoot, 14.1, -4.3, wallPanel, green);
-  addVendingMachine(highDetailRoot, -15.45, 0.5, 90, wallPanel, dark, aqua);
-  addVendingMachine(highDetailRoot, 15.45, -0.5, -90, wallPanel, dark, pink);
+  addCondimentStation(highDetailRoot, -14.45, -4.2, 90, wallPanel, chrome, tomato, mustard);
+  addCondimentStation(highDetailRoot, 14.45, 4.2, -90, wallPanel, chrome, tomato, mustard);
+  addTrashStation(highDetailRoot, -14.55, 4.3, wallPanel, green, dark);
+  addTrashStation(highDetailRoot, 14.55, -4.3, wallPanel, green, dark);
+  addVendingMachine(highDetailRoot, -15.45, 0.5, 90, wallPanel, dark, aqua, dark);
+  addVendingMachine(highDetailRoot, 15.45, -0.5, -90, wallPanel, dark, pink, dark);
 
   // Overhead landmark signage helps orient players and gives the court a distinct visual identity.
   const sign = new pc.Entity("food-fight-overhead-sign");
@@ -231,11 +231,11 @@ export function createArenaDetail(options: ArenaDetailOptions) {
   addPrimitive(sign, "neon-right", "box", aqua, [3.5, 0.16, 0.08], [2.0, 4.28, -0.18]);
   addPrimitive(sign, "center-disc", "cylinder", mustard, [0.58, 0.16, 0.58], [0, 4.28, -0.2], [90, 0, 0]);
 
-  // Decorative food silhouettes on counters are deliberately chunky so they survive the gameplay camera.
+  // Decorative food silhouettes sit behind the south boundary and remain chunky at gameplay distance.
   for (const [x, z, material, kind] of [
-    [-9.8, 9.0, tomato, "pizza"], [-8.4, 9.0, cream, "plate"],
-    [-0.65, 9.0, mustard, "burger"], [0.65, 9.0, green, "lettuce"],
-    [8.5, 9.0, pink, "shake"], [9.8, 9.0, mint, "shake"],
+    [-9.8, 9.45, tomato, "pizza"], [-8.4, 9.45, cream, "plate"],
+    [-0.65, 9.45, mustard, "burger"], [0.65, 9.45, green, "lettuce"],
+    [8.5, 9.45, pink, "shake"], [9.8, 9.45, mint, "shake"],
   ] as Array<[number, number, pc.Material, string]>) {
     const display = new pc.Entity(`counter-food-${kind}-${x}`);
     display.setLocalPosition(x, 1.55, z);
