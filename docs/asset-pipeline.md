@@ -27,7 +27,7 @@ concept -> turnaround -> gameplay blockout -> review -> final model -> UV/materi
 
 Third-party runtime art must be traceable to an approved source before it enters the game bundle. The repository-level provenance record is `assets/third-party/manifest.json`, and CI runs `pnpm assets:audit` on every pull request.
 
-Each source record captures a stable source ID, publisher, source URL, license identifier/evidence URL, verification date, approval state, and review notes. Each imported runtime derivative must additionally record its repository path, source ID, asset kind, first-play budget bucket, per-file byte ceiling, and SHA-256 digest.
+Each source record captures a stable source ID, publisher, source URL, license identifier/evidence URL, verification date, approval state, and review notes. Each imported runtime derivative must additionally record its repository path, source ID, asset kind, first-play budget bucket, per-file byte ceiling, and SHA-256 digest. Model records also declare explicit ceilings for triangles, mesh primitives, materials, textures, and animations.
 
 Runtime derivatives live under `apps/game-client/public/assets/third-party/`. The audit intentionally accepts production-oriented formats only:
 
@@ -54,10 +54,12 @@ A source being listed in the manifest does not mean its whole pack should be cop
 4. Select only assets needed for a concrete gameplay/art hypothesis.
 5. Normalize scale/orientation/materials in Blender as needed, export GLB/glTF, and compress textures to KTX2/Basis.
 6. Place runtime derivatives under `apps/game-client/public/assets/third-party/<source-id>/`.
-7. Add manifest asset records with SHA-256, first-play bucket, and explicit `maxBytes` review limits.
+7. Add manifest asset records with SHA-256, first-play bucket, `maxBytes`, and model-specific `maxTriangles`, `maxPrimitives`, `maxMaterials`, `maxTextures`, and `maxAnimations` ceilings.
 8. Run `pnpm assets:audit`, `pnpm build`, and `pnpm perf:budget` before visual/performance review.
 
-The audit enforces provenance integrity and first-play asset ceilings. It does not substitute for visual inspection, draw-call analysis, GPU memory measurement, or browser frame-time profiling.
+For `.gltf` files, external buffers/images must remain local to the model's directory or be embedded data URIs. Remote URLs, parent-directory traversal, and missing sidecar resources fail the audit. GLB files are parsed directly and must have a valid glTF 2 binary header, declared length, and JSON chunk.
+
+The audit enforces provenance integrity, first-play asset ceilings, and low-cost structural model budgets. It does not substitute for visual inspection, draw-call analysis, GPU memory measurement, texture-dimension inspection, or browser frame-time profiling.
 
 ## Character budgets
 
@@ -100,17 +102,23 @@ Use squash/stretch and procedural secondary motion selectively. Gameplay timing 
 
 ## Export validation
 
-Automated checks should eventually enforce:
+The current automated gate enforces:
+
+- approved provenance and immutable SHA-256 identity;
+- runtime path/format restrictions;
+- file existence and per-file byte ceilings;
+- first-play asset budget buckets;
+- valid glTF 2 / GLB structure;
+- local/embedded glTF sidecar resources only;
+- model triangle, primitive, material, texture, and animation ceilings.
+
+Future validation should add:
 
 - sane coordinate scale/orientation;
-- no unsupported materials;
-- texture dimensions within budget;
-- expected animation clips present;
-- no accidental duplicate materials;
-- mesh/texture memory estimates;
-- file-size limits.
-
-The current asset audit already enforces source approval, runtime path/format restrictions, file existence, per-file byte ceilings, SHA-256 integrity, and first-play byte buckets. Geometry/material/animation introspection remains a follow-up once production GLB files are present.
+- unsupported material/extension checks;
+- texture dimensions and estimated GPU memory;
+- required animation-clip naming for production heroes;
+- accidental duplicate-material detection.
 
 ## Source-control policy
 

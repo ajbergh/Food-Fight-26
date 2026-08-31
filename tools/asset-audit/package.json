@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node --check src/audit.mjs && node --check src/index.mjs",
-    "check": "node --check src/audit.mjs && node --check src/index.mjs",
+    "build": "node --check src/audit.mjs && node --check src/gltf.mjs && node --check src/index.mjs",
+    "check": "node --check src/audit.mjs && node --check src/gltf.mjs && node --check src/index.mjs",
     "test": "node --test",
     "audit": "node src/index.mjs ../../assets/third-party/manifest.json"
   }
