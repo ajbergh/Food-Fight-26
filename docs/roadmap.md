@@ -52,9 +52,12 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Stylized chef silhouettes layered over networked player capsules.
 - More readable sundae objective and team-control ring.
 - Low/medium/high visual-quality toggles.
+- Prototype action/match audio language using browser-synthesized cues.
+- Reduced-motion-compatible peripheral action feedback.
+- Live FPS/frame-time instrumentation for art iteration.
 - Open-asset source shortlist and intake policy.
 - Next: evaluate one production external food pack and one production hero rig/style.
-- Next: first final VFX/audio language and performance capture.
+- Next: benchmark download size, draw-call pressure, and frame pacing on target laptops/tablets.
 
 **Exit:** visual direction validated without blowing performance/download budgets.
 
