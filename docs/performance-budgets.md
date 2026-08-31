@@ -38,6 +38,28 @@ pnpm build
 pnpm perf:budget
 ```
 
+## Automated third-party asset gates
+
+The third-party provenance manifest in `assets/third-party/manifest.json` carries first-play byte ceilings that mirror the asset portions of the download budget:
+
+| First-play third-party bucket | Audit ceiling |
+|---|---:|
+| Arena | <= 10 MiB |
+| Characters | <= 10 MiB |
+| Audio | <= 5 MiB |
+| Other | <= 10 MiB |
+| **Total third-party runtime assets** | **<= 40 MiB hard review threshold** |
+
+CI runs `pnpm assets:audit` before the production build. The audit counts the committed runtime file size for assets marked `firstPlay: true`, which is intentionally conservative for already-compressed GLB/KTX2/audio derivatives. It also requires each runtime derivative to declare a per-file `maxBytes` ceiling and matching SHA-256 digest, so a replaced asset cannot silently grow or change provenance.
+
+These buckets do not grant an extra 40 MiB on top of the overall first-play target. They are guardrails for third-party content entering the repository; final first-play accounting still includes code, first-party art, maps, UI, and audio together.
+
+For a local check:
+
+```bash
+pnpm assets:audit
+```
+
 ## Frame targets
 
 Tier 1 desktop: stable 60 fps at common laptop resolutions on medium settings.
