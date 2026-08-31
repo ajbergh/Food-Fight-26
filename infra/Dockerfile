@@ -8,26 +8,26 @@ RUN pnpm install --no-frozen-lockfile
 
 FROM workspace AS game-server-build
 RUN pnpm --filter @foodfight/game-server build
+RUN pnpm --filter @foodfight/game-server --prod deploy --legacy /deploy/game-server
 
 FROM node:22-bookworm-slim AS game-server
 WORKDIR /app
 ENV NODE_ENV=production \
     GAME_SERVER_PORT=2567
-COPY --from=game-server-build /workspace/node_modules ./node_modules
-COPY --from=game-server-build /workspace/apps/game-server/dist ./dist
+COPY --from=game-server-build /deploy/game-server ./
 EXPOSE 2567
 USER node
 CMD ["node", "dist/index.js"]
 
 FROM workspace AS platform-api-build
 RUN pnpm --filter @foodfight/platform-api build
+RUN pnpm --filter @foodfight/platform-api --prod deploy --legacy /deploy/platform-api
 
 FROM node:22-bookworm-slim AS platform-api
 WORKDIR /app
 ENV NODE_ENV=production \
     PLATFORM_API_PORT=3000
-COPY --from=platform-api-build /workspace/node_modules ./node_modules
-COPY --from=platform-api-build /workspace/apps/platform-api/dist ./dist
+COPY --from=platform-api-build /deploy/platform-api ./
 EXPOSE 3000
 USER node
 CMD ["node", "dist/index.js"]
