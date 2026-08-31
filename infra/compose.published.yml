@@ -10,7 +10,7 @@ services:
     environment:
       GAME_SERVER_PUBLIC_URL: ${PUBLIC_GAME_SERVER_URL:-http://localhost:2567}
       PLATFORM_API_PUBLIC_URL: ${PUBLIC_PLATFORM_API_URL:-http://localhost:3000}
-      FOOD_FIGHT_RELEASE: ${FOOD_FIGHT_RELEASE:-${FOOD_FIGHT_IMAGE_TAG:-main}}
+      FOOD_FIGHT_RELEASE: ${FOOD_FIGHT_RELEASE:-main}
     ports:
       - "8081:8080"
     restart: unless-stopped
