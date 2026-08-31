@@ -19,6 +19,7 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm perf:budget
+      - run: pnpm benchmark:room
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - name: Upload Playwright report on failure
