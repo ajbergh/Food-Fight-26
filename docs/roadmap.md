@@ -80,11 +80,13 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Persistent HUD scale and reduced-motion accessibility controls with keyboard shortcuts and operating-system motion preference defaulting.
 - Semantic live status treatment, minimum touch targets, keyboard focus styling, higher-contrast handling, and mobile E2E coverage for presentation settings.
 - Persistent color-safe blue/orange team palette with matching HUD/3D objective/player materials and hue-independent diamond/circle team markers.
+- Bounded browser session/performance/error telemetry with an aggregate staging summary endpoint and browser E2E ingestion coverage.
+- Client observability explicitly excludes account identity, display names, user-agent strings, raw input, and stack traces; the current aggregate is process-local and non-durable.
 - Next: responsive lobby/party flow once lobby interaction is promoted beyond the current direct-match prototype.
 - Next: input remapping/accessibility control depth and formal color-vision validation on production art.
 - Eight-character readable set or modular variants.
 - Deploy the tested container/static artifacts to hosted staging regions.
-- Crash/client-performance/network observability dashboards.
+- Next observability step: durable structured logs/metrics plus hosted dashboards for room tick health, browser frame pacing, client error rate, and match completion/rematch behavior.
 - Structured external playtest.
 
 **Exit:** retention/rematch/readability data supports continued content investment.
