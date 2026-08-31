@@ -1,7 +1,12 @@
 import * as pc from "playcanvas";
 import { GAME, movePlayerWithObstacles } from "@foodfight/game-core";
 import { foodCourtMap } from "@foodfight/maps";
-import type { MatchStateShape, PlayerSnapshot } from "@foodfight/protocol";
+import type {
+  ImpactMessage,
+  MatchStateShape,
+  PlayerSnapshot,
+  ProjectileSnapshot,
+} from "@foodfight/protocol";
 import { connectToMatch, type MatchConnection } from "./network";
 import "./styles.css";
 
@@ -42,6 +47,10 @@ function material(color: pc.Color) {
   return value;
 }
 
+const tomatoMaterial = material(new pc.Color(0.9, 0.08, 0.05));
+const tomatoStemMaterial = material(new pc.Color(0.15, 0.6, 0.2));
+const impactMaterial = material(new pc.Color(1, 0.15, 0.08));
+
 const floor = new pc.Entity("arena-floor");
 floor.addComponent("render", { type: "box", material: material(new pc.Color(0.36, 0.3, 0.39)) });
 floor.setLocalScale(foodCourtMap.width, 0.5, foodCourtMap.height);
@@ -73,9 +82,9 @@ const playerColors = [
   new pc.Color(1, 0.35, 0.7),
 ];
 
-interface PlayerCollection {
+interface StateCollection<T> {
   size: number;
-  forEach(callback: (player: PlayerSnapshot, sessionId: string) => void): void;
+  forEach(callback: (value: T, key: string) => void): void;
 }
 
 interface PlayerVisual {
@@ -84,16 +93,41 @@ interface PlayerVisual {
   authoritative: pc.Vec3;
   label: HTMLDivElement;
   local: boolean;
+  stunned: boolean;
+}
+
+interface ProjectileVisual {
+  entity: pc.Entity;
+  target: pc.Vec3;
+}
+
+interface ImpactVisual {
+  entity: pc.Entity;
+  age: number;
 }
 
 const playerVisuals = new Map<string, PlayerVisual>();
+const projectileVisuals = new Map<string, ProjectileVisual>();
+const impactVisuals: ImpactVisual[] = [];
 let connection: MatchConnection | undefined;
 let inputSequence = 0;
 let inputAccumulator = 0;
 let lastAim = { x: 1, y: 0 };
+let throwQueued = false;
+let lastGamepadThrow = false;
 let lastStateAt = performance.now();
 let smoothedPatchHz = 0;
 let currentPlayerCount = 0;
+
+window.addEventListener("keydown", (event) => {
+  if (event.code === "Space" && !event.repeat) {
+    event.preventDefault();
+    throwQueued = true;
+  }
+});
+canvas.addEventListener("pointerdown", () => {
+  throwQueued = true;
+});
 
 function colorForSession(sessionId: string): pc.Color {
   let hash = 0;
@@ -104,7 +138,8 @@ function colorForSession(sessionId: string): pc.Color {
 function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVisual {
   const existing = playerVisuals.get(sessionId);
   if (existing) {
-    existing.label.textContent = player.displayName;
+    existing.label.textContent = player.stunRemaining > 0 ? `${player.displayName} · SPLAT!` : player.displayName;
+    existing.stunned = player.stunRemaining > 0;
     return existing;
   }
 
@@ -126,9 +161,28 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
     authoritative: position.clone(),
     label,
     local: connection?.room.sessionId === sessionId,
+    stunned: player.stunRemaining > 0,
   };
   playerVisuals.set(sessionId, visual);
   return visual;
+}
+
+function createTomatoEntity(projectileId: string) {
+  const root = new pc.Entity(`projectile-${projectileId}`);
+
+  const fruit = new pc.Entity("fruit");
+  fruit.addComponent("render", { type: "sphere", material: tomatoMaterial });
+  fruit.setLocalScale(0.56, 0.56, 0.56);
+  root.addChild(fruit);
+
+  const stem = new pc.Entity("stem");
+  stem.addComponent("render", { type: "cone", material: tomatoStemMaterial });
+  stem.setLocalScale(0.18, 0.15, 0.18);
+  stem.setLocalPosition(0, 0.28, 0);
+  root.addChild(stem);
+
+  app.root.addChild(root);
+  return root;
 }
 
 function syncState(state: MatchStateShape) {
@@ -138,29 +192,50 @@ function syncState(state: MatchStateShape) {
   smoothedPatchHz = smoothedPatchHz === 0 ? instantaneousHz : smoothedPatchHz * 0.85 + instantaneousHz * 0.15;
   lastStateAt = now;
 
-  const players = state.players as unknown as PlayerCollection;
+  const players = state.players as unknown as StateCollection<PlayerSnapshot>;
   currentPlayerCount = players.size;
-  const seen = new Set<string>();
+  const seenPlayers = new Set<string>();
 
   players.forEach((player, sessionId) => {
-    seen.add(sessionId);
+    seenPlayers.add(sessionId);
     const visual = ensurePlayerVisual(sessionId, player);
     visual.local = connection?.room.sessionId === sessionId;
+    visual.stunned = player.stunRemaining > 0;
     visual.target.set(player.x, 0.9, player.y);
     visual.authoritative.copy(visual.target);
   });
 
   for (const [sessionId, visual] of playerVisuals) {
-    if (seen.has(sessionId)) continue;
+    if (seenPlayers.has(sessionId)) continue;
     visual.entity.destroy();
     visual.label.remove();
     playerVisuals.delete(sessionId);
   }
 
+  const projectiles = state.projectiles as unknown as StateCollection<ProjectileSnapshot>;
+  const seenProjectiles = new Set<string>();
+  projectiles.forEach((projectile, projectileId) => {
+    seenProjectiles.add(projectileId);
+    let visual = projectileVisuals.get(projectileId);
+    if (!visual) {
+      const entity = createTomatoEntity(projectileId);
+      entity.setPosition(projectile.x, 0.45, projectile.y);
+      visual = { entity, target: new pc.Vec3(projectile.x, 0.45, projectile.y) };
+      projectileVisuals.set(projectileId, visual);
+    }
+    visual.target.set(projectile.x, 0.45, projectile.y);
+  });
+
+  for (const [projectileId, visual] of projectileVisuals) {
+    if (seenProjectiles.has(projectileId)) continue;
+    visual.entity.destroy();
+    projectileVisuals.delete(projectileId);
+  }
+
   blueScoreLabel.textContent = String(state.blueScore);
   redScoreLabel.textContent = String(state.redScore);
   timerLabel.textContent = formatTime(state.timeRemaining);
-  updateNetworkLabel(state.phase);
+  updateNetworkLabel(state.phase, projectiles.size);
 }
 
 function readMovement() {
@@ -179,6 +254,11 @@ function readMovement() {
       x = gamepadX;
       y = gamepadY;
     }
+    const gamepadThrow = Boolean(gamepad.buttons[0]?.pressed);
+    if (gamepadThrow && !lastGamepadThrow) throwQueued = true;
+    lastGamepadThrow = gamepadThrow;
+  } else {
+    lastGamepadThrow = false;
   }
 
   const length = Math.hypot(x, y);
@@ -214,11 +294,33 @@ function updateLabels() {
     cameraComponent.worldToScreen(markerWorld, markerScreen);
     visual.label.style.transform = `translate(-50%, -100%) translate(${markerScreen.x}px, ${markerScreen.y}px)`;
     visual.label.classList.toggle("local", visual.local);
+    visual.label.classList.toggle("stunned", visual.stunned);
   }
 }
 
-function updateNetworkLabel(phase = "playing") {
-  networkLabel.textContent = `online · ${currentPlayerCount}/${GAME.maxPlayers} · ${smoothedPatchHz.toFixed(0)} patch/s · ${phase}`;
+function spawnImpact(message: ImpactMessage) {
+  const entity = new pc.Entity("tomato-impact");
+  entity.addComponent("render", { type: "cylinder", material: impactMaterial });
+  entity.setLocalScale(0.2, 0.035, 0.2);
+  entity.setPosition(message.x, 0.04, message.y);
+  app.root.addChild(entity);
+  impactVisuals.push({ entity, age: 0 });
+}
+
+function tickImpacts(dt: number) {
+  for (let index = impactVisuals.length - 1; index >= 0; index -= 1) {
+    const visual = impactVisuals[index]!;
+    visual.age += dt;
+    const scale = 0.2 + visual.age * 5;
+    visual.entity.setLocalScale(scale, 0.035, scale);
+    if (visual.age < 0.35) continue;
+    visual.entity.destroy();
+    impactVisuals.splice(index, 1);
+  }
+}
+
+function updateNetworkLabel(phase = "playing", projectileCount = projectileVisuals.size) {
+  networkLabel.textContent = `online · ${currentPlayerCount}/${GAME.maxPlayers} · ${projectileCount} tomatoes · ${smoothedPatchHz.toFixed(0)} patch/s · ${phase}`;
 }
 
 function formatTime(seconds: number) {
@@ -231,7 +333,7 @@ app.on("update", (dt: number) => {
   const move = readMovement();
   const localVisual = connection ? playerVisuals.get(connection.room.sessionId) : undefined;
 
-  if (localVisual) {
+  if (localVisual && !localVisual.stunned) {
     const current = localVisual.entity.getPosition();
     const predicted = movePlayerWithObstacles(
       { x: current.x, y: current.z },
@@ -251,10 +353,16 @@ app.on("update", (dt: number) => {
   }
 
   for (const visual of playerVisuals.values()) {
-    if (visual.local) continue;
-    smoothPosition(visual.entity, visual.target, 14, dt);
+    if (!visual.local) smoothPosition(visual.entity, visual.target, 14, dt);
+    visual.entity.setEulerAngles(0, 0, visual.stunned ? Math.sin(performance.now() * 0.025) * 12 : 0);
   }
 
+  for (const visual of projectileVisuals.values()) {
+    smoothPosition(visual.entity, visual.target, 24, dt);
+    visual.entity.rotateLocal(240 * dt, 180 * dt, 0);
+  }
+
+  tickImpacts(dt);
   updateLabels();
 
   if (!connection) return;
@@ -268,8 +376,9 @@ app.on("update", (dt: number) => {
       moveY: move.y,
       aimX: lastAim.x,
       aimY: lastAim.y,
-      throwPressed: false,
+      throwPressed: throwQueued,
     });
+    throwQueued = false;
   }
 });
 
@@ -280,6 +389,7 @@ connectToMatch(`Guest-${Math.floor(Math.random() * 9000 + 1000)}`)
     connection = matchConnection;
     networkLabel.textContent = `connected · ${connection.room.sessionId.slice(0, 6)}`;
     connection.room.onStateChange((state) => syncState(state));
+    connection.room.onMessage("impact", (message: ImpactMessage) => spawnImpact(message));
     syncState(connection.room.state);
   })
   .catch((error: unknown) => {
