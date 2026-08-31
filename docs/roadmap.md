@@ -64,6 +64,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 ## M5 — First polished playtest — in progress
 
 - Repeatable multiplayer bot harness for local eight-player smoke/load tests.
+- Automated Chromium smoke tests for real client/server connection, multiplayer room population, HUD/settings, and authoritative combat input.
 - Eight-character readable set or modular variants.
 - Responsive HUD/lobby.
 - Accessibility controls.
