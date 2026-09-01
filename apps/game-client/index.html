@@ -4,19 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Food Fight 26 — Sundae Control</title>
+    <link rel="stylesheet" href="/src/commercial.css" />
   </head>
   <body data-hud-scale="normal" data-reduced-motion="false" data-team-palette="default">
     <canvas id="game" aria-label="Food Fight 26 game arena"></canvas>
     <div id="action-flash" class="action-flash" aria-hidden="true"></div>
+
+    <div class="brand-bug" aria-label="Food Fight 26 — Sundae Control">
+      <span class="brand-mark" aria-hidden="true">FF26</span>
+      <span class="brand-copy"><strong>Food Fight 26</strong><span>Sundae Control</span></span>
+    </div>
+
     <div class="hud" role="group" aria-label="Match score and timer">
-      <div class="blue-score"><b>BLUE <span aria-hidden="true">◆</span> <span id="blue-score">0</span></b></div>
+      <div class="blue-score">
+        <span class="team-name">BLUE <span class="team-symbol" aria-hidden="true">◆</span></span>
+        <span id="blue-score">0</span>
+      </div>
       <div id="timer" class="timer" aria-label="Match timer">3:00</div>
-      <div class="red-score"><b>RED <span aria-hidden="true">●</span> <span id="red-score">0</span></b></div>
+      <div class="red-score">
+        <span id="red-score">0</span>
+        <span class="team-name">RED <span class="team-symbol" aria-hidden="true">●</span></span>
+      </div>
     </div>
+
     <div class="inventory" aria-label="Inventory">
-      <span><span aria-hidden="true">🍅</span><span class="sr-only">Tomatoes</span> <b id="tomato-ammo">3</b></span>
-      <span><span aria-hidden="true">🍌</span><span class="sr-only">Bananas</span> <b id="banana-ammo">1</b></span>
+      <span><span aria-hidden="true">🍅</span><span class="sr-only">Tomatoes</span><b id="tomato-ammo">3</b></span>
+      <span><span aria-hidden="true">🍌</span><span class="sr-only">Bananas</span><b id="banana-ammo">1</b></span>
     </div>
+
     <div class="settings" role="group" aria-label="Presentation settings">
       <button id="audio" type="button" title="Toggle audio (M)" aria-pressed="false">audio · on</button>
       <button id="quality" type="button" title="Cycle graphics quality (G)">graphics · medium</button>
@@ -24,12 +39,14 @@
       <button id="motion" type="button" title="Toggle reduced motion (R)" aria-pressed="false">motion · full</button>
       <button id="palette" type="button" title="Toggle color-safe team palette (P)" aria-pressed="false">palette · default</button>
     </div>
+
     <div id="performance" class="performance" aria-label="Rendering performance">-- fps</div>
     <div id="match-banner" class="match-banner" role="status" aria-live="assertive" aria-atomic="true"></div>
     <div id="event-toast" class="event-toast" role="status" aria-live="polite" aria-atomic="true"></div>
     <div id="objective" class="objective" data-state="none" role="status" aria-live="polite" aria-atomic="true">HOLD THE SUNDAE</div>
     <div class="controls" aria-label="Controls">WASD / stick · move &nbsp; SPACE / A · tomato &nbsp; Q / B · banana &nbsp; SHIFT / RB · dodge &nbsp; G · graphics &nbsp; H · HUD &nbsp; R · motion &nbsp; P · palette &nbsp; M · audio</div>
     <div id="network" class="network" aria-label="Network diagnostics">connecting…</div>
+
     <script src="/runtime-config.js"></script>
     <script type="module" src="/src/main.ts"></script>
     <script type="module" src="/src/gameFeel.ts"></script>
