@@ -1,3 +1,28 @@
+/* High-specificity shell rules keep this layer authoritative even when Vite extracts module CSS after HTML CSS links. */
+body .hud {
+  top: calc(18px + var(--safe-top));
+  grid-template-columns: calc(154px * var(--hud-scale)) calc(112px * var(--hud-scale)) calc(154px * var(--hud-scale));
+  gap: calc(6px * var(--hud-scale));
+  text-shadow: none;
+}
+
+body .hud > div {
+  min-height: calc(50px * var(--hud-scale));
+  border-radius: calc(12px * var(--hud-scale));
+  border-color: rgba(255,255,255,.15);
+  background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,0)), rgba(10,8,14,.92);
+  box-shadow: 0 12px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+body .inventory { top: calc(78px + var(--safe-top)); }
+body .settings { top: calc(20px + var(--safe-top)); right: calc(18px + var(--safe-right)); gap: 5px; }
+body .performance { top: calc(63px + var(--safe-top)); right: calc(20px + var(--safe-right)); }
+body .objective {
+  bottom: calc(22px + var(--safe-bottom));
+  border-radius: 999px;
+  font-size: calc(10px * var(--hud-scale));
+}
+
 body[data-clock-state="warning"] .timer {
   border-color: rgba(255, 195, 79, .5);
   box-shadow: 0 12px 34px rgba(0,0,0,.32), 0 0 24px rgba(255, 174, 54, .1), inset 0 1px 0 rgba(255,255,255,.08);
@@ -52,4 +77,26 @@ body[data-reduced-motion="true"] .hud > .score-pop {
   .hud > .score-pop {
     animation: none !important;
   }
+}
+
+@media (max-width: 920px) {
+  body .settings {
+    top: auto;
+    right: auto;
+    bottom: calc(52px + var(--safe-bottom));
+  }
+  body .objective { bottom: calc(104px + var(--safe-bottom)); }
+}
+
+@media (max-width: 760px) {
+  body .hud {
+    top: calc(8px + var(--safe-top));
+    grid-template-columns: calc(108px * var(--hud-scale)) calc(82px * var(--hud-scale)) calc(108px * var(--hud-scale));
+    gap: 4px;
+  }
+  body .hud > div {
+    min-height: calc(44px * var(--hud-scale));
+    border-radius: calc(10px * var(--hud-scale));
+  }
+  body .inventory { top: calc(60px + var(--safe-top)); }
 }
