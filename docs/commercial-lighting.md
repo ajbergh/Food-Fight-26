@@ -1,22 +1,22 @@
 # Commercial lighting and material grade
 
-M9 adds a bounded client-side lighting layer to the food hall without changing collision, replication, room state, or match rules.
+M9 adds a bounded client-side lighting and material-response layer to the food hall without changing collision, replication, room state, or match rules.
 
 ## Lighting hierarchy
 
 - The directional key remains the primary gameplay light.
-- Medium/high quality adds four static vendor omni lights to create warm/cool separation across the north food stalls.
-- High quality adds two side rim lights plus four low-intensity perimeter accents for additional depth.
-- The existing objective light is incorporated into the quality profile and receives a restrained pulse.
-- Accent lights are static and never cast shadows. The directional key is the only shadow-casting light outside low quality.
+- Medium quality keeps the pre-M9 dynamic-light count and creates separation through material response plus key/fill/objective grading.
+- High quality adds only two static vendor omni fills, one warm and one cool, to separate the north food stalls.
+- The existing objective and fill lights are quality-graded but remain static between quality changes.
+- The two new accents never cast shadows. The directional key is the only shadow-casting light outside low quality.
 
 ## Quality contract
 
-- `low`: accent lights disabled, key shadows disabled, brighter ambient fill.
-- `medium`: four static vendor accents enabled, key shadows enabled, moderate ambient contrast.
-- `high`: medium lights plus two rim and four corner accents, stronger key/fill/objective balance and darker ambient fill.
+- `low`: new accent lights disabled, key shadows disabled, brighter ambient fill.
+- `medium`: new accent lights disabled, key shadows enabled, moderate ambient contrast and the commercial material grade.
+- `high`: two static vendor fills enabled, slightly stronger key/fill/objective balance and darker ambient fill.
 
-Only the single existing objective light animates. This keeps gameplay silhouettes and team markers stable and avoids continuously invalidating the renderer's light state.
+The objective ring already supplies restrained motion, so M9 does not animate light intensities per frame. This keeps gameplay silhouettes and team markers stable and avoids continuously invalidating renderer light state on slower GPUs or software/headless renderers.
 
 ## Material grade
 
@@ -32,4 +32,4 @@ The color-safe palette updates both diffuse and emissive objective-ring color.
 
 ## Performance constraints
 
-The pass adds at most ten non-shadow-casting omni lights. Four are enabled on medium and all ten on high. Low disables all of them. New accent-light intensities are static after quality changes; only the pre-existing objective light receives a shallow pulse. No textures, render targets, post-process passes, dynamic probes, or replicated state are added.
+The pass adds at most two non-shadow-casting omni lights, and both are high-only. Medium and low add no new dynamic lights. New accent-light intensities are static after quality changes. No textures, render targets, post-process passes, dynamic probes, per-frame light mutations, or replicated state are added.
