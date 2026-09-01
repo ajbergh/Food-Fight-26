@@ -31,7 +31,7 @@ body .inventory > span {
 
 body .settings { top: calc(20px + var(--safe-top)); right: calc(18px + var(--safe-right)); gap: 5px; }
 body .settings button {
-  min-height: 36px;
+  min-height: 44px;
   color: rgba(255,255,255,.72);
   background: rgba(9,7,13,.72);
   border-color: rgba(255,255,255,.13);
