@@ -42,7 +42,10 @@ body[data-objective-state="contested"] .objective {
 
 body[data-reduced-motion="true"] .timer,
 body[data-reduced-motion="true"] .objective,
-body[data-reduced-motion="true"] .hud > .score-pop,
+body[data-reduced-motion="true"] .hud > .score-pop {
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body[data-clock-state="critical"] .timer,
   body[data-objective-state="contested"] .objective,
