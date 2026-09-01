@@ -66,12 +66,11 @@ function recoverGraphicsIfNeeded() {
   if (slowHighSamples < 4) return;
 
   // High quality is opt-in, but a sustained sub-30-fps session is not a premium experience.
-  // The quality cycle is high -> low -> medium, so two clicks recover to the balanced tier.
+  // The quality cycle moves high -> low, which immediately removes optional presentation load.
   adaptiveQualityRecovered = true;
   qualityButton.click();
-  qualityButton.click();
   qualityButton.dataset.autoAdjusted = "true";
-  qualityButton.title = "Graphics automatically returned to medium after sustained low frame rate. Press G to override.";
+  qualityButton.title = "Graphics automatically moved to the performance tier after sustained low frame rate. Press G to override.";
   document.body.dataset.adaptiveQuality = "recovered";
 }
 
