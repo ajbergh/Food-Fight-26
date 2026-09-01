@@ -11,6 +11,7 @@ import type {
   ProjectileSnapshot,
 } from "@foodfight/protocol";
 import { createArtPrototype } from "./artPrototype";
+import { createCommercialVfx } from "./commercialVfx";
 import { connectToMatch, type MatchConnection } from "./network";
 import "./styles.css";
 
@@ -85,6 +86,10 @@ sundae.setPosition(foodCourtMap.objective.x, 1.6, foodCourtMap.objective.y);
 app.root.addChild(sundae);
 
 const art = createArtPrototype({ app, camera, keyLight: light, sundae });
+const vfx = createCommercialVfx({
+  app,
+  objectivePosition: { x: foodCourtMap.objective.x, z: foodCourtMap.objective.y },
+});
 
 const playerColors = [
   new pc.Color(0.2, 0.55, 1),
@@ -110,6 +115,7 @@ interface PlayerVisual {
   local: boolean;
   stunned: boolean;
   dodging: boolean;
+  wasDodging: boolean;
 }
 
 interface MovingVisual {
@@ -206,6 +212,7 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
     local: connection?.room.sessionId === sessionId,
     stunned: player.stunRemaining > 0,
     dodging: player.dodgeRemaining > 0,
+    wasDodging: player.dodgeRemaining > 0,
   };
   playerVisuals.set(sessionId, visual);
   return visual;
@@ -252,6 +259,7 @@ function createPickupEntity(pickupId: string, kind: PickupSnapshot["kind"]) {
   pad.setLocalPosition(0, -0.24, 0);
   root.addChild(pad);
   root.addChild(kind === "tomato" ? createTomatoEntity("food", 1.15) : createBananaEntity("food", 1.1));
+  vfx.decoratePickup(root, kind);
   app.root.addChild(root);
   return root;
 }
@@ -295,6 +303,7 @@ function syncState(state: MatchStateShape) {
       const entity = createTomatoEntity(`projectile-${projectileId}`);
       app.root.addChild(entity);
       entity.setPosition(projectile.x, 0.45, projectile.y);
+      vfx.decorateProjectile(entity);
       visual = { entity, target: new pc.Vec3(projectile.x, 0.45, projectile.y) };
       projectileVisuals.set(projectileId, visual);
       art.triggerPlayerThrow(
@@ -320,6 +329,7 @@ function syncState(state: MatchStateShape) {
     if (!entity) {
       entity = createBananaEntity(`hazard-${bananaId}`);
       app.root.addChild(entity);
+      vfx.decorateBananaHazard(entity);
       bananaVisuals.set(bananaId, entity);
       art.triggerPlayerThrow(banana.ownerSessionId, undefined, "banana");
     }
@@ -396,6 +406,9 @@ function handleMatchEvent(message: MatchEventMessage) {
   eventToast.textContent = text;
   eventToast.dataset.team = message.team ?? "none";
   eventToast.classList.add("visible");
+  if (message.type === "objective_control" || message.type === "overtime" || message.type === "round_started") {
+    vfx.spawnObjectiveBurst(message.team);
+  }
   if (toastTimer !== undefined) window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => eventToast.classList.remove("visible"), 1500);
 }
@@ -479,6 +492,7 @@ function spawnImpact(message: ImpactMessage) {
   entity.setPosition(message.x, 0.04, message.y);
   app.root.addChild(entity);
   impactVisuals.push({ entity, age: 0 });
+  vfx.spawnImpact(message);
 }
 
 function tickImpacts(dt: number) {
@@ -540,6 +554,11 @@ app.on("update", (dt: number) => {
 
   for (const visual of playerVisuals.values()) {
     if (!visual.local) smoothPosition(visual.entity, visual.target, visual.dodging ? 20 : 14, dt);
+    if (visual.dodging && !visual.wasDodging) {
+      vfx.spawnDodge(visual.entity.getPosition());
+    }
+    visual.wasDodging = visual.dodging;
+
     if (visual.stunned) {
       visual.entity.setEulerAngles(0, 0, Math.sin(performance.now() * 0.025) * 12);
       visual.entity.setLocalScale(0.95, 1.02, 0.95);
@@ -562,6 +581,7 @@ app.on("update", (dt: number) => {
 
   tickPickups(dt);
   tickImpacts(dt);
+  vfx.update(dt);
   art.update(dt);
   updateLabels();
 
