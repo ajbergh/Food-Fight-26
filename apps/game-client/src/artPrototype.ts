@@ -3,6 +3,7 @@ import { foodCourtMap } from "@foodfight/maps";
 import type { TeamName } from "@foodfight/protocol";
 import { createArenaDetail } from "./arenaDetail";
 import { createCharacterVisual, type CharacterVisual } from "./characterVisual";
+import { createEnvironmentFinish } from "./environmentFinish";
 
 export type VisualQuality = "low" | "medium" | "high";
 export type TeamPalette = "default" | "color-safe";
@@ -100,6 +101,7 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   const creamMaterial = makeMaterial(PALETTE.cream, 0.52);
 
   createArenaDetail({ app, mediumDetailRoot, highDetailRoot });
+  createEnvironmentFinish({ mediumDetailRoot, highDetailRoot });
 
   addPrimitive(
     environmentRoot,
