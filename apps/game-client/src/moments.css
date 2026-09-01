@@ -145,7 +145,7 @@ body[data-reduced-motion="true"] .hud > .score-pop {
     right: auto;
     bottom: calc(52px + var(--safe-bottom));
   }
-  body .objective { bottom: calc(104px + var(--safe-bottom)); }
+  body .objective { bottom: calc(158px + var(--safe-bottom)); }
 }
 
 @media (max-width: 760px) {
