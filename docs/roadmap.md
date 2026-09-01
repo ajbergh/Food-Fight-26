@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-01):** all 29 published pull requests are merged. The M11 skeletal-pilot implementation described below is ready to publish for review.
+**Status snapshot (2026-09-01):** 29 pull requests are merged. [PR #30](https://github.com/ajbergh/Food-Fight-26/pull/30), the M11 skeletal-pilot implementation described below, is open for review.
 
 ## M0 — Repository and architecture — complete
 
@@ -133,9 +133,11 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 
 **Exit status:** the scoped cinematic presentation merged in PR #28. It intentionally uses shell-level presentation transforms rather than changing the authoritative gameplay camera; hit micro-shake or deeper camera work remains optional and playtest-driven.
 
-## M11 — Skeletal character pilot — implementation ready for review
+## M11 — Skeletal character pilot — implementation in review
 
 [PR #29](https://github.com/ajbergh/Food-Fight-26/pull/29) merged with a green CI validation check on 2026-09-01.
+
+[PR #30](https://github.com/ajbergh/Food-Fight-26/pull/30) is the open follow-up implementation.
 
 ### Delivered in PR #29
 
@@ -176,9 +178,9 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 | M8        | [#26](https://github.com/ajbergh/Food-Fight-26/pull/26)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | M9        | [#27](https://github.com/ajbergh/Food-Fight-26/pull/27)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | M10       | [#28](https://github.com/ajbergh/Food-Fight-26/pull/28)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| M11       | [#29](https://github.com/ajbergh/Food-Fight-26/pull/29), follow-up implementation ready to publish                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| M11       | [#29](https://github.com/ajbergh/Food-Fight-26/pull/29), [#30](https://github.com/ajbergh/Food-Fight-26/pull/30)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
-M0 is the repository baseline and predates this PR ledger. The table accounts for every published pull request visible on GitHub at the status snapshot and identifies the unpublished follow-up separately.
+M0 is the repository baseline and predates this PR ledger. The table accounts for every merged or open pull request visible on GitHub at the status snapshot.
 
 ## Later, only after validation
 
