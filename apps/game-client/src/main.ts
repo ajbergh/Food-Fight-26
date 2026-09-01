@@ -297,6 +297,11 @@ function syncState(state: MatchStateShape) {
       entity.setPosition(projectile.x, 0.45, projectile.y);
       visual = { entity, target: new pc.Vec3(projectile.x, 0.45, projectile.y) };
       projectileVisuals.set(projectileId, visual);
+      art.triggerPlayerThrow(
+        projectile.ownerSessionId,
+        { x: projectile.vx, z: projectile.vy },
+        "tomato",
+      );
     }
     visual.target.set(projectile.x, 0.45, projectile.y);
   });
@@ -316,6 +321,7 @@ function syncState(state: MatchStateShape) {
       entity = createBananaEntity(`hazard-${bananaId}`);
       app.root.addChild(entity);
       bananaVisuals.set(bananaId, entity);
+      art.triggerPlayerThrow(banana.ownerSessionId, undefined, "banana");
     }
     entity.setPosition(banana.x, 0.06, banana.y);
   });
