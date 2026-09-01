@@ -11,7 +11,10 @@ function reducedMotion() {
 
 function parseClock(value: string | null) {
   if (!value) return Number.POSITIVE_INFINITY;
-  const [minutes, seconds] = value.trim().split(":").map(Number);
+  const parts = value.trim().split(":");
+  if (parts.length !== 2) return Number.POSITIVE_INFINITY;
+  const minutes = Number(parts[0]);
+  const seconds = Number(parts[1]);
   if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return Number.POSITIVE_INFINITY;
   return minutes * 60 + seconds;
 }
