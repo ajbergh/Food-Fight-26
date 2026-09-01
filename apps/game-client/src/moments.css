@@ -1,0 +1,52 @@
+body[data-clock-state="warning"] .timer {
+  border-color: rgba(255, 195, 79, .5);
+  box-shadow: 0 12px 34px rgba(0,0,0,.32), 0 0 24px rgba(255, 174, 54, .1), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+body[data-clock-state="critical"] .timer {
+  border-color: rgba(255, 100, 88, .72);
+  color: #fff4f1;
+  box-shadow: 0 12px 34px rgba(0,0,0,.32), 0 0 28px rgba(255, 72, 55, .18), inset 0 1px 0 rgba(255,255,255,.08);
+  animation: clock-critical 1s ease-in-out infinite;
+}
+
+body[data-objective-state="contested"] .objective {
+  animation: contested-beacon 1.25s ease-in-out infinite;
+}
+
+.inventory > span[data-empty] {
+  color: rgba(255,255,255,.4);
+  border-color: rgba(255,255,255,.08);
+  filter: saturate(.45);
+}
+
+.hud > .score-pop {
+  animation: score-pop .42s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes score-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.055); filter: brightness(1.18); }
+  100% { transform: scale(1); }
+}
+
+@keyframes clock-critical {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+@keyframes contested-beacon {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.14); }
+}
+
+body[data-reduced-motion="true"] .timer,
+body[data-reduced-motion="true"] .objective,
+body[data-reduced-motion="true"] .hud > .score-pop,
+@media (prefers-reduced-motion: reduce) {
+  body[data-clock-state="critical"] .timer,
+  body[data-objective-state="contested"] .objective,
+  .hud > .score-pop {
+    animation: none !important;
+  }
+}
