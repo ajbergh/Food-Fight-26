@@ -2,7 +2,11 @@ import * as pc from "playcanvas";
 import { foodCourtMap } from "@foodfight/maps";
 import type { TeamName } from "@foodfight/protocol";
 import { createArenaDetail } from "./arenaDetail";
-import { createCharacterVisual, type CharacterVisual } from "./characterVisual";
+import {
+  createCharacterVisual,
+  type CharacterThrowKind,
+  type CharacterVisual,
+} from "./characterVisual";
 import { createEnvironmentFinish } from "./environmentFinish";
 
 export type VisualQuality = "low" | "medium" | "high";
@@ -17,6 +21,11 @@ interface ArtPrototypeOptions {
 
 interface ArtPrototypeController {
   decoratePlayer(root: pc.Entity, accent: pc.Color, team: number): void;
+  triggerPlayerThrow(
+    sessionId: string,
+    direction?: { x: number; z: number },
+    kind?: CharacterThrowKind,
+  ): void;
   setObjectiveState(owner: TeamName, contested: boolean): void;
   update(dt: number): void;
   cycleQuality(): void;
@@ -177,7 +186,6 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   };
   const playerTeamMaterials: Array<{ material: pc.StandardMaterial; team: number }> = [];
   const playerCharacters = new Map<string, CharacterVisual>();
-  const knownProjectileNames = new Set<string>();
   const ringEntities = new Map<string, pc.Entity>();
   for (const [state, ringMaterial] of Object.entries(ringMaterials)) {
     const ring = new pc.Entity(`objective-ring-${state}`);
@@ -281,46 +289,17 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     }
   }
 
-  function updateCharacterThrows() {
-    const activeProjectiles = new Set<string>();
-    for (const node of app.root.children) {
-      const projectile = node as pc.Entity;
-      if (!projectile.name.startsWith("projectile-")) continue;
-      activeProjectiles.add(projectile.name);
-      if (knownProjectileNames.has(projectile.name)) continue;
-      knownProjectileNames.add(projectile.name);
-
-      const projectilePosition = projectile.getPosition();
-      let nearest: CharacterVisual | undefined;
-      let nearestDistance = Number.POSITIVE_INFINITY;
-      for (const character of playerCharacters.values()) {
-        if (!character.root.parent) continue;
-        const playerPosition = character.root.getPosition();
-        const dx = projectilePosition.x - playerPosition.x;
-        const dz = projectilePosition.z - playerPosition.z;
-        const distance = dx * dx + dz * dz;
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearest = character;
-        }
-      }
-
-      if (nearest) {
-        const playerPosition = nearest.root.getPosition();
-        nearest.triggerThrow({
-          x: projectilePosition.x - playerPosition.x,
-          z: projectilePosition.z - playerPosition.z,
-        });
-      }
-    }
-
-    for (const name of knownProjectileNames) {
-      if (!activeProjectiles.has(name)) knownProjectileNames.delete(name);
-    }
+  function triggerPlayerThrow(
+    sessionId: string,
+    direction?: { x: number; z: number },
+    kind: CharacterThrowKind = "tomato",
+  ) {
+    playerCharacters.get(sessionId)?.triggerThrow(direction, kind);
   }
 
   return {
     decoratePlayer,
+    triggerPlayerThrow,
     setObjectiveState,
     update(dt: number) {
       elapsed += dt;
@@ -332,7 +311,6 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
       );
       cherry.rotateLocal(0, 45 * dt, 0);
 
-      updateCharacterThrows();
       for (const [sessionId, character] of playerCharacters) {
         if (!character.root.parent) {
           playerCharacters.delete(sessionId);
