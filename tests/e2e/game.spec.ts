@@ -29,6 +29,28 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(tomatoAmmo).toHaveText("2");
 });
 
+test("opt-in skeletal pilot loads and preserves authoritative combat input", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" && !message.location().url.endsWith("/favicon.ico")) {
+      consoleErrors.push(message.text());
+    }
+  });
+  await page.goto("/?skeletalPilot=1");
+
+  await expect(page.locator("#network")).toContainText("online");
+  await expect(page.locator("html")).toHaveAttribute("data-skeletal-pilot", "ready", {
+    timeout: 15_000,
+  });
+  await expect(page.locator("#network")).toContainText("playing", { timeout: 15_000 });
+
+  const tomatoAmmo = page.locator("#tomato-ammo");
+  await expect(tomatoAmmo).toHaveText("3");
+  await page.keyboard.press("Space");
+  await expect(tomatoAmmo).toHaveText("2");
+  expect(consoleErrors).toEqual([]);
+});
+
 test("responsive HUD accessibility settings persist on a phone viewport", async ({ page }) => {
   test.setTimeout(60_000);
 

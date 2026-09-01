@@ -16,6 +16,7 @@
     "test:e2e": "playwright test",
     "perf:budget": "pnpm --filter @foodfight/perf-budget check:client",
     "assets:audit": "pnpm --filter @foodfight/asset-audit run audit",
+    "assets:derive:kaykit-pilot": "pnpm --filter @foodfight/asset-audit run derive:kaykit-pilot",
     "benchmark:room": "pnpm --filter @foodfight/load-benchmark start",
     "format:check": "prettier --check .",
     "format": "prettier --write ."

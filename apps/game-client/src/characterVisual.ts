@@ -12,6 +12,7 @@ export type CharacterThrowKind = "tomato" | "banana";
 
 export interface CharacterVisual {
   root: pc.Entity;
+  setVisible(visible: boolean): void;
   update(dt: number): void;
   triggerThrow(direction?: { x: number; z: number }, kind?: CharacterThrowKind): void;
 }
@@ -271,6 +272,9 @@ export function createCharacterVisual(options: CharacterVisualOptions): Characte
 
   return {
     root,
+    setVisible(visible: boolean) {
+      modelRoot.enabled = visible;
+    },
     triggerThrow,
     update(dt: number) {
       const position = root.getPosition();

@@ -10,6 +10,11 @@ interface AnimationAssetLike {
   resource?: unknown;
 }
 
+interface AnimationTrackLike {
+  name?: string;
+  duration?: number;
+}
+
 interface ContainerResourceLike {
   animations?: AnimationAssetLike[];
   instantiateRenderEntity(options?: unknown): pc.Entity;
@@ -17,6 +22,7 @@ interface ContainerResourceLike {
 
 export interface SkeletalPilotInstance {
   entity: pc.Entity;
+  duration(clip: SkeletalPilotClip): number;
   transition(clip: SkeletalPilotClip, blendSeconds?: number): void;
   destroy(): void;
 }
@@ -34,7 +40,8 @@ export function isSkeletalPilotEnabled(search = window.location.search) {
 export function mapSkeletalPilotClips(animations: readonly AnimationAssetLike[]) {
   const byName = new Map<string, AnimationAssetLike>();
   for (const animation of animations) {
-    byName.set(normalizeSkeletalClipName(animation.name), animation);
+    const track = animation.resource as AnimationTrackLike | undefined;
+    byName.set(normalizeSkeletalClipName(track?.name ?? animation.name), animation);
   }
 
   const clips = new Map<SkeletalPilotClip, AnimationAssetLike>();
@@ -106,12 +113,21 @@ export async function instantiateSkeletalPilot(app: pc.Application): Promise<Ske
     anim.assignAnimation(clip, animation.resource as pc.AnimTrack, "base", 1, clip !== "throw_food");
   }
 
+  if (!baseLayer.playable) {
+    entity.destroy();
+    throw new Error("Skeletal pilot animation graph is not fully bound.");
+  }
   anim.activate = true;
-  baseLayer.transition("idle", 0);
+  anim.playing = true;
+  baseLayer.play("idle");
 
   let destroyed = false;
   return {
     entity,
+    duration(clip) {
+      const resource = clips.get(clip)?.resource as pc.AnimTrack | undefined;
+      return typeof resource?.duration === "number" ? resource.duration : 0;
+    },
     transition(clip, blendSeconds = clip === "throw_food" ? 0.06 : 0.12) {
       if (destroyed || !entity.parent) return;
       baseLayer.transition(clip, blendSeconds);

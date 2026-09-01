@@ -9,6 +9,8 @@ import {
 } from "./characterVisual";
 import { createEnvironmentFinish } from "./environmentFinish";
 import { createLightingFinish } from "./lightingFinish";
+import { createSkeletalCharacterVisual } from "./skeletalCharacterVisual";
+import { instantiateSkeletalPilot, isSkeletalPilotEnabled } from "./skeletalPilot";
 
 export type VisualQuality = "low" | "medium" | "high";
 export type TeamPalette = "default" | "color-safe";
@@ -93,6 +95,7 @@ function addPrimitive(
 
 export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeController {
   const { app, camera, keyLight, sundae } = options;
+  const skeletalPilotEnabled = isSkeletalPilotEnabled();
   const environmentRoot = new pc.Entity("art-prototype-environment");
   const mediumDetailRoot = new pc.Entity("medium-detail");
   const highDetailRoot = new pc.Entity("high-detail");
@@ -278,7 +281,26 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     if (root.render) root.render.enabled = false;
 
     const sessionId = root.name.startsWith("player-") ? root.name.slice("player-".length) : root.name;
-    playerCharacters.set(sessionId, createCharacterVisual({ root, accent, sessionId }));
+    const procedural = createCharacterVisual({ root, accent, sessionId });
+    playerCharacters.set(sessionId, procedural);
+    if (skeletalPilotEnabled) {
+      document.documentElement.dataset.skeletalPilot = "loading";
+      void instantiateSkeletalPilot(app)
+        .then((pilot) => {
+          if (!root.parent || playerCharacters.get(sessionId) !== procedural) {
+            pilot.destroy();
+            return;
+          }
+          root.addChild(pilot.entity);
+          procedural.setVisible(false);
+          playerCharacters.set(sessionId, createSkeletalCharacterVisual({ root, pilot }));
+          document.documentElement.dataset.skeletalPilot = "ready";
+        })
+        .catch((error: unknown) => {
+          document.documentElement.dataset.skeletalPilot = "fallback";
+          console.warn("Skeletal pilot failed; retaining procedural chef fallback.", error);
+        });
+    }
 
     const colors = teamColors(teamPalette);
     const teamMaterial = makeMaterial(team === 0 ? colors.blue : colors.red, 0.52, 0.02);

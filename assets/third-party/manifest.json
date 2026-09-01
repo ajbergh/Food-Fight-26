@@ -43,5 +43,28 @@
       "notes": "The pack page currently labels the pack CC0 while the publisher's general license page now presents QAL v1.0 dated 2026-08-28. Do not import this source until provenance and applicable terms are explicitly resolved."
     }
   ],
-  "assets": []
+  "assets": [
+    {
+      "path": "apps/game-client/public/assets/third-party/kaykit-adventurers/chef-pilot.glb",
+      "sourceId": "kaykit-adventurers",
+      "sourceRevision": "672074b73ba276876a19e8816ecdc5241817ab47",
+      "sourceAsset": "addons/kaykit_character_pack_adventures/Characters/gltf/Mage.glb",
+      "sourceSha256": "cf898585da33fab50c724d31605fb931eb2912e6d2280092141e98ca81ad507d",
+      "derivationCommand": "pnpm assets:derive:kaykit-pilot",
+      "kind": "model",
+      "budgetBucket": "characters",
+      "firstPlay": false,
+      "maxBytes": 3145728,
+      "maxTriangles": 8000,
+      "maxPrimitives": 16,
+      "maxMaterials": 2,
+      "maxTextures": 2,
+      "maxAnimations": 4,
+      "sha256": "1aefbeb86218be4dacf89775894a2db3faf2bf6ec11ddfa7ad90591de770cdcf",
+      "skeletal": {
+        "minSkins": 1,
+        "requiredAnimations": ["idle", "walk", "run", "throw_food"]
+      }
+    }
+  ]
 }

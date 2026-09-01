@@ -27,7 +27,7 @@ concept -> turnaround -> gameplay blockout -> review -> final model -> UV/materi
 
 Third-party runtime art must be traceable to an approved source before it enters the game bundle. The repository-level provenance record is `assets/third-party/manifest.json`, and CI runs `pnpm assets:audit` on every pull request.
 
-Each source record captures a stable source ID, publisher, source URL, license identifier/evidence URL, verification date, approval state, and review notes. Each imported runtime derivative must additionally record its repository path, source ID, asset kind, first-play budget bucket, per-file byte ceiling, and SHA-256 digest. Model records also declare explicit ceilings for triangles, mesh primitives, materials, textures, and animations.
+Each source record captures a stable source ID, publisher, source URL, license identifier/evidence URL, verification date, approval state, and review notes. Each imported runtime derivative must additionally record its repository path, source ID, asset kind, first-play budget bucket, per-file byte ceiling, and SHA-256 digest. Model records also declare explicit ceilings for triangles, mesh primitives, materials, textures, and animations. Skinned production candidates declare a minimum skin count and required named animation clips.
 
 Runtime derivatives live under `apps/game-client/public/assets/third-party/`. The audit intentionally accepts production-oriented formats only:
 
@@ -111,13 +111,14 @@ The current automated gate enforces:
 - valid glTF 2 / GLB structure;
 - local/embedded glTF sidecar resources only;
 - model triangle, primitive, material, texture, and animation ceilings.
+- optional skeletal skin and required-animation contracts.
 
 Future validation should add:
 
 - sane coordinate scale/orientation;
 - unsupported material/extension checks;
 - texture dimensions and estimated GPU memory;
-- required animation-clip naming for production heroes;
+- runtime animation binding/playback validation for production heroes;
 - accidental duplicate-material detection.
 
 ## Source-control policy
