@@ -108,6 +108,6 @@ assert_contains "$runtime_config" 'release: "sha-smoke-test"'
 GAME_SERVER_URL=http://127.0.0.1:32567 \
 BOT_COUNT=2 \
 BOT_DURATION_SECONDS=3 \
-pnpm bots
+corepack pnpm bots
 
 echo "Staging container smoke: PASS"

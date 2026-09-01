@@ -14,10 +14,10 @@ describe("skeletal pilot contract", () => {
 
   it("maps the required pilot clips by normalized animation name", () => {
     const clips = mapSkeletalPilotClips([
-      { name: "Idle", resource: {} },
-      { name: "Walk", resource: {} },
-      { name: "Run", resource: {} },
-      { name: "Throw-Food", resource: {} },
+      { name: "pilot.glb/animation/0", resource: { name: "Idle" } },
+      { name: "pilot.glb/animation/1", resource: { name: "Walk" } },
+      { name: "pilot.glb/animation/2", resource: { name: "Run" } },
+      { name: "pilot.glb/animation/3", resource: { name: "Throw-Food" } },
       { name: "Unused", resource: {} },
     ]);
     expect([...clips.keys()]).toEqual(["idle", "walk", "run", "throw_food"]);

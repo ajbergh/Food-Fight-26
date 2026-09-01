@@ -615,7 +615,8 @@ connectToMatch(`Guest-${Math.floor(Math.random() * 9000 + 1000)}`)
     connection.room.onStateChange((state) => syncState(state));
     connection.room.onMessage("impact", (message: ImpactMessage) => spawnImpact(message));
     connection.room.onMessage("match_event", (message: MatchEventMessage) => handleMatchEvent(message));
-    syncState(connection.room.state);
+    const initialState = connection.room.state as Partial<MatchStateShape>;
+    if (initialState.players) syncState(initialState as MatchStateShape);
   })
   .catch((error: unknown) => {
     console.error("Unable to connect to game server", error);

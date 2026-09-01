@@ -45,7 +45,8 @@ ENV GAME_SERVER_PUBLIC_URL=http://localhost:2567 \
 COPY infra/nginx-static.conf /etc/nginx/conf.d/default.conf
 COPY infra/40-foodfight-runtime-config.sh /docker-entrypoint.d/40-foodfight-runtime-config.sh
 COPY --from=game-client-build /workspace/apps/game-client/dist /usr/share/nginx/html
-RUN chmod +x /docker-entrypoint.d/40-foodfight-runtime-config.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-foodfight-runtime-config.sh \
+    && chmod +x /docker-entrypoint.d/40-foodfight-runtime-config.sh
 EXPOSE 8080
 
 FROM workspace AS web-build
