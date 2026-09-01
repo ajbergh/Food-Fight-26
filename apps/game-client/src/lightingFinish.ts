@@ -9,12 +9,6 @@ interface LightingFinishOptions {
   fillLight: pc.Entity;
 }
 
-interface AccentLight {
-  entity: pc.Entity;
-  baseIntensity: number;
-  phase: number;
-}
-
 export interface LightingFinishController {
   setQuality(quality: LightingQuality): void;
   update(dt: number): void;
@@ -53,20 +47,23 @@ function addOmni(
 export function createLightingFinish(options: LightingFinishOptions): LightingFinishController {
   const { app, keyLight, objectiveLight, fillLight } = options;
 
-  const mediumLights: AccentLight[] = [
-    { entity: addOmni(app, "vendor-light-pizza", [-10.5, 3.25, -8.1], COLORS.berry, 0.72, 6.5), baseIntensity: 0.72, phase: 0.1 },
-    { entity: addOmni(app, "vendor-light-grill", [-3.5, 3.2, -8.1], COLORS.warm, 0.78, 6.5), baseIntensity: 0.78, phase: 1.1 },
-    { entity: addOmni(app, "vendor-light-shake", [3.5, 3.2, -8.1], COLORS.mint, 0.7, 6.5), baseIntensity: 0.7, phase: 2.2 },
-    { entity: addOmni(app, "vendor-light-dessert", [10.5, 3.25, -8.1], COLORS.cream, 0.74, 6.5), baseIntensity: 0.74, phase: 3.2 },
-    { entity: addOmni(app, "rim-light-west", [-13.8, 2.8, 1.4], COLORS.aqua, 0.44, 7.5), baseIntensity: 0.44, phase: 0.7 },
-    { entity: addOmni(app, "rim-light-east", [13.8, 2.8, -1.4], COLORS.violet, 0.44, 7.5), baseIntensity: 0.44, phase: 2.7 },
+  // Medium quality keeps a static four-light vendor wash. Static accent lights avoid
+  // per-frame light-list invalidation on software/headless renderers.
+  const mediumLights = [
+    addOmni(app, "vendor-light-pizza", [-10.5, 3.25, -8.1], COLORS.berry, 0.62, 6.0),
+    addOmni(app, "vendor-light-grill", [-3.5, 3.2, -8.1], COLORS.warm, 0.68, 6.0),
+    addOmni(app, "vendor-light-shake", [3.5, 3.2, -8.1], COLORS.mint, 0.6, 6.0),
+    addOmni(app, "vendor-light-dessert", [10.5, 3.25, -8.1], COLORS.cream, 0.64, 6.0),
   ];
 
-  const highLights: AccentLight[] = [
-    { entity: addOmni(app, "corner-light-nw", [-13.5, 2.3, -6.9], COLORS.aqua, 0.32, 5.6), baseIntensity: 0.32, phase: 0.4 },
-    { entity: addOmni(app, "corner-light-ne", [13.5, 2.3, -6.9], COLORS.berry, 0.32, 5.6), baseIntensity: 0.32, phase: 1.4 },
-    { entity: addOmni(app, "corner-light-sw", [-13.5, 2.1, 6.9], COLORS.violet, 0.28, 5.2), baseIntensity: 0.28, phase: 2.4 },
-    { entity: addOmni(app, "corner-light-se", [13.5, 2.1, 6.9], COLORS.mint, 0.28, 5.2), baseIntensity: 0.28, phase: 3.4 },
+  // Rim and corner accents are high-only. They remain static and never cast shadows.
+  const highLights = [
+    addOmni(app, "rim-light-west", [-13.8, 2.8, 1.4], COLORS.aqua, 0.36, 7.0),
+    addOmni(app, "rim-light-east", [13.8, 2.8, -1.4], COLORS.violet, 0.36, 7.0),
+    addOmni(app, "corner-light-nw", [-13.5, 2.3, -6.9], COLORS.aqua, 0.26, 5.2),
+    addOmni(app, "corner-light-ne", [13.5, 2.3, -6.9], COLORS.berry, 0.26, 5.2),
+    addOmni(app, "corner-light-sw", [-13.5, 2.1, 6.9], COLORS.violet, 0.22, 4.9),
+    addOmni(app, "corner-light-se", [13.5, 2.1, 6.9], COLORS.mint, 0.22, 4.9),
   ];
 
   let quality: LightingQuality = "medium";
@@ -74,21 +71,21 @@ export function createLightingFinish(options: LightingFinishOptions): LightingFi
 
   function setQuality(next: LightingQuality) {
     quality = next;
-    for (const light of mediumLights) light.entity.enabled = next !== "low";
-    for (const light of highLights) light.entity.enabled = next === "high";
+    for (const light of mediumLights) light.enabled = next !== "low";
+    for (const light of highLights) light.enabled = next === "high";
 
     if (keyLight.light) {
-      keyLight.light.intensity = next === "low" ? 1.35 : next === "medium" ? 1.52 : 1.62;
+      keyLight.light.intensity = next === "low" ? 1.35 : next === "medium" ? 1.48 : 1.58;
       keyLight.light.castShadows = next !== "low";
     }
     if (fillLight.light) {
       fillLight.enabled = next !== "low";
-      fillLight.light.intensity = next === "high" ? 0.42 : 0.34;
+      fillLight.light.intensity = next === "high" ? 0.4 : 0.33;
     }
     if (objectiveLight.light) {
       objectiveLight.enabled = next !== "low";
-      objectiveLight.light.intensity = next === "high" ? 1.55 : 1.25;
-      objectiveLight.light.range = next === "high" ? 10.5 : 8.5;
+      objectiveLight.light.intensity = next === "high" ? 1.5 : 1.22;
+      objectiveLight.light.range = next === "high" ? 10 : 8.25;
     }
 
     app.scene.ambientLight = next === "low"
@@ -100,24 +97,11 @@ export function createLightingFinish(options: LightingFinishOptions): LightingFi
 
   function update(dt: number) {
     elapsed += dt;
-    if (quality === "low") return;
+    if (quality === "low" || !objectiveLight.light) return;
 
-    const density = quality === "high" ? 1 : 0.7;
-    for (const light of mediumLights) {
-      if (!light.entity.light) continue;
-      light.entity.light.intensity = light.baseIntensity * (1 + Math.sin(elapsed * 1.8 + light.phase) * 0.035 * density);
-    }
-    if (quality === "high") {
-      for (const light of highLights) {
-        if (!light.entity.light) continue;
-        light.entity.light.intensity = light.baseIntensity * (1 + Math.sin(elapsed * 1.35 + light.phase) * 0.045);
-      }
-    }
-
-    if (objectiveLight.light) {
-      const base = quality === "high" ? 1.55 : 1.25;
-      objectiveLight.light.intensity = base * (1 + Math.sin(elapsed * 2.4) * 0.045);
-    }
+    // Only the single pre-existing objective light animates. Accent lights are static.
+    const base = quality === "high" ? 1.5 : 1.22;
+    objectiveLight.light.intensity = base * (1 + Math.sin(elapsed * 2.1) * 0.03);
   }
 
   setQuality(quality);
