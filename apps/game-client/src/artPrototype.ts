@@ -8,6 +8,7 @@ import {
   type CharacterVisual,
 } from "./characterVisual";
 import { createEnvironmentFinish } from "./environmentFinish";
+import { createLightingFinish } from "./lightingFinish";
 
 export type VisualQuality = "low" | "medium" | "high";
 export type TeamPalette = "default" | "color-safe";
@@ -56,17 +57,19 @@ function copyColor(color: pc.Color) {
   return new pc.Color(color.r, color.g, color.b, color.a);
 }
 
-function makeMaterial(color: pc.Color, gloss = 0.4, metalness = 0.03) {
+function makeMaterial(color: pc.Color, gloss = 0.4, metalness = 0.03, emissive?: pc.Color) {
   const value = new pc.StandardMaterial();
   value.diffuse = copyColor(color);
   value.gloss = gloss;
   value.metalness = metalness;
+  if (emissive) value.emissive = copyColor(emissive);
   value.update();
   return value;
 }
 
-function setMaterialColor(material: pc.StandardMaterial, color: pc.Color) {
+function setMaterialColor(material: pc.StandardMaterial, color: pc.Color, emissive = false) {
   material.diffuse = copyColor(color);
+  if (emissive) material.emissive = copyColor(color);
   material.update();
 }
 
@@ -97,17 +100,17 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   environmentRoot.addChild(highDetailRoot);
   app.root.addChild(environmentRoot);
 
-  if (camera.camera) camera.camera.clearColor = new pc.Color(0.055, 0.045, 0.075);
-  app.scene.ambientLight = new pc.Color(0.34, 0.3, 0.42);
+  if (camera.camera) camera.camera.clearColor = new pc.Color(0.045, 0.035, 0.064);
+  app.scene.ambientLight = new pc.Color(0.31, 0.275, 0.37);
 
-  const floorInset = makeMaterial(PALETTE.floorInset, 0.3);
-  const wallMaterial = makeMaterial(PALETTE.wall, 0.24);
-  const counterMaterial = makeMaterial(PALETTE.counter, 0.3);
-  const counterTopMaterial = makeMaterial(PALETTE.counterTop, 0.48);
-  const pinkMaterial = makeMaterial(PALETTE.pink, 0.48);
-  const mintMaterial = makeMaterial(PALETTE.mint, 0.45);
-  const foliageMaterial = makeMaterial(PALETTE.foliage, 0.2);
-  const creamMaterial = makeMaterial(PALETTE.cream, 0.52);
+  const floorInset = makeMaterial(PALETTE.floorInset, 0.18, 0.01);
+  const wallMaterial = makeMaterial(PALETTE.wall, 0.14, 0.01);
+  const counterMaterial = makeMaterial(PALETTE.counter, 0.22, 0.02);
+  const counterTopMaterial = makeMaterial(PALETTE.counterTop, 0.62, 0.08);
+  const pinkMaterial = makeMaterial(PALETTE.pink, 0.5, 0.01);
+  const mintMaterial = makeMaterial(PALETTE.mint, 0.48, 0.01);
+  const foliageMaterial = makeMaterial(PALETTE.foliage, 0.12, 0);
+  const creamMaterial = makeMaterial(PALETTE.cream, 0.58, 0.02);
 
   createArenaDetail({ app, mediumDetailRoot, highDetailRoot });
   createEnvironmentFinish({ mediumDetailRoot, highDetailRoot });
@@ -173,16 +176,16 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   addPrimitive(sundae, "glass-cup", "cone", creamMaterial, [0.7, 0.82, 0.7], [0, 0.58, 0], [180, 0, 0]);
   addPrimitive(sundae, "vanilla-scoop", "sphere", creamMaterial, [0.72, 0.55, 0.72], [-0.16, 1.02, 0.02]);
   addPrimitive(sundae, "berry-scoop", "sphere", pinkMaterial, [0.66, 0.52, 0.66], [0.28, 1.05, 0.04]);
-  const cherry = addPrimitive(sundae, "cherry", "sphere", makeMaterial(PALETTE.red, 0.62), [0.25, 0.25, 0.25], [0.05, 1.48, 0]);
+  const cherry = addPrimitive(sundae, "cherry", "sphere", makeMaterial(PALETTE.red, 0.68, 0.01), [0.25, 0.25, 0.25], [0.05, 1.48, 0]);
   addPrimitive(sundae, "cherry-stem", "cylinder", foliageMaterial, [0.05, 0.22, 0.05], [0.09, 1.68, 0], [0, 0, -18]);
 
   let teamPalette = readTeamPalette();
   const initialTeamColors = teamColors(teamPalette);
   const ringMaterials = {
     none: makeMaterial(PALETTE.neutral, 0.45),
-    blue: makeMaterial(initialTeamColors.blue, 0.55),
-    red: makeMaterial(initialTeamColors.red, 0.55),
-    contested: makeMaterial(PALETTE.gold, 0.58),
+    blue: makeMaterial(initialTeamColors.blue, 0.58, 0.02, initialTeamColors.blue),
+    red: makeMaterial(initialTeamColors.red, 0.58, 0.02, initialTeamColors.red),
+    contested: makeMaterial(PALETTE.gold, 0.62, 0.02, PALETTE.gold),
   };
   const playerTeamMaterials: Array<{ material: pc.StandardMaterial; team: number }> = [];
   const playerCharacters = new Map<string, CharacterVisual>();
@@ -218,6 +221,7 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   fillLight.setEulerAngles(70, 145, 0);
   app.root.addChild(fillLight);
 
+  const lighting = createLightingFinish({ app, keyLight, objectiveLight, fillLight });
   const qualityButton = document.querySelector<HTMLButtonElement>("#quality");
   let quality = readQuality();
   let activeRing = ringEntities.get("none")!;
@@ -227,9 +231,7 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     quality = next;
     mediumDetailRoot.enabled = next !== "low";
     highDetailRoot.enabled = next === "high";
-    objectiveLight.enabled = next !== "low";
-    fillLight.enabled = next !== "low";
-    if (keyLight.light) keyLight.light.castShadows = next !== "low";
+    lighting.setQuality(next);
     if (qualityButton) qualityButton.textContent = `graphics · ${next}`;
     try {
       window.localStorage.setItem("foodfight.visualQuality", next);
@@ -246,8 +248,8 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
   function applyTeamPalette(next: TeamPalette) {
     teamPalette = next;
     const colors = teamColors(next);
-    setMaterialColor(ringMaterials.blue, colors.blue);
-    setMaterialColor(ringMaterials.red, colors.red);
+    setMaterialColor(ringMaterials.blue, colors.blue, true);
+    setMaterialColor(ringMaterials.red, colors.red, true);
     for (const entry of playerTeamMaterials) {
       setMaterialColor(entry.material, entry.team === 0 ? colors.blue : colors.red);
     }
@@ -279,7 +281,7 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     playerCharacters.set(sessionId, createCharacterVisual({ root, accent, sessionId }));
 
     const colors = teamColors(teamPalette);
-    const teamMaterial = makeMaterial(team === 0 ? colors.blue : colors.red, 0.5);
+    const teamMaterial = makeMaterial(team === 0 ? colors.blue : colors.red, 0.52, 0.02);
     playerTeamMaterials.push({ material: teamMaterial, team });
     addPrimitive(root, "team-ring", "cylinder", teamMaterial, [1.16, 0.045, 1.16], [0, -0.79, 0]);
     if (team === 0) {
@@ -310,6 +312,7 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
         foodCourtMap.objective.radius * 2.08 * pulse,
       );
       cherry.rotateLocal(0, 45 * dt, 0);
+      lighting.update(dt);
 
       for (const [sessionId, character] of playerCharacters) {
         if (!character.root.parent) {
