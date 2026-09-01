@@ -15,6 +15,7 @@ const C = {
   floorAccent: new pc.Color(0.33, 0.285, 0.38),
   wall: new pc.Color(0.17, 0.125, 0.205),
   wallDeep: new pc.Color(0.085, 0.065, 0.11),
+  counter: new pc.Color(0.255, 0.19, 0.315),
   metal: new pc.Color(0.48, 0.5, 0.57),
   cream: new pc.Color(0.96, 0.84, 0.62),
   warmWhite: new pc.Color(1, 0.94, 0.82),
@@ -89,13 +90,14 @@ function storefront(
 }
 
 export function createArenaDetail(options: ArenaDetailOptions) {
-  const { mediumDetailRoot, highDetailRoot } = options;
+  const { app, mediumDetailRoot, highDetailRoot } = options;
 
   const shell = material(C.shell, 0.12);
   const floor = material(C.floor, 0.22);
   const floorAccent = material(C.floorAccent, 0.24);
   const wall = material(C.wall, 0.3);
   const wallDeep = material(C.wallDeep, 0.18);
+  const counter = material(C.counter, 0.32);
   const metal = material(C.metal, 0.7, 0.34);
   const cream = material(C.cream, 0.48);
   const red = material(C.red, 0.52);
@@ -110,6 +112,20 @@ export function createArenaDetail(options: ArenaDetailOptions) {
   const neonPink = material(C.pink, 0.32, 0, C.pink);
   const neonAqua = material(C.aqua, 0.32, 0, C.aqua);
   const neonYellow = material(C.yellow, 0.32, 0, C.yellow);
+
+  // Re-grade the existing gameplay geometry instead of layering redundant renderers on top of it.
+  const arenaFloor = app.root.findByName("arena-floor") as pc.Entity | null;
+  if (arenaFloor?.render) arenaFloor.render.material = floor;
+  for (const obstacle of foodCourtMap.obstacles) {
+    const obstacleEntity = app.root.findByName(obstacle.id) as pc.Entity | null;
+    if (obstacleEntity?.render) obstacleEntity.render.material = counter;
+  }
+  app.scene.ambientLight = new pc.Color(0.3, 0.265, 0.36);
+  const keyLight = app.root.findByName("key-light") as pc.Entity | null;
+  if (keyLight?.light) {
+    keyLight.light.color = new pc.Color(1, 0.88, 0.74);
+    keyLight.light.intensity = 1.38;
+  }
 
   // A dark architectural slab outside the authoritative arena removes the "floating board in black space" read.
   // It is presentation-only and deliberately sits below all gameplay geometry.
@@ -144,6 +160,27 @@ export function createArenaDetail(options: ArenaDetailOptions) {
   primitive(mediumDetailRoot, "east-portal", "box", wallDeep, [0.75, 2.7, 5.1], [17.25, 1.18, 0]);
   primitive(mediumDetailRoot, "west-portal-light", "box", neonAqua, [0.09, 1.85, 3.7], [-16.84, 1.42, 0]);
   primitive(mediumDetailRoot, "east-portal-light", "box", neonPink, [0.09, 1.85, 3.7], [16.84, 1.42, 0]);
+
+  // Dress the authoritative cover blocks as food-court counters while leaving collision dimensions untouched.
+  for (const [index, obstacle] of foodCourtMap.obstacles.entries()) {
+    const accent = index % 2 === 0 ? neonPink : neonAqua;
+    primitive(
+      mediumDetailRoot,
+      `${obstacle.id}-front-panel`,
+      "box",
+      wallDeep,
+      [obstacle.width * 0.8, 0.34, 0.07],
+      [obstacle.x, 0.43, obstacle.y - obstacle.height / 2 - 0.035],
+    );
+    primitive(
+      mediumDetailRoot,
+      `${obstacle.id}-front-rule`,
+      "box",
+      accent,
+      [obstacle.width * 0.55, 0.055, 0.045],
+      [obstacle.x, 0.5, obstacle.y - obstacle.height / 2 - 0.078],
+    );
+  }
 
   // High quality adds broad patterning and chunky silhouettes only; no micro-geometry or extra lights.
   for (const x of [-10, -5, 5, 10]) {
