@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { auditManifest, formatAuditReport, loadManifest } from "./audit.mjs";
+import { auditSkeletalContracts, formatSkeletalAuditReport } from "./skeletal.mjs";
 
 const manifestPath = resolve(process.argv[2] ?? "../../assets/third-party/manifest.json");
 const repoRoot = findRepoRoot(dirname(manifestPath));
@@ -10,15 +11,17 @@ if (!repoRoot) {
   process.exitCode = 1;
 } else {
   try {
-    const result = auditManifest(loadManifest(manifestPath), repoRoot);
-    const report = formatAuditReport(result);
+    const manifest = loadManifest(manifestPath);
+    const result = auditManifest(manifest, repoRoot);
+    const skeletalResult = auditSkeletalContracts(manifest, repoRoot);
+    const report = `${formatAuditReport(result)}\n${formatSkeletalAuditReport(skeletalResult)}`;
     process.stdout.write(report);
 
     if (process.env.GITHUB_STEP_SUMMARY) {
       appendFileSync(process.env.GITHUB_STEP_SUMMARY, report);
     }
 
-    if (result.errors.length > 0) process.exitCode = 1;
+    if (result.errors.length > 0 || skeletalResult.errors.length > 0) process.exitCode = 1;
   } catch (error) {
     console.error(`Asset audit failed to read ${manifestPath}:`, error);
     process.exitCode = 1;

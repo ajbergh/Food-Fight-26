@@ -20,7 +20,7 @@ test("parses GLB 2.0 JSON chunks and summarizes production structure", () => {
     materials: [{}, {}],
     textures: [{}],
     images: [{}],
-    animations: [{}],
+    animations: [{ name: "idle" }],
     skins: [{}],
   };
 
@@ -34,8 +34,18 @@ test("parses GLB 2.0 JSON chunks and summarizes production structure", () => {
     textures: 1,
     images: 1,
     animations: 1,
+    animationNames: ["idle"],
     skins: 1,
   });
+});
+
+test("omits unnamed clips from the animation-name contract surface", () => {
+  const result = summarizeGltf({
+    asset: { version: "2.0" },
+    animations: [{}, { name: "  walk  " }, { name: "" }, { name: "run" }],
+  });
+  assert.deepEqual(result.animationNames, ["walk", "run"]);
+  assert.equal(result.animations, 4);
 });
 
 test("rejects malformed GLB headers and declared lengths", () => {

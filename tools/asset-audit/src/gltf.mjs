@@ -87,6 +87,7 @@ export function parseGlb(buffer) {
 export function summarizeGltf(document) {
   const accessors = Array.isArray(document.accessors) ? document.accessors : [];
   const meshes = Array.isArray(document.meshes) ? document.meshes : [];
+  const animationEntries = Array.isArray(document.animations) ? document.animations : [];
   let primitives = 0;
   let triangles = 0;
 
@@ -108,7 +109,10 @@ export function summarizeGltf(document) {
     materials: arrayLength(document.materials),
     textures: arrayLength(document.textures),
     images: arrayLength(document.images),
-    animations: arrayLength(document.animations),
+    animations: animationEntries.length,
+    animationNames: animationEntries
+      .map((animation) => (typeof animation?.name === "string" ? animation.name.trim() : ""))
+      .filter((name) => name.length > 0),
     skins: arrayLength(document.skins),
   };
 }
@@ -191,7 +195,17 @@ function arrayLength(value) {
 }
 
 function emptyMetrics() {
-  return { meshes: 0, primitives: 0, triangles: 0, materials: 0, textures: 0, images: 0, animations: 0, skins: 0 };
+  return {
+    meshes: 0,
+    primitives: 0,
+    triangles: 0,
+    materials: 0,
+    textures: 0,
+    images: 0,
+    animations: 0,
+    animationNames: [],
+    skins: 0,
+  };
 }
 
 function isObject(value) {
