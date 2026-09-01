@@ -21,6 +21,17 @@
       "notes": "The publisher page currently identifies this 3D pack as Creative Commons CC0. Import only optimized runtime derivatives, not the complete source archive."
     },
     {
+      "id": "kaykit-adventurers",
+      "name": "KayKit Character Pack: Adventurers 1.0",
+      "provider": "KayKit / Kay Lousberg",
+      "sourceUrl": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "licenseId": "CC0-1.0",
+      "licenseEvidenceUrl": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/blob/main/LICENSE.txt",
+      "verifiedOn": "2026-09-01",
+      "status": "approved",
+      "notes": "Official public KayKit repository. LICENSE.txt explicitly grants CC0 use for personal, educational, and commercial projects. README documents fully rigged low-poly characters with 75 animations. Use a single optimized GLB pilot first so the character budget is preserved; do not vendor the entire pack."
+    },
+    {
       "id": "quaternius-ultimate-food",
       "name": "Ultimate Food Pack",
       "provider": "Quaternius",
