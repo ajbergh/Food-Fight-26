@@ -26,6 +26,7 @@ This directory is the product and engineering source of truth for the initial ve
 ## Art
 
 - [Art direction](art-direction.md)
+- [Arena art](arena-art.md)
 - [Asset pipeline](asset-pipeline.md)
 - [Character animation](character-animation.md)
 - [Concept-art brief](concept-art/README.md)
