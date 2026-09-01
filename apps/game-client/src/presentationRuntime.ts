@@ -4,6 +4,11 @@ const blueScore = document.querySelector<HTMLElement>("#blue-score");
 const redScore = document.querySelector<HTMLElement>("#red-score");
 const tomatoAmmo = document.querySelector<HTMLElement>("#tomato-ammo");
 const bananaAmmo = document.querySelector<HTMLElement>("#banana-ammo");
+const performanceLabel = document.querySelector<HTMLElement>("#performance");
+const qualityButton = document.querySelector<HTMLButtonElement>("#quality");
+
+let slowHighSamples = 0;
+let adaptiveQualityRecovered = false;
 
 function reducedMotion() {
   return document.body.dataset.reducedMotion === "true" || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -44,6 +49,32 @@ function animateScore(element: HTMLElement | null) {
   window.setTimeout(() => panel.classList.remove("score-pop"), 420);
 }
 
+function recoverGraphicsIfNeeded() {
+  if (!performanceLabel || !qualityButton || adaptiveQualityRecovered) return;
+
+  const quality = qualityButton.textContent?.toLowerCase() ?? "";
+  if (!quality.includes("high")) {
+    slowHighSamples = 0;
+    return;
+  }
+
+  const match = performanceLabel.textContent?.match(/(\d+)\s*fps/i);
+  const fps = match ? Number(match[1]) : Number.NaN;
+  if (!Number.isFinite(fps)) return;
+
+  slowHighSamples = fps < 30 ? slowHighSamples + 1 : 0;
+  if (slowHighSamples < 4) return;
+
+  // High quality is opt-in, but a sustained sub-30-fps session is not a premium experience.
+  // The quality cycle is high -> low -> medium, so two clicks recover to the balanced tier.
+  adaptiveQualityRecovered = true;
+  qualityButton.click();
+  qualityButton.click();
+  qualityButton.dataset.autoAdjusted = "true";
+  qualityButton.title = "Graphics automatically returned to medium after sustained low frame rate. Press G to override.";
+  document.body.dataset.adaptiveQuality = "recovered";
+}
+
 function observeText(element: HTMLElement | null, callback: () => void) {
   if (!element) return;
   const observer = new MutationObserver(callback);
@@ -55,6 +86,7 @@ observeText(blueScore, () => animateScore(blueScore));
 observeText(redScore, () => animateScore(redScore));
 observeText(tomatoAmmo, () => syncAmmoState(tomatoAmmo));
 observeText(bananaAmmo, () => syncAmmoState(bananaAmmo));
+observeText(performanceLabel, recoverGraphicsIfNeeded);
 
 if (objective) {
   new MutationObserver(syncObjectiveState).observe(objective, { attributes: true, attributeFilter: ["data-state"] });
