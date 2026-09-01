@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-01):** all 30 pull requests are merged and there are no open pull requests.
+**Status snapshot (2026-09-01):** 30 implementation pull requests are merged. [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31) is the open documentation-only reconciliation pass.
 
 ## M0 — Repository and architecture — complete
 
@@ -182,7 +182,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 | M10       | [#28](https://github.com/ajbergh/Food-Fight-26/pull/28)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | M11       | [#29](https://github.com/ajbergh/Food-Fight-26/pull/29), [#30](https://github.com/ajbergh/Food-Fight-26/pull/30)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
-M0 is the repository baseline and predates this PR ledger. The table accounts for all 30 merged pull requests at the status snapshot.
+M0 is the repository baseline and predates this PR ledger. The table accounts for all 30 merged implementation pull requests at the status snapshot; the open documentation-only PR is linked above.
 
 ## Later, only after validation
 
