@@ -1,0 +1,147 @@
+/* M10 match-moment presentation. This layer never mutates PlayCanvas camera or gameplay state. */
+#game {
+  transform-origin: 50% 50%;
+}
+
+body[data-match-moment="round"] #game {
+  animation: arena-round-intro 1.2s cubic-bezier(.16,.84,.26,1);
+}
+
+body[data-match-moment="control"][data-presentation-team="blue"] #game {
+  animation: arena-control-blue 1.05s cubic-bezier(.2,.8,.2,1);
+}
+
+body[data-match-moment="control"][data-presentation-team="red"] #game {
+  animation: arena-control-red 1.05s cubic-bezier(.2,.8,.2,1);
+}
+
+body[data-match-moment="overtime"] #game {
+  animation: arena-overtime 1.7s cubic-bezier(.16,.84,.26,1);
+}
+
+body[data-match-moment="finish"] #game {
+  animation: arena-finish-neutral 1.1s cubic-bezier(.18,.84,.22,1) forwards;
+}
+
+body[data-match-moment="finish"][data-presentation-team="blue"] #game {
+  animation-name: arena-finish-blue;
+}
+
+body[data-match-moment="finish"][data-presentation-team="red"] #game {
+  animation-name: arena-finish-red;
+}
+
+body[data-match-moment="finish"] .match-banner.visible {
+  animation: finish-title 760ms cubic-bezier(.16,.84,.24,1) both;
+}
+
+body[data-match-moment="overtime"] .event-toast.visible,
+body[data-match-moment="control"] .event-toast.visible {
+  animation: moment-toast 520ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.match-celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.match-celebration i {
+  --piece-color: #ffc34f;
+  position: absolute;
+  top: -7vh;
+  left: var(--piece-x);
+  width: 8px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--piece-color);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--piece-color) 48%, transparent);
+  opacity: 0;
+  animation: celebration-fall 1.85s cubic-bezier(.12,.62,.24,1) var(--piece-delay) forwards;
+}
+
+.match-celebration[data-team="blue"] i { --piece-color: #56a8ff; }
+.match-celebration[data-team="red"] i { --piece-color: #ff6458; }
+.match-celebration i:nth-child(3n + 2) { --piece-color: #ffc34f; width: 6px; height: 14px; }
+.match-celebration i:nth-child(4n) { border-radius: 999px; width: 9px; height: 9px; }
+
+@keyframes arena-round-intro {
+  0% { transform: scale(1.026); filter: brightness(.9) saturate(.92); }
+  42% { transform: scale(.994); filter: brightness(1.08) saturate(1.06); }
+  100% { transform: scale(1); filter: none; }
+}
+
+@keyframes arena-control-blue {
+  0%, 100% { transform: translateX(0) scale(1); filter: none; }
+  38% { transform: translateX(.8%) scale(1.018); filter: brightness(1.06) saturate(1.08); }
+}
+
+@keyframes arena-control-red {
+  0%, 100% { transform: translateX(0) scale(1); filter: none; }
+  38% { transform: translateX(-.8%) scale(1.018); filter: brightness(1.06) saturate(1.08); }
+}
+
+@keyframes arena-overtime {
+  0% { transform: scale(1); filter: none; }
+  34% { transform: scale(1.026); filter: brightness(1.08) contrast(1.04); }
+  100% { transform: scale(1); filter: none; }
+}
+
+@keyframes arena-finish-neutral {
+  from { transform: scale(1); filter: none; }
+  to { transform: scale(1.035); filter: brightness(.88) saturate(.95); }
+}
+
+@keyframes arena-finish-blue {
+  from { transform: translateX(0) scale(1); filter: none; }
+  to { transform: translateX(1%) scale(1.04); filter: brightness(.9) saturate(1.02); }
+}
+
+@keyframes arena-finish-red {
+  from { transform: translateX(0) scale(1); filter: none; }
+  to { transform: translateX(-1%) scale(1.04); filter: brightness(.9) saturate(1.02); }
+}
+
+@keyframes finish-title {
+  0% { opacity: 0; transform: translate(-50%, 14px) scale(.9); letter-spacing: .16em; }
+  55% { opacity: 1; transform: translate(-50%, -3px) scale(1.045); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); letter-spacing: .08em; }
+}
+
+@keyframes moment-toast {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(.94); }
+  55% { opacity: 1; transform: translate(-50%, -2px) scale(1.02); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@keyframes celebration-fall {
+  0% { opacity: 0; transform: translate3d(0, -4vh, 0) rotate(0deg); }
+  12% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--piece-drift), 112vh, 0) rotate(720deg); }
+}
+
+body[data-reduced-motion="true"] #game,
+body[data-reduced-motion="true"] .match-banner,
+body[data-reduced-motion="true"] .event-toast {
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+body[data-reduced-motion="true"] .match-celebration {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #game,
+  .match-banner,
+  .event-toast {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .match-celebration { display: none; }
+}
