@@ -91,6 +91,12 @@ export async function instantiateSkeletalPilot(app: pc.Application): Promise<Ske
     parameters: {},
   });
 
+  const baseLayer = anim.baseLayer;
+  if (!baseLayer) {
+    entity.destroy();
+    throw new Error("Skeletal pilot state graph did not create a base animation layer.");
+  }
+
   for (const clip of SKELETAL_PILOT_CLIPS) {
     const animation = clips.get(clip);
     if (!animation?.resource) {
@@ -101,14 +107,14 @@ export async function instantiateSkeletalPilot(app: pc.Application): Promise<Ske
   }
 
   anim.activate = true;
-  anim.baseLayer.transition("idle", 0);
+  baseLayer.transition("idle", 0);
 
   let destroyed = false;
   return {
     entity,
     transition(clip, blendSeconds = clip === "throw_food" ? 0.06 : 0.12) {
       if (destroyed || !entity.parent) return;
-      anim.baseLayer.transition(clip, blendSeconds);
+      baseLayer.transition(clip, blendSeconds);
     },
     destroy() {
       if (destroyed) return;
