@@ -1,3 +1,5 @@
+export {};
+
 type MatchMoment = "neutral" | "round" | "control" | "overtime" | "finish";
 type Team = "blue" | "red";
 
