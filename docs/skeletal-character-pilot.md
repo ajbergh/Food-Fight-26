@@ -40,7 +40,7 @@ The third-party asset audit now supports an optional model-level contract:
 }
 ```
 
-When the real pilot is added to the manifest, this contract must be present on its model entry. The audit reads glTF/GLB animation names directly and fails closed when a required clip or skin is missing.
+The committed pilot entry carries this contract. The audit reads glTF/GLB animation names directly and fails closed when a required clip or skin is missing.
 
 ## Runtime adapter
 
@@ -56,6 +56,12 @@ When the real pilot is added to the manifest, this contract must be present on i
 - the procedural chef is created first and hidden only after the skeletal hierarchy and animation graph are ready.
 
 The adapter is wired only behind `?skeletalPilot=1`. The HTML `data-skeletal-pilot` diagnostic reports `loading`, `ready`, or `fallback`, and browser E2E verifies a ready pilot can still perform authoritative combat input without console errors.
+
+## Reproducing and checking the pilot
+
+Run `pnpm assets:derive:kaykit-pilot` to download the pinned upstream source, verify its source digest, and regenerate the committed GLB. It must reproduce SHA-256 `1aefbeb86218be4dacf89775894a2db3faf2bf6ec11ddfa7ad90591de770cdcf`.
+
+Then run `pnpm assets:audit` to verify provenance, byte/structure budgets, and the skeletal contract. Use `?skeletalPilot=1` in a local game-client session to exercise the opt-in path; a session without that query parameter must keep the procedural chef and avoid requesting the binary asset.
 
 ## Completed pilot intake
 
