@@ -16,22 +16,22 @@ Decision: preferred first external pack to evaluate because its clean stylized l
 
 - Source: `https://quaternius.com/packs/ultimatefood.html`
 - Publisher: Quaternius
-- License: Creative Commons CC0
+- License: hold — the pack page labels it CC0, while the publisher's current general license page presents QAL v1.0 dated 2026-08-28.
 - Official catalog describes 100+ food/consumable models and supplies FBX, OBJ, and Blender formats.
 - Intended use: secondary food variants and shape-language reference where the Kenney pack lacks an item.
 
-Decision: strong fallback/secondary source. Prefer a small curated subset rather than mixing the full pack with another visual language.
+Decision: on hold. Do not import this source until its applicable terms and provenance are explicitly resolved in `assets/third-party/manifest.json`.
 
 ## Quaternius Universal Base Characters + Universal Animation Library
 
 - Sources: `https://quaternius.com/packs/universalbasecharacters.html` and the Quaternius Universal Animation Library.
 - Publisher: Quaternius.
-- License: Creative Commons CC0.
+- License: not currently approved for this repository.
 - Base pack: six rigged humanoid base characters, approximately 13k triangles per model, with glTF and FBX exports.
 - Animation library: 120+ reusable humanoid clips including multi-direction locomotion, jogging, sprinting, actions, and reactions.
 - Intended use: production chef mesh customization in Blender on a common skeleton, followed by retargeted Food Fight-specific throw/hit clips.
 
-Decision: preferred production-rig candidate if we want to own the final chef silhouettes while keeping a mature reusable animation skeleton.
+Decision: research only. It is not an approved production-rig source in the current provenance manifest; add a reviewed source record before using it.
 
 ## KayKit Adventurers + Character Animations
 
@@ -41,7 +41,7 @@ Decision: preferred production-rig candidate if we want to own the final chef si
 - Formats include GLTF/GLB and FBX; the animation packs provide reusable humanoid movement/action clips.
 - Intended use: rapid production-rig evaluation and a possible final low-poly stylized character foundation.
 
-Decision: strong alternate character family. The clean, chunky low-poly proportions are close to the current browser art prototype. If selected, ingest from an authoritative KayKit distribution, preserve source/version provenance, and author a dedicated food-throw animation rather than treating a generic attack clip as final.
+Decision: selected for the technical pilot. PR #30 commits one source-pinned Mage derivative with bounded locomotion/throw clips behind an opt-in runtime flag. It remains a technical integration pilot; final chef art still needs a dedicated throw clip and readability/performance validation.
 
 ## Kenney UI Pack
 

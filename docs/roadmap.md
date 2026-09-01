@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-01):** 29 pull requests are merged. [PR #30](https://github.com/ajbergh/Food-Fight-26/pull/30), the M11 skeletal-pilot implementation described below, is open for review.
+**Status snapshot (2026-09-01):** all 30 pull requests are merged and there are no open pull requests.
 
 ## M0 — Repository and architecture — complete
 
@@ -62,7 +62,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 
 **Corrections to the previous roadmap:** authoritative projectile ownership now drives throw presentation through the PR #25 character pass, so nearest-projectile inference is no longer a pending item. KayKit Adventurers is the approved CC0 production-character source; the repository does not currently establish a separate approved Quaternius character/animation source.
 
-**Remaining production work:** import selected audited production food props, land an optimized skinned hero GLB, and benchmark production-asset download size, draw calls, skinning cost, memory, and frame pacing on target laptops/tablets.
+**Remaining production work:** import selected audited production food props, turn the M11 technical pilot into a final chef silhouette, and benchmark production-asset download size, draw calls, skinning cost, memory, and frame pacing on target laptops/tablets.
 
 ## M5 — First polished playtest foundation — in progress
 
@@ -105,7 +105,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Replaced the earlier nearest-player throw heuristic with authoritative `ownerSessionId` presentation, including banana actions.
 - Approved KayKit Adventurers as the CC0 source for the first production-character pilot.
 
-**Exit status:** the procedural production pass merged in PR #25. Replacing it with a production skinned GLB is intentionally gated by M11.
+**Exit status:** the procedural production pass merged in PR #25, and the opt-in skinned technical pilot merged in PR #30. Default replacement remains gated by M11's remaining performance, readability, and final-art requirements.
 
 ## M8 — VFX and juice pass — complete at bounded prototype level
 
@@ -133,11 +133,11 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 
 **Exit status:** the scoped cinematic presentation merged in PR #28. It intentionally uses shell-level presentation transforms rather than changing the authoritative gameplay camera; hit micro-shake or deeper camera work remains optional and playtest-driven.
 
-## M11 — Skeletal character pilot — implementation in review
+## M11 — Skeletal character pilot — complete at opt-in pilot level
 
 [PR #29](https://github.com/ajbergh/Food-Fight-26/pull/29) merged with a green CI validation check on 2026-09-01.
 
-[PR #30](https://github.com/ajbergh/Food-Fight-26/pull/30) is the open follow-up implementation.
+[PR #30](https://github.com/ajbergh/Food-Fight-26/pull/30) merged after its green CI validation run on 2026-09-01.
 
 ### Delivered in PR #29
 
@@ -146,7 +146,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Run the skeletal contract through the existing asset audit with dedicated tests.
 - Add an opt-in `?skeletalPilot=1` PlayCanvas loader with shared loading, a four-state animation graph, and procedural-chef fallback.
 
-### Delivered in the follow-up implementation
+### Delivered in PR #30
 
 - Added a deterministic, pinned KayKit Mage derivative with only the canonical `idle`, `walk`, `run`, and `throw_food` clips; source and generated SHA-256 digests are recorded in the third-party manifest.
 - Removed the source mage hat, cape, staff, wand, and spellbook nodes while preserving the skinned character, embedded texture, and animation data.
@@ -162,7 +162,9 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Representative eight-player client performance and gameplay readability still require playtest evidence before default enablement.
 - No gameplay, collision, networking, reconciliation, projectile, objective, or match state changes are proposed.
 
-**Next:** review the opt-in pilot, validate eight-player client performance and readability on representative hardware, then either schedule a final chef-authoring pass or keep the procedural presentation as the default.
+**Exit status:** complete for the opt-in technical pilot. The procedural chef remains the default until the remaining gates below are met.
+
+**Next:** validate eight-player client performance and readability on representative hardware, then schedule a final chef-authoring pass or retain the procedural presentation as the default.
 
 ## Pull-request coverage
 
@@ -180,7 +182,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 | M10       | [#28](https://github.com/ajbergh/Food-Fight-26/pull/28)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | M11       | [#29](https://github.com/ajbergh/Food-Fight-26/pull/29), [#30](https://github.com/ajbergh/Food-Fight-26/pull/30)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
-M0 is the repository baseline and predates this PR ledger. The table accounts for every merged or open pull request visible on GitHub at the status snapshot.
+M0 is the repository baseline and predates this PR ledger. The table accounts for all 30 merged pull requests at the status snapshot.
 
 ## Later, only after validation
 

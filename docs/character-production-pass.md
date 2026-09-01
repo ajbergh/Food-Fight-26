@@ -30,11 +30,11 @@ Upstream evidence reviewed on 2026-09-01:
 - README documents rigged, low-poly characters with 75 animations and GLTF/FBX delivery
 - upstream character GLBs are roughly 3.6 MB each before project-specific optimization
 
-The initial production import should therefore use **one** optimized character GLB as a rig/animation pilot rather than shipping the entire upstream character set. The existing 10 MiB character first-play budget remains authoritative.
+PR #30 added that one technical pilot: a deterministic 2.70 MB derivative of the pinned upstream Mage GLB with detachable fantasy accessories hidden and only `idle`, `walk`, `run`, and `throw_food` retained. It is source-pinned and audited, but remains opt-in behind `?skeletalPilot=1`; the procedural chef is still the default. The existing 10 MiB character first-play budget remains authoritative.
 
 ## Skeletal-pilot acceptance criteria
 
-Before replacing the fallback character at runtime, the pilot must:
+Before replacing the default procedural presentation, the pilot or its successor must:
 
 1. pass the third-party asset audit and structural GLB budgets;
 2. fit inside the character first-play budget after optimization;
@@ -47,7 +47,7 @@ Before replacing the fallback character at runtime, the pilot must:
 
 ## Recommended optimization pipeline
 
-1. import one upstream GLB into Blender;
+1. reproduce the pinned pilot with `pnpm assets:derive:kaykit-pilot` or import an explicitly approved successor;
 2. remove unused accessories and duplicate materials;
 3. customize the silhouette toward the Food Fight chef art direction;
 4. retain only required locomotion/action clips for first play;
