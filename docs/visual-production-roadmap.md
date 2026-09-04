@@ -2,14 +2,15 @@
 
 This document extends the master roadmap with the next art-production gates after M12–M14. It is deliberately ordered so visual ambition does not outrun multiplayer readability, asset provenance, or client performance.
 
-## Current baseline — complete through M14, M15 in progress
+## Current baseline — complete through M14, M15 and M17 in progress
 
 The repository now has a coherent presentation stack rather than a single graybox art pass:
 
 - **M12 — reactive character animation:** procedural and skeletal character paths react to dodge and slip/stun states without changing authoritative gameplay.
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
-- **M15 — audited production prop replacement:** the first tranche establishes a deterministic Kenney Food Kit intake/derivation path and High-quality runtime loading for selected food-display props.
+- **M15 — audited production prop replacement:** the first merged tranche establishes a deterministic Kenney Food Kit intake/derivation path and High-quality runtime loading for selected food-display props.
+- **M17 — ambient arena life:** the first tranche animates existing escalators, hanging wayfinding, and vendor equipment with a fixed transform budget and explicit reduced-motion fallback.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -19,7 +20,7 @@ The automated eight-player multiplayer/room gate is treated as passing for this 
 
 Replace the highest-value procedural arena placeholders with a deliberately small set of audited production GLBs while preserving the footprints and quality-tier ownership established by M13.
 
-### First tranche
+### First tranche — merged in PR #36
 
 The first implementation tranche is intentionally narrow and proves the production-asset path before larger environment imports:
 
@@ -27,9 +28,10 @@ The first implementation tranche is intentionally narrow and proves the producti
 - immutable mirror revision and Git-blob verification for downloaded source bytes;
 - deterministic derivation that embeds the shared external colormap into self-contained runtime GLBs;
 - existing structural inspection applied before generated files are accepted;
-- exact output integrity/geometry ceilings recorded in the third-party manifest before merge;
+- exact output integrity/geometry ceilings recorded in the third-party manifest;
 - High-quality-only lazy loading so the default Medium tier does not pay the model download/parse cost;
 - procedural arena dressing retained as fallback when any production container fails;
+- Docker-image smoke checks proving all four derived GLBs ship in release-shaped images;
 - browser E2E coverage for successful High-quality production-prop readiness.
 
 See [M15 Audited Production Prop Intake](production-prop-intake.md) for the derivation and runtime contract.
@@ -92,17 +94,29 @@ The current M12 transform-layer dodge/slip reactions remain valid fallbacks; aut
 
 The final chef passes provenance/structural audits, first-play budgets, eight-character render testing, animation/readability review, and color-vision/accessibility review. Only then should the project decide whether to make the skeletal path the default.
 
-## M17 — Ambient arena life and environmental animation
+## M17 — Ambient arena life and environmental animation — in progress
 
 ### Goal
 
 Make the arena feel occupied and alive without putting high-frequency motion into the combat lanes.
 
-### Candidate work
+### First tranche
 
-- slow peripheral escalator or conveyor motion;
+The first implementation tranche deliberately animates only scene nodes that already exist:
+
+- slowly circulating M13 west/east escalator steps, moving in opposite directions;
+- restrained independent sway on the three M6 hanging wayfinding signs;
+- subtle pizza-oven fire-bed and burger-grill heat-line scale cues;
+- slow, out-of-phase shake-machine handle motion;
+- one 30 Hz ambient update budget rather than another render-frame subscription;
+- `data-arena-ambient-life="active|reduced"` diagnostics for stable browser validation;
+- complete static-pose fallback when product or OS reduced motion is active.
+
+See [M17 Ambient Arena Life](ambient-arena-life.md) for the motion/readability budget.
+
+### Remaining candidates
+
 - bounded vendor-screen/menu animation;
-- subtle food-equipment motion such as mixer/spinner/heat indicators;
 - distant mezzanine patron silhouettes or low-cost crowd cards;
 - occasional peripheral service/cart motion;
 - restrained environmental audio loops tied to quality/audio settings.
@@ -113,10 +127,11 @@ Make the arena feel occupied and alive without putting high-frequency motion int
 - Reduced-motion mode must suppress or simplify nonessential movement.
 - No animated decoration may resemble a projectile, banana hazard, pickup, player, or objective state.
 - Crowd/ambient systems need hard instance/update budgets and must disable cleanly on Low quality.
+- New ambient systems should reuse the existing presentation update path unless a measured need justifies another scheduler.
 
 ### Exit gate
 
-The arena feels more alive in motion while player/hazard tracking is unchanged in structured eight-player readability tests.
+M17 remains open until the arena feels materially more alive in motion while player/hazard tracking is unchanged in structured eight-player readability tests. Any additional crowd/audio/service motion must remain inside explicit update and quality-tier budgets.
 
 ## M18 — Visual validation and regression gates
 
