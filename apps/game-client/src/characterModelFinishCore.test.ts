@@ -5,7 +5,7 @@ import {
   type NamedNodeLike,
 } from "./characterModelFinishCore";
 
-interface TestNode extends NamedNodeLike<TestNode> {
+interface TestNode extends NamedNodeLike {
   name: string;
   children: TestNode[];
 }
