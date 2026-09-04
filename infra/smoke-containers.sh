@@ -109,7 +109,7 @@ for production_prop in pizza pizza-box can carton; do
   prop_url="http://127.0.0.1:38081/assets/third-party/kenney-food-kit/${production_prop}.glb"
   if ! curl --fail --silent --show-error --output /dev/null "$prop_url"; then
     echo "Game-client image is missing generated production prop: ${production_prop}.glb" >&2
-    return 1
+    exit 1
   fi
 done
 
