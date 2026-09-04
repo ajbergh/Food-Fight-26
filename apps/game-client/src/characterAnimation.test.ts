@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { locomotionPose, resolveLocomotion, throwPose } from "./characterAnimation";
+import {
+  characterActionPose,
+  locomotionPose,
+  resolveCharacterAction,
+  resolveLocomotion,
+  throwPose,
+} from "./characterAnimation";
 
 describe("character animation poses", () => {
   it("selects idle, walk, and run from normalized speed", () => {
@@ -27,5 +33,24 @@ describe("character animation poses", () => {
     expect(recovered.shoulderDegrees).toBeCloseTo(0);
     expect(recovered.elbowDegrees).toBeCloseTo(0);
     expect(recovered.torsoTwistDegrees).toBeCloseTo(0);
+  });
+
+  it("infers presentation-only dodge and slip states from the authoritative root scale", () => {
+    expect(resolveCharacterAction(1.2)).toBe("normal");
+    expect(resolveCharacterAction(1.02)).toBe("slip");
+    expect(resolveCharacterAction(0.9)).toBe("dodge");
+  });
+
+  it("keeps action poses bounded while making dodge and slip visually distinct", () => {
+    const normal = characterActionPose("normal", 0);
+    const dodge = characterActionPose("dodge", Math.PI / 2);
+    const slip = characterActionPose("slip", Math.PI / 2);
+
+    expect(normal.expression).toBe(0);
+    expect(dodge.crouch).toBeGreaterThan(0);
+    expect(dodge.pitchDegrees).toBeGreaterThan(10);
+    expect(slip.armLiftDegrees).toBeGreaterThan(dodge.armLiftDegrees);
+    expect(Math.abs(slip.rollDegrees)).toBeLessThanOrEqual(14);
+    expect(slip.expression).toBeGreaterThan(dodge.expression);
   });
 });
