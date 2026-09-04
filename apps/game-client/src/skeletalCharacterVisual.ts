@@ -1,6 +1,10 @@
 import { GAME } from "@foodfight/game-core";
 import * as pc from "playcanvas";
-import { resolveLocomotion } from "./characterAnimation";
+import {
+  characterActionPose,
+  resolveCharacterAction,
+  resolveLocomotion,
+} from "./characterAnimation";
 import type { CharacterThrowKind, CharacterVisual } from "./characterVisual";
 import type { SkeletalPilotInstance, SkeletalPilotClip } from "./skeletalPilot";
 
@@ -21,20 +25,22 @@ export function createSkeletalCharacterVisual(
   let targetYaw = 0;
   let locomotion: SkeletalPilotClip = "idle";
   let throwRemaining = 0;
+  let actionPhase = 0;
 
   function applyModelTransform() {
     const parentScale = root.getLocalScale();
+    const action = characterActionPose(resolveCharacterAction(parentScale.y), actionPhase);
     pilot.entity.setLocalScale(
-      PILOT_WORLD_SCALE / Math.max(0.01, parentScale.x),
-      PILOT_WORLD_SCALE / Math.max(0.01, parentScale.y),
-      PILOT_WORLD_SCALE / Math.max(0.01, parentScale.z),
+      (PILOT_WORLD_SCALE * action.squashX) / Math.max(0.01, parentScale.x),
+      (PILOT_WORLD_SCALE * action.squashY) / Math.max(0.01, parentScale.y),
+      (PILOT_WORLD_SCALE * action.squashX) / Math.max(0.01, parentScale.z),
     );
     pilot.entity.setLocalPosition(
       0,
-      -PLAYER_ROOT_HEIGHT / Math.max(0.01, parentScale.y),
+      (-PLAYER_ROOT_HEIGHT - action.crouch) / Math.max(0.01, parentScale.y),
       0,
     );
-    pilot.entity.setLocalEulerAngles(0, currentYaw, 0);
+    pilot.entity.setLocalEulerAngles(action.pitchDegrees, currentYaw, action.rollDegrees);
   }
 
   applyModelTransform();
@@ -60,6 +66,7 @@ export function createSkeletalCharacterVisual(
       const dz = position.z - lastPosition.z;
       const speed = dt > 0 ? Math.hypot(dx, dz) / dt : 0;
       lastPosition.copy(position);
+      actionPhase += dt * 7.5;
 
       if (speed > 0.12) {
         targetYaw = Math.atan2(dx, -dz) * (180 / Math.PI);
