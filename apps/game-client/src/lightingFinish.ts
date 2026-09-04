@@ -1,4 +1,5 @@
 import * as pc from "playcanvas";
+import { createArenaAmbientLife } from "./arenaAmbientLife";
 import { createArenaProductionProps } from "./arenaProductionProps";
 
 export type LightingQuality = "low" | "medium" | "high";
@@ -59,6 +60,7 @@ export function createLightingFinish(options: LightingFinishOptions): LightingFi
   const productionProps = highDetailRoot
     ? createArenaProductionProps({ app, highDetailRoot })
     : undefined;
+  const ambientLife = createArenaAmbientLife({ app });
 
   let quality: LightingQuality = "medium";
 
@@ -88,9 +90,11 @@ export function createLightingFinish(options: LightingFinishOptions): LightingFi
         : new pc.Color(0.27, 0.235, 0.33);
   }
 
-  function update(_dt: number) {
-    // Lighting state is static between quality changes. Objective life is carried by
-    // the existing pulsing ring, avoiding per-frame light invalidation on slower GPUs.
+  function update(dt: number) {
+    // Lighting itself stays static between quality changes. M17 reuses this existing
+    // presentation update hook for a small, 30 Hz peripheral-motion budget rather
+    // than adding another application-frame subscription.
+    ambientLife.update(dt);
   }
 
   setQuality(quality);
