@@ -5,20 +5,41 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { inspectModelFile } from "../src/gltf.mjs";
-import { embedExternalImage } from "../src/kenney-props.mjs";
+import { gitBlobSha1 } from "../src/kenney-props.mjs";
 
-const SOURCE_URL =
+const PROVENANCE_URL =
   "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip";
 const ARCHIVE_SHA256 =
   "e67652d0932cee41683f74711c03d3e192a2af9979ef8e6b237711f5482d46b0";
 const LICENSE_PATH = "License.txt";
-const TEXTURE_PATH = "Models/GLB format/Textures/colormap.png";
-const IMAGE_URI = "Textures/colormap.png";
+
+// Kenney remains the provenance and license authority. RetroDECK is used only
+// as an immutable byte mirror because the current official ZIP is a legacy
+// package and does not contain the GLB runtime format used by the client.
+const SOURCE_REPOSITORY = "RetroDECK/RetroQUEST";
+const SOURCE_REVISION = "dfa19a5602a31f64bd890d15279a61f43b127328";
+const SOURCE_ROOT = "assets/kenney_furniture-kit/Models/GLTF format";
 const MODELS = Object.freeze([
-  { name: "bench", member: "Models/GLB format/bench.glb" },
-  { name: "chair", member: "Models/GLB format/chair.glb" },
-  { name: "table-round", member: "Models/GLB format/tableRound.glb" },
-  { name: "trashcan", member: "Models/GLB format/trashcan.glb" },
+  {
+    name: "bench",
+    path: `${SOURCE_ROOT}/bench.glb`,
+    gitBlobSha1: "7897dd0652ad3c6e94ae1dbdbbfc6180dab6b4e8",
+  },
+  {
+    name: "chair",
+    path: `${SOURCE_ROOT}/chair.glb`,
+    gitBlobSha1: "2d57af4fef2a32910e3af9283d1e45f177068d63",
+  },
+  {
+    name: "table-round",
+    path: `${SOURCE_ROOT}/tableRound.glb`,
+    gitBlobSha1: "885fdcd356eff8cc379e306d7b3b1ef3c5ca7475",
+  },
+  {
+    name: "trashcan",
+    path: `${SOURCE_ROOT}/trashcan.glb`,
+    gitBlobSha1: "7c7d381cd693c9ffcc37a520750f5eb6de56f462",
+  },
 ]);
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -31,62 +52,44 @@ const tempDirectory = mkdtempSync(join(tmpdir(), "foodfight-kenney-furniture-"))
 const archivePath = join(tempDirectory, "kenney_furniture-kit.zip");
 
 try {
-  const archive = await downloadArchive();
+  const archive = await downloadOfficialArchive();
   writeFileSync(archivePath, archive);
 
   const members = listArchiveMembers(archivePath);
   assertMember(members, LICENSE_PATH);
-  for (const model of MODELS) assertMember(members, model.member);
-
   const license = extractMember(archivePath, LICENSE_PATH).toString("utf8");
-  if (!/(Creative Commons Zero|CC0)/iu.test(license)) {
+  if (!/(CC0\s+1\.0\s+Universal|Creative Commons Zero)/iu.test(license)) {
     throw new Error(
-      "Official Kenney Furniture Kit archive license did not contain the expected CC0 marker.",
+      "Official Kenney Furniture Kit archive license did not contain the expected CC0 1.0 marker.",
     );
   }
-
-  const texture = members.includes(TEXTURE_PATH)
-    ? extractMember(archivePath, TEXTURE_PATH)
-    : undefined;
 
   rmSync(outputDirectory, { recursive: true, force: true });
   mkdirSync(outputDirectory, { recursive: true });
 
   const generated = [];
   for (const model of MODELS) {
-    const source = extractMember(archivePath, model.member);
-    const sourceSha256 = sha256(source);
-    let output = source;
-
-    if (source.includes(Buffer.from(IMAGE_URI, "utf8"))) {
-      if (!texture) {
-        throw new Error(
-          `Furniture model '${model.name}' references '${IMAGE_URI}', but '${TEXTURE_PATH}' is absent from the pinned archive.`,
-        );
-      }
-      output = embedExternalImage(source, texture, IMAGE_URI);
-    } else if (source.includes(Buffer.from("colormap.png", "utf8"))) {
-      throw new Error(
-        `Furniture model '${model.name}' references an unexpected colormap URI; update the derivation deliberately instead of passing it through.`,
-      );
-    }
-
+    const source = await downloadPinnedModel(model);
     const outputPath = resolve(outputDirectory, `${model.name}.glb`);
-    writeFileSync(outputPath, output);
+    writeFileSync(outputPath, source);
+
+    // inspectModelFile validates the GLB structure and rejects unresolved,
+    // remote, or escaping resource URIs. This intentionally prevents an
+    // unpinned texture/resource from entering the runtime asset set.
     const inspection = inspectModelFile(outputPath);
     if (inspection.errors.length > 0) {
       throw new Error(
-        `Generated furniture prop '${model.name}' failed structural inspection: ${inspection.errors.join("; ")}`,
+        `Pinned furniture prop '${model.name}' failed structural inspection: ${inspection.errors.join("; ")}`,
       );
     }
 
     generated.push({
       name: model.name,
-      sourceAsset: model.member,
-      sourceSha256,
+      sourceAsset: model.path,
+      sourceGitBlobSha1: model.gitBlobSha1,
       outputPath,
-      outputBytes: output.length,
-      outputSha256: sha256(output),
+      outputBytes: source.length,
+      outputSha256: sha256(source),
       metrics: inspection.metrics,
     });
   }
@@ -94,10 +97,11 @@ try {
   process.stdout.write(
     `${JSON.stringify(
       {
-        sourceUrl: SOURCE_URL,
-        sourceArchiveSha256: ARCHIVE_SHA256,
+        provenanceUrl: PROVENANCE_URL,
+        provenanceArchiveSha256: ARCHIVE_SHA256,
         licensePath: LICENSE_PATH,
-        texturePath: texture ? TEXTURE_PATH : null,
+        sourceRepository: SOURCE_REPOSITORY,
+        sourceRevision: SOURCE_REVISION,
         generated,
       },
       null,
@@ -108,8 +112,8 @@ try {
   rmSync(tempDirectory, { recursive: true, force: true });
 }
 
-async function downloadArchive() {
-  const response = await fetch(SOURCE_URL, { redirect: "follow" });
+async function downloadOfficialArchive() {
+  const response = await fetch(PROVENANCE_URL, { redirect: "follow" });
   if (!response.ok) {
     throw new Error(
       `Unable to download official Kenney Furniture Kit archive: HTTP ${response.status}.`,
@@ -120,6 +124,25 @@ async function downloadArchive() {
   if (digest !== ARCHIVE_SHA256) {
     throw new Error(
       `Kenney Furniture Kit archive SHA-256 mismatch: expected ${ARCHIVE_SHA256}, received ${digest}.`,
+    );
+  }
+  return bytes;
+}
+
+async function downloadPinnedModel(model) {
+  const encodedPath = model.path.split("/").map(encodeURIComponent).join("/");
+  const url = `https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_REVISION}/${encodedPath}`;
+  const response = await fetch(url, { redirect: "follow" });
+  if (!response.ok) {
+    throw new Error(
+      `Unable to download pinned Furniture Kit model '${model.path}': HTTP ${response.status}.`,
+    );
+  }
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const digest = gitBlobSha1(bytes);
+  if (digest !== model.gitBlobSha1) {
+    throw new Error(
+      `Pinned Furniture Kit Git blob mismatch for '${model.path}': expected ${model.gitBlobSha1}, received ${digest}.`,
     );
   }
   return bytes;
@@ -142,13 +165,7 @@ function listArchiveMembers(path) {
 
 function assertMember(members, expected) {
   if (members.includes(expected)) return;
-  const leaf = expected.split("/").at(-1)?.replace(/\.[^.]+$/u, "").toLowerCase() ?? "";
-  const candidates = members
-    .filter((member) => member.toLowerCase().includes(leaf))
-    .slice(0, 12);
-  throw new Error(
-    `Pinned Furniture Kit archive is missing '${expected}'. Candidate members: ${candidates.join(", ") || "none"}.`,
-  );
+  throw new Error(`Pinned Furniture Kit archive is missing '${expected}'.`);
 }
 
 function extractMember(path, member) {
