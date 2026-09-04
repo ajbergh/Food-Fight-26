@@ -9,3 +9,4 @@ coverage/
 .pnpm-store/
 .playcanvas/
 artifacts/
+apps/game-client/public/assets/third-party/kenney-food-kit/
