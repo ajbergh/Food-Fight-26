@@ -5,6 +5,7 @@ import {
   resolveCharacterAction,
   resolveLocomotion,
 } from "./characterAnimation";
+import { decorateSkeletalChefPilot } from "./characterModelFinish";
 import type { CharacterThrowKind, CharacterVisual } from "./characterVisual";
 import type { SkeletalPilotInstance, SkeletalPilotClip } from "./skeletalPilot";
 
@@ -20,6 +21,11 @@ export function createSkeletalCharacterVisual(
   options: SkeletalCharacterVisualOptions,
 ): CharacterVisual {
   const { root, pilot } = options;
+  const sessionId = root.name.startsWith("player-")
+    ? root.name.slice("player-".length)
+    : root.name;
+  decorateSkeletalChefPilot(pilot.entity, sessionId);
+
   let lastPosition = root.getPosition().clone();
   let currentYaw = 0;
   let targetYaw = 0;
