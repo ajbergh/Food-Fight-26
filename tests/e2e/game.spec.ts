@@ -15,6 +15,9 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   const initialQuality = (await quality.textContent()) ?? "";
   await quality.click();
   await expect(quality).not.toHaveText(initialQuality);
+  await expect(page.locator("html")).toHaveAttribute("data-production-props", "ready", {
+    timeout: 15_000,
+  });
 
   const audio = page.locator("#audio");
   await expect(audio).toHaveAttribute("aria-pressed", "false");
