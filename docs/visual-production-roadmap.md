@@ -2,43 +2,62 @@
 
 This document extends the master roadmap with the next art-production gates after M12–M14. It is deliberately ordered so visual ambition does not outrun multiplayer readability, asset provenance, or client performance.
 
-## Current baseline — complete through M14
+## Current baseline — complete through M14, M15 in progress
 
 The repository now has a coherent presentation stack rather than a single graybox art pass:
 
 - **M12 — reactive character animation:** procedural and skeletal character paths react to dodge and slip/stun states without changing authoritative gameplay.
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
+- **M15 — audited production prop replacement:** the first tranche establishes a deterministic Kenney Food Kit intake/derivation path and High-quality runtime loading for selected food-display props.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
-## M15 — Audited production prop replacement
+## M15 — Audited production prop replacement — in progress
 
 ### Goal
 
 Replace the highest-value procedural arena placeholders with a deliberately small set of audited production GLBs while preserving the footprints and quality-tier ownership established by M13.
 
-### Priority order
+### First tranche
+
+The first implementation tranche is intentionally narrow and proves the production-asset path before larger environment imports:
+
+- selected Kenney Food Kit `pizza`, `pizza-box`, `can`, and `carton` models;
+- immutable mirror revision and Git-blob verification for downloaded source bytes;
+- deterministic derivation that embeds the shared external colormap into self-contained runtime GLBs;
+- existing structural inspection applied before generated files are accepted;
+- exact output integrity/geometry ceilings recorded in the third-party manifest before merge;
+- High-quality-only lazy loading so the default Medium tier does not pay the model download/parse cost;
+- procedural arena dressing retained as fallback when any production container fails;
+- browser E2E coverage for successful High-quality production-prop readiness.
+
+See [M15 Audited Production Prop Intake](production-prop-intake.md) for the derivation and runtime contract.
+
+### Remaining priority order
 
 1. restaurant kiosk/storefront modules;
 2. food-service equipment such as ovens, grills, dispensers, and display cases;
 3. table/chair/booth set;
 4. vending, trash, and recycling stations;
-5. food display props;
+5. additional food display props only when they improve gameplay-camera recognition;
 6. overhead signage and lighting fixtures.
+
+The first tranche addresses the food-display path; it does not imply the other categories are complete.
 
 ### Asset rules
 
 - Prefer the already approved Kenney Food Kit where it satisfies the art direction.
 - Add another source only after license/provenance review and manifest approval.
-- Vendor only selected production assets, never a whole pack by default.
+- Vendor or reproducibly derive only selected production assets, never a whole pack by default.
 - Keep first-play download buckets and per-model structural ceilings enforced in CI.
-- Prefer shared materials/atlases, KTX2/Basis texture compression, and instancing where practical.
+- Prefer self-contained/shared-material assets, KTX2/Basis texture compression when larger texture sets justify it, and instancing where practical.
 - Do not change collision or map topology merely to match an imported prop.
+- A distribution mirror may supply pinned bytes, but the original publisher remains the provenance/license authority.
 
 ### Exit gate
 
-At least one representative asset from each required hero category is imported, audited, visually reviewed at gameplay distance, and shown not to regress the client bundle/performance budget.
+M15 remains open until the visually important Food Court replacement categories have representative audited assets, gameplay-camera review confirms a material improvement over their procedural targets, and the resulting High-quality arena stays within client performance/download budgets. Low and Medium must retain clean fallback behavior.
 
 ## M16 — Final authored Food Fight chef
 
