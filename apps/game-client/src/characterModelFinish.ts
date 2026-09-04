@@ -57,7 +57,7 @@ export function decorateSkeletalChefPilot(
     "head",
     "def-head",
     "mixamorighead",
-  ]);
+  ]) as pc.GraphNode | null;
   if (head) {
     const toque = new pc.Entity("foodfight-chef-toque");
     toque.setLocalPosition(0, 0.2, 0);
@@ -104,7 +104,7 @@ export function decorateSkeletalChefPilot(
     "spine_03",
     "spine2",
     "spine",
-  ]);
+  ]) as pc.GraphNode | null;
   if (torso) {
     const apron = new pc.Entity("foodfight-chef-apron");
     torso.addChild(apron);
