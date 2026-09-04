@@ -45,13 +45,12 @@ function primitive(
 
 export function decorateSkeletalChefPilot(
   pilotRoot: pc.Entity,
-  accent: pc.Color,
   sessionId: string,
 ): SkeletalChefFinishResult {
   const profile = resolveChefModelFinish(sessionId);
   const cream = material(new pc.Color(0.97, 0.94, 0.86), 0.3);
   const warmWhite = material(new pc.Color(0.9, 0.86, 0.78), 0.25);
-  const teamAccent = material(accent, 0.42);
+  const accent = material(new pc.Color(0.86, 0.52, 0.18), 0.42);
   const dark = material(new pc.Color(0.08, 0.065, 0.1), 0.22);
 
   const head = findNamedAttachment(pilotRoot, [
@@ -68,7 +67,7 @@ export function decorateSkeletalChefPilot(
       toque,
       "toque-band",
       "cylinder",
-      teamAccent,
+      accent,
       [0.3 * profile.toqueWidth, 0.085, 0.3 * profile.toqueWidth],
       [0, 0.02, 0],
     );
@@ -121,7 +120,7 @@ export function decorateSkeletalChefPilot(
       apron,
       "waist-band",
       "box",
-      teamAccent,
+      accent,
       [0.4 * profile.apronWidth, 0.055, 0.055],
       [0, -0.02, -0.2],
     );
