@@ -21,6 +21,17 @@
       "notes": "The publisher page currently identifies this 3D pack as Creative Commons CC0. Import only optimized runtime derivatives, not the complete source archive. The M15 derivation uses a pinned public GitHub mirror strictly for reproducible byte distribution while Kenney remains the provenance and license authority."
     },
     {
+      "id": "kenney-furniture-kit",
+      "name": "Furniture Kit",
+      "provider": "Kenney",
+      "sourceUrl": "https://kenney.nl/assets/furniture-kit",
+      "licenseId": "CC0-1.0",
+      "licenseEvidenceUrl": "https://kenney.nl/assets/furniture-kit",
+      "verifiedOn": "2026-09-04",
+      "status": "approved",
+      "notes": "The current publisher page identifies this 3D pack as Creative Commons CC0. M15 downloads the official Kenney archive directly, verifies a pinned archive SHA-256, checks the archive's own CC0 marker, and extracts only selected runtime models; the complete pack is never vendored."
+    },
+    {
       "id": "kaykit-adventurers",
       "name": "KayKit Character Pack: Adventurers 1.0",
       "provider": "KayKit / Kay Lousberg",
