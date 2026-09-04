@@ -113,6 +113,14 @@ for production_prop in pizza pizza-box can carton; do
   fi
 done
 
+for furniture_prop in bench chair table-round trashcan; do
+  prop_url="http://127.0.0.1:38081/assets/third-party/kenney-furniture-kit/${furniture_prop}.glb"
+  if ! curl --fail --silent --show-error --output /dev/null "$prop_url"; then
+    echo "Game-client image is missing generated Furniture Kit prop: ${furniture_prop}.glb" >&2
+    exit 1
+  fi
+done
+
 GAME_SERVER_URL=http://127.0.0.1:32567 \
 BOT_COUNT=2 \
 BOT_DURATION_SECONDS=3 \
