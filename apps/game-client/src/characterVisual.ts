@@ -1,7 +1,9 @@
 import * as pc from "playcanvas";
 import { GAME } from "@foodfight/game-core";
 import {
+  characterActionPose,
   locomotionPose,
+  resolveCharacterAction,
   resolveLocomotion,
   THROW_DURATION_SECONDS,
   throwPose,
@@ -306,41 +308,76 @@ export function createCharacterVisual(options: CharacterVisualOptions): Characte
       heldBanana.enabled = propVisible && throwKind === "banana";
 
       const parentScale = root.getLocalScale();
+      const actionState = resolveCharacterAction(parentScale.y);
+      const action = characterActionPose(actionState, locomotionPhase);
       const anticipation = throwing && throwProgress < 0.3 ? Math.sin((throwProgress / 0.3) * Math.PI) * 0.035 : 0;
       const releaseLift = throwing && throwProgress >= 0.3 && throwProgress < 0.62
         ? Math.sin(((throwProgress - 0.3) / 0.32) * Math.PI) * 0.045
         : 0;
       modelRoot.setLocalScale(
-        widthScale * (1 + anticipation) / Math.max(0.01, parentScale.x),
-        heightScale * (1 - anticipation + releaseLift) / Math.max(0.01, parentScale.y),
-        widthScale * (1 - anticipation * 0.5) / Math.max(0.01, parentScale.z),
+        (widthScale * action.squashX * (1 + anticipation)) / Math.max(0.01, parentScale.x),
+        (heightScale * action.squashY * (1 - anticipation + releaseLift)) / Math.max(0.01, parentScale.y),
+        (widthScale * action.squashX * (1 - anticipation * 0.5)) / Math.max(0.01, parentScale.z),
       );
       modelRoot.setLocalEulerAngles(0, currentYaw, 0);
 
-      const dodgePose = parentScale.y < 0.98;
-      const bob = locomotion.bob - (dodgePose ? 0.08 : 0) + releaseLift * 0.25;
+      const bob = locomotion.bob - action.crouch + releaseLift * 0.25;
       body.setLocalPosition(0, bob, 0);
-      body.setLocalEulerAngles(dodgePose ? 11 : locomotion.leanDegrees, throwLayer.torsoTwistDegrees, 0);
-      head.setLocalEulerAngles(dodgePose ? -8 : -locomotion.leanDegrees * 0.28, -throwLayer.torsoTwistDegrees * 0.25, 0);
-      scarf.setLocalEulerAngles(Math.sin(locomotionPhase) * (state === "run" ? 9 : 4), 0, 0);
+      body.setLocalEulerAngles(
+        locomotion.leanDegrees + action.pitchDegrees,
+        throwLayer.torsoTwistDegrees,
+        action.rollDegrees,
+      );
+      head.setLocalEulerAngles(
+        -locomotion.leanDegrees * 0.28 + action.headPitchDegrees,
+        -throwLayer.torsoTwistDegrees * 0.25,
+        -action.rollDegrees * 0.45,
+      );
+      scarf.setLocalEulerAngles(
+        Math.sin(locomotionPhase) * (state === "run" ? 9 : 4) + action.pitchDegrees * 0.22,
+        0,
+        -action.rollDegrees * 0.35,
+      );
 
-      const expression = throwing ? Math.sin(Math.min(1, throwProgress / 0.58) * Math.PI) : 0;
+      const throwExpression = throwing ? Math.sin(Math.min(1, throwProgress / 0.58) * Math.PI) : 0;
+      const expression = Math.max(throwExpression, action.expression);
       browLeft.setLocalEulerAngles(0, 0, 4 - expression * 15);
       browRight.setLocalEulerAngles(0, 0, -4 + expression * 15);
       mouth.setLocalScale(0.2 + expression * 0.08, 0.035 + expression * 0.025, 0.025);
 
-      leftLeg.pivot.setLocalEulerAngles(locomotion.strideDegrees, 0, 0);
-      rightLeg.pivot.setLocalEulerAngles(-locomotion.strideDegrees, 0, 0);
+      const strideScale = actionState === "normal" ? 1 : actionState === "dodge" ? 0.58 : 0.25;
+      leftLeg.pivot.setLocalEulerAngles(locomotion.strideDegrees * strideScale, 0, action.rollDegrees * 0.18);
+      rightLeg.pivot.setLocalEulerAngles(-locomotion.strideDegrees * strideScale, 0, action.rollDegrees * 0.18);
       const kneeScale = state === "run" ? 30 : state === "walk" ? 15 : 0;
-      leftLeg.joint.setLocalEulerAngles(Math.max(0, -Math.sin(locomotionPhase)) * kneeScale, 0, 0);
-      rightLeg.joint.setLocalEulerAngles(Math.max(0, Math.sin(locomotionPhase)) * kneeScale, 0, 0);
-      leftLeg.shoe?.setLocalEulerAngles(state === "run" ? Math.max(0, Math.sin(locomotionPhase)) * -18 : 0, 0, 0);
-      rightLeg.shoe?.setLocalEulerAngles(state === "run" ? Math.max(0, -Math.sin(locomotionPhase)) * -18 : 0, 0, 0);
+      leftLeg.joint.setLocalEulerAngles(
+        Math.max(0, -Math.sin(locomotionPhase)) * kneeScale * strideScale + action.legBendDegrees,
+        0,
+        0,
+      );
+      rightLeg.joint.setLocalEulerAngles(
+        Math.max(0, Math.sin(locomotionPhase)) * kneeScale * strideScale + action.legBendDegrees,
+        0,
+        0,
+      );
+      leftLeg.shoe?.setLocalEulerAngles(state === "run" ? Math.max(0, Math.sin(locomotionPhase)) * -18 * strideScale : 0, 0, 0);
+      rightLeg.shoe?.setLocalEulerAngles(state === "run" ? Math.max(0, -Math.sin(locomotionPhase)) * -18 * strideScale : 0, 0, 0);
 
-      leftArm.pivot.setLocalEulerAngles(-locomotion.armSwingDegrees + throwLayer.counterArmDegrees, 0, -5);
-      leftArm.joint.setLocalEulerAngles(state === "run" ? 18 : 8, 0, 0);
-      rightArm.pivot.setLocalEulerAngles(locomotion.armSwingDegrees + throwLayer.shoulderDegrees, 0, 5);
-      rightArm.joint.setLocalEulerAngles(throwLayer.elbowDegrees + (state === "run" && !throwing ? 16 : 4), 0, 0);
+      leftArm.pivot.setLocalEulerAngles(
+        -locomotion.armSwingDegrees + throwLayer.counterArmDegrees - action.armLiftDegrees,
+        0,
+        -5 - action.rollDegrees * 0.2,
+      );
+      leftArm.joint.setLocalEulerAngles((state === "run" ? 18 : 8) + action.armLiftDegrees * 0.35, 0, 0);
+      rightArm.pivot.setLocalEulerAngles(
+        locomotion.armSwingDegrees + throwLayer.shoulderDegrees - action.armLiftDegrees * 0.72,
+        0,
+        5 - action.rollDegrees * 0.2,
+      );
+      rightArm.joint.setLocalEulerAngles(
+        throwLayer.elbowDegrees + (state === "run" && !throwing ? 16 : 4) + action.armLiftDegrees * 0.22,
+        0,
+        0,
+      );
     },
   };
 }
