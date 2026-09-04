@@ -27,9 +27,9 @@ The optimized derivative must expose at least one skin and these named clips:
 - `run`
 - `throw_food`
 
-The deterministic derivative maps upstream `Idle`, `Walking_A`, `Running_A`, and `Throw` to the canonical names above. Hyphens and whitespace normalize to underscores for audit/runtime matching. Later production expansion should add `dodge`, `slip`, `hit`, `celebrate`, and `defeat` without weakening the first four required clips.
+The deterministic derivative maps upstream `Idle`, `Walking_A`, `Running_A`, and `Throw` to the canonical names above. Hyphens and whitespace normalize to underscores for audit/runtime matching.
 
-The third-party asset audit now supports an optional model-level contract:
+The third-party asset audit supports the model-level contract:
 
 ```json
 {
@@ -41,6 +41,8 @@ The third-party asset audit now supports an optional model-level contract:
 ```
 
 The committed pilot entry carries this contract. The audit reads glTF/GLB animation names directly and fails closed when a required clip or skin is missing.
+
+A future authored production rig may add `dodge`, `slip`, `hit`, `celebrate`, and `defeat`; those additions must not weaken the four canonical first-play clips.
 
 ## Runtime adapter
 
@@ -57,6 +59,34 @@ The committed pilot entry carries this contract. The audit reads glTF/GLB animat
 
 The adapter is wired only behind `?skeletalPilot=1`. The HTML `data-skeletal-pilot` diagnostic reports `loading`, `ready`, or `fallback`, and browser E2E verifies a ready pilot can still perform authoritative combat input without console errors.
 
+## M12 reactive animation extension
+
+[PR #32](https://github.com/ajbergh/Food-Fight-26/pull/32) added presentation-only dodge and slip/stun reactions to the skeletal adapter without changing the GLB contract.
+
+The adapter derives a bounded secondary transform pose from the same authoritative root presentation already used by the live client. This means the pilot now reacts through:
+
+- crouch and silhouette compression during dodge;
+- controlled torso pitch/roll;
+- slip/stun wobble and recovery posture;
+- floor-contact compensation while action poses are active.
+
+These transforms are intentionally fallback-capable. A final authored rig may supply dedicated `dodge` and `slip` clips later, but only if those clips improve readability and timing at the gameplay camera.
+
+## M14 chef identity extension
+
+[PR #34](https://github.com/ajbergh/Food-Fight-26/pull/34) moved the pilot closer to the Food Fight art direction without replacing the audited binary asset.
+
+The runtime now searches the instantiated skeletal hierarchy for common head and torso attachment nodes. When available it attaches lightweight, non-shadow-casting chef identity pieces:
+
+- deterministic classic, tall, or compact toque proportions;
+- apron bib;
+- waist band;
+- apron pocket.
+
+Attachment lookup prefers exact hierarchy names and then falls back to common partial skeletal names. Missing attachments degrade gracefully rather than making the pilot fail. Cosmetic finish colors remain team-neutral; external team rings and hue-independent team shapes continue to own team readability and color-safe behavior.
+
+This is a model-finish layer, not a declaration that the underlying KayKit-derived tunic mesh is the final shipping character.
+
 ## Reproducing and checking the pilot
 
 Run `pnpm assets:derive:kaykit-pilot` to download the pinned upstream source, verify its source digest, and regenerate the committed GLB. It must reproduce SHA-256 `1aefbeb86218be4dacf89775894a2db3faf2bf6ec11ddfa7ad90591de770cdcf`.
@@ -69,15 +99,19 @@ Then run `pnpm assets:audit` to verify provenance, byte/structure budgets, and t
 - 5,683 triangles, 12 primitives, one material, one texture, one skin, and four canonical animation clips.
 - Exact runtime SHA-256, byte/structure ceilings, character bucket, and skeletal contract recorded in the third-party manifest.
 - Asset/provenance audit and a real-browser opt-in load/animation/combat path.
+- Presentation fallback for dodge/slip through M12.
+- Lightweight hierarchy-attached chef identity finish through M14.
 - Procedural fallback, external team rings, and hue-independent team markers preserved.
 
 ## Remaining before default enablement
 
-1. Author the final Food Fight chef silhouette and remove the remaining fantasy costume language; the current tunic mesh is only a technical pilot.
-2. Author or retarget a Food Fight-specific `throw_food` clip whose release frame matches the presentation event.
-3. Validate eight simultaneously rendered animated pilots and record frame pacing, draw calls, skinning cost, GPU memory, and download behavior on target laptops/tablets.
-4. Add any required production clips (`dodge`, `slip`, `hit`, results) and formal readability/color-vision review.
-5. Only after those gates pass should the skeletal path be considered for default enablement.
+1. Decide whether the project should author a purpose-built Food Fight chef mesh or retain the procedural chef as the shipping default. M14 improves identity but does not fully remove the underlying pilot costume language.
+2. If the skeletal path advances, author or retarget a Food Fight-specific `throw_food` clip whose release frame matches the authoritative presentation event, plus `hit`, `celebrate`, and `defeat` as required.
+3. Treat M12's transform-layer `dodge` and `slip` reactions as valid production fallbacks; replace them with authored clips only when the result is measurably clearer.
+4. Validate eight simultaneously rendered animated characters and record client frame pacing, draw calls, skinning cost, texture/GPU memory, and first-play download behavior on representative laptops/tablets.
+5. Complete formal combat-readability, color-vision, reduced-motion, and clipping review before considering default enablement.
+
+The automated eight-player authoritative-room benchmark is already part of CI and is treated as passing for current roadmap planning. It is not a substitute for the rendered-client graphics/performance measurements above.
 
 ## Non-negotiable gameplay boundary
 
