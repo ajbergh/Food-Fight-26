@@ -2,6 +2,7 @@ import * as pc from "playcanvas";
 import { foodCourtMap } from "@foodfight/maps";
 import type { TeamName } from "@foodfight/protocol";
 import { createArenaDetail } from "./arenaDetail";
+import { createArenaHeroModels } from "./arenaHeroModels";
 import {
   createCharacterVisual,
   type CharacterThrowKind,
@@ -117,6 +118,7 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
 
   createArenaDetail({ app, mediumDetailRoot, highDetailRoot });
   createEnvironmentFinish({ mediumDetailRoot, highDetailRoot });
+  createArenaHeroModels({ mediumDetailRoot, highDetailRoot });
 
   addPrimitive(
     environmentRoot,
