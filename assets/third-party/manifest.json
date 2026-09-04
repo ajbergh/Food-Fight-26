@@ -29,7 +29,7 @@
       "licenseEvidenceUrl": "https://kenney.nl/assets/furniture-kit",
       "verifiedOn": "2026-09-04",
       "status": "approved",
-      "notes": "The current publisher page identifies this 3D pack as Creative Commons CC0. M15 downloads the official Kenney archive directly, verifies a pinned archive SHA-256, checks the archive's own CC0 marker, and extracts only selected runtime models; the complete pack is never vendored."
+      "notes": "The publisher page currently identifies this 3D pack as Creative Commons CC0. M15 verifies the pinned official Kenney archive SHA-256 and its internal CC0 license, then retrieves only four GLB runtime files from an immutable RetroDECK/RetroQUEST commit with exact Git blob SHA-1 verification. Kenney remains the provenance/license authority; the mirror is only a reproducible byte host and the complete pack is never vendored."
     },
     {
       "id": "kaykit-adventurers",
