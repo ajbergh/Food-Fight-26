@@ -1,4 +1,5 @@
 import * as pc from "playcanvas";
+import { createArenaProductionProps } from "./arenaProductionProps";
 
 export type LightingQuality = "low" | "medium" | "high";
 
@@ -51,11 +52,20 @@ export function createLightingFinish(options: LightingFinishOptions): LightingFi
     addOmni(app, "vendor-fill-east", [6.7, 3.1, -7.7], COLORS.mint, 0.34, 7.4),
   ];
 
+  // Production prop assets are part of the High-quality visual tier. Resolve the
+  // existing presentation root once and defer all network/parse cost until High is
+  // actually requested. The procedural arena remains the fallback if loading fails.
+  const highDetailRoot = app.root.findByName("high-detail") as pc.Entity | null;
+  const productionProps = highDetailRoot
+    ? createArenaProductionProps({ app, highDetailRoot })
+    : undefined;
+
   let quality: LightingQuality = "medium";
 
   function setQuality(next: LightingQuality) {
     quality = next;
     for (const light of highLights) light.enabled = next === "high";
+    if (next === "high") void productionProps?.ensureLoaded();
 
     if (keyLight.light) {
       keyLight.light.intensity = next === "low" ? 1.35 : next === "medium" ? 1.48 : 1.56;
