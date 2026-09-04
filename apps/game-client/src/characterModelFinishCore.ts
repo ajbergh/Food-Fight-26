@@ -7,9 +7,9 @@ export interface ChefModelFinishProfile {
   apronWidth: number;
 }
 
-export interface NamedNodeLike<T extends NamedNodeLike<T>> {
+export interface NamedNodeLike {
   name: string;
-  children: readonly T[];
+  children: readonly NamedNodeLike[];
 }
 
 export function resolveChefModelFinish(sessionId: string): ChefModelFinishProfile {
@@ -38,13 +38,13 @@ export function resolveChefModelFinish(sessionId: string): ChefModelFinishProfil
   };
 }
 
-export function findNamedAttachment<T extends NamedNodeLike<T>>(
-  root: T,
+export function findNamedAttachment(
+  root: NamedNodeLike,
   preferredNames: readonly string[],
-): T | null {
+): NamedNodeLike | null {
   const normalized = preferredNames.map((name) => name.toLowerCase());
-  const nodes: T[] = [root];
-  const visited: T[] = [];
+  const nodes: NamedNodeLike[] = [root];
+  const visited: NamedNodeLike[] = [];
 
   while (nodes.length > 0) {
     const node = nodes.shift()!;
