@@ -36,6 +36,7 @@ USER node
 CMD ["node", "dist/index.js"]
 
 FROM workspace AS game-client-build
+RUN pnpm assets:derive:kenney-props
 RUN pnpm --filter @foodfight/game-client build
 
 FROM nginx:1.27-alpine AS game-client-static

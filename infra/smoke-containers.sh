@@ -105,6 +105,14 @@ assert_contains "$runtime_config" 'gameServerUrl: "https://match.smoke.example"'
 assert_contains "$runtime_config" 'platformApiUrl: "https://api.smoke.example"'
 assert_contains "$runtime_config" 'release: "sha-smoke-test"'
 
+for production_prop in pizza pizza-box can carton; do
+  prop_url="http://127.0.0.1:38081/assets/third-party/kenney-food-kit/${production_prop}.glb"
+  if ! curl --fail --silent --show-error --output /dev/null "$prop_url"; then
+    echo "Game-client image is missing generated production prop: ${production_prop}.glb" >&2
+    exit 1
+  fi
+done
+
 GAME_SERVER_URL=http://127.0.0.1:32567 \
 BOT_COUNT=2 \
 BOT_DURATION_SECONDS=3 \

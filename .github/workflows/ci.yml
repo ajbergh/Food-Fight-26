@@ -17,6 +17,7 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm check
       - run: pnpm test
+      - run: pnpm assets:derive:kenney-props
       - run: pnpm assets:audit
       - run: pnpm build
       - run: pnpm perf:budget

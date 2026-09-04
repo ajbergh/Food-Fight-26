@@ -18,7 +18,7 @@
       "licenseEvidenceUrl": "https://kenney.nl/assets/food-kit",
       "verifiedOn": "2026-08-31",
       "status": "approved",
-      "notes": "The publisher page currently identifies this 3D pack as Creative Commons CC0. Import only optimized runtime derivatives, not the complete source archive."
+      "notes": "The publisher page currently identifies this 3D pack as Creative Commons CC0. Import only optimized runtime derivatives, not the complete source archive. The M15 derivation uses a pinned public GitHub mirror strictly for reproducible byte distribution while Kenney remains the provenance and license authority."
     },
     {
       "id": "kaykit-adventurers",
@@ -65,6 +65,82 @@
         "minSkins": 1,
         "requiredAnimations": ["idle", "walk", "run", "throw_food"]
       }
+    },
+    {
+      "path": "apps/game-client/public/assets/third-party/kenney-food-kit/pizza.glb",
+      "sourceId": "kenney-food-kit",
+      "sourceRevision": "d00f54f4acd328bc2162656a09f4b78a9a1e6364",
+      "sourceRepository": "MMqd/godot-screenspace-projection",
+      "sourceAsset": "assets/kenney_food-kit/pizza.glb",
+      "sourceGitBlobSha1": "989049a255f3e692df6886b7f019d45cd9cd607f",
+      "derivationCommand": "pnpm assets:derive:kenney-props",
+      "kind": "model",
+      "budgetBucket": "arena",
+      "firstPlay": false,
+      "maxBytes": 131072,
+      "maxTriangles": 1500,
+      "maxPrimitives": 8,
+      "maxMaterials": 1,
+      "maxTextures": 1,
+      "maxAnimations": 0,
+      "sha256": "c9cd5807f6d1725e5a2ac7eec1d7eeb64a80e0850a3ff2a2105e8548460d42b4"
+    },
+    {
+      "path": "apps/game-client/public/assets/third-party/kenney-food-kit/pizza-box.glb",
+      "sourceId": "kenney-food-kit",
+      "sourceRevision": "d00f54f4acd328bc2162656a09f4b78a9a1e6364",
+      "sourceRepository": "MMqd/godot-screenspace-projection",
+      "sourceAsset": "assets/kenney_food-kit/pizza-box.glb",
+      "sourceGitBlobSha1": "cd2dffb46823eefdfae69975f7de2a9fdb894d5e",
+      "derivationCommand": "pnpm assets:derive:kenney-props",
+      "kind": "model",
+      "budgetBucket": "arena",
+      "firstPlay": false,
+      "maxBytes": 24576,
+      "maxTriangles": 128,
+      "maxPrimitives": 2,
+      "maxMaterials": 1,
+      "maxTextures": 1,
+      "maxAnimations": 0,
+      "sha256": "c8c56379a9f0c620f9eff412c7361cca49ac32307112307f7619624d7027bdfe"
+    },
+    {
+      "path": "apps/game-client/public/assets/third-party/kenney-food-kit/can.glb",
+      "sourceId": "kenney-food-kit",
+      "sourceRevision": "d00f54f4acd328bc2162656a09f4b78a9a1e6364",
+      "sourceRepository": "MMqd/godot-screenspace-projection",
+      "sourceAsset": "assets/kenney_food-kit/can.glb",
+      "sourceGitBlobSha1": "f235fa49a8a91dcc0356918839123ddca8c8b191",
+      "derivationCommand": "pnpm assets:derive:kenney-props",
+      "kind": "model",
+      "budgetBucket": "arena",
+      "firstPlay": false,
+      "maxBytes": 32768,
+      "maxTriangles": 256,
+      "maxPrimitives": 1,
+      "maxMaterials": 1,
+      "maxTextures": 1,
+      "maxAnimations": 0,
+      "sha256": "d8bbdf7b11c73fd1ddcc3eec6c67c82ee8163c7985627457a1892047c0c5bf54"
+    },
+    {
+      "path": "apps/game-client/public/assets/third-party/kenney-food-kit/carton.glb",
+      "sourceId": "kenney-food-kit",
+      "sourceRevision": "d00f54f4acd328bc2162656a09f4b78a9a1e6364",
+      "sourceRepository": "MMqd/godot-screenspace-projection",
+      "sourceAsset": "assets/kenney_food-kit/carton.glb",
+      "sourceGitBlobSha1": "fe095efdf461dcee80ff2222f8c51032e0a48b62",
+      "derivationCommand": "pnpm assets:derive:kenney-props",
+      "kind": "model",
+      "budgetBucket": "arena",
+      "firstPlay": false,
+      "maxBytes": 24576,
+      "maxTriangles": 128,
+      "maxPrimitives": 1,
+      "maxMaterials": 1,
+      "maxTextures": 1,
+      "maxAnimations": 0,
+      "sha256": "6095f6e3977a467f72cb8131d87288fd51c897bb06aa114425413a218fca0c14"
     }
   ]
 }
