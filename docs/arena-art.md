@@ -10,46 +10,82 @@ The arena should read as a lively, premium 2026 mall food court while preserving
 2. **Sundae objective and ownership ring** — strong central landmark.
 3. **Gameplay obstacles** — readable silhouettes with simple materials.
 4. **Food-court architecture** — detailed enough to establish place, but pushed toward the perimeter.
-5. **Micro-props** — high-quality-only dressing that should never compete with action.
+5. **Micro-props** — High-quality-only dressing that should never compete with action.
 
-## Current procedural detail pass
+## Procedural environment foundation
 
-The M4 detailed-arena pass adds:
+The M4/M6 environment passes established:
 
-- two-tone tiled perimeter concourses and grout lines;
+- two-tone perimeter concourses and floor composition;
 - architectural wall bays and metal columns;
-- three south-side restaurant kiosks to balance the existing north counters;
-- awnings, service windows, menu panels, and counter displays;
-- side-wall booth seating;
-- cafe tables with chairs;
-- condiment stations, trash/recycling stations, and vending machines;
+- north/south restaurant fronts with service windows, menu panels, and counter displays;
+- side-wall booth seating and cafe furniture;
+- condiment, trash/recycling, and vending stations;
 - chunky food silhouettes on counters;
-- an overhead Food Fight landmark sign with emissive accent strips;
-- ceiling-light cards that imply a larger indoor space without adding many dynamic lights.
+- overhead Food Fight landmark signage and emissive accent strips;
+- ceiling/light-card rhythm that implies a larger indoor space without adding many dynamic lights;
+- proscenium, wayfinding, posters, secondary planter clusters, and a stronger objective focal hierarchy.
 
-All of these elements are presentation-only. They do not alter authoritative collision or map topology.
+All environment dressing is presentation-only unless a map/collision change is explicitly reviewed separately.
+
+## M13 hero-model layer
+
+[PR #33](https://github.com/ajbergh/Food-Fight-26/pull/33) added a stronger architectural/modeling pass intended to define the masses that later production assets should replace.
+
+### Medium quality
+
+- north and south mezzanine decks;
+- fascia, handrails, rail posts, and glass-panel masses;
+- east and west escalator banks outside the authoritative playfield.
+
+These pieces give the arena a clearer multi-level mall identity and stronger depth beyond the combat board.
+
+### High quality
+
+The south-side vendors now include recognizable food-service equipment rather than generic blocks:
+
+- pizza oven with opening, fire bed, and chimney;
+- burger griddle with extraction hood;
+- shake/soft-serve machine with nozzles, handles, drip tray, and beacon.
+
+These hero fixtures remain outside the primary combat lanes and introduce no collision or gameplay state.
 
 ## Quality tiers
 
-- **Low:** gameplay geometry and base environment only. Decorative M4 roots are disabled.
-- **Medium:** structural restaurant fronts, wall architecture, and primary landmark signage.
-- **High:** seating, floor tile detail, vending/condiment/trash props, food displays, and lighting cards.
+- **Low:** gameplay geometry and base environment only; decorative roots remain disabled.
+- **Medium:** structural restaurant fronts, primary landmark signage, mezzanine architecture, and escalator silhouettes.
+- **High:** seating, floor detail, vending/condiment/waste props, food displays, lighting cards, and detailed vendor equipment.
 
-This division is intentionally aligned with the existing `G` graphics-quality cycle.
+This division is intentionally aligned with the existing `G` graphics-quality cycle and adaptive quality fallback.
 
-## Production asset pass
+## M15 production asset replacement
 
-The procedural pieces are placeholders for production GLB assets. Replace them gradually, preserving roughly the same visual masses and quality-tier ownership. Prefer shared materials, atlases, mesh instancing, and KTX2 textures. Avoid importing hundreds of unique props merely because a source pack contains them.
+The current procedural pieces—including M13's hero models—are now **target footprints**, not an instruction to keep adding primitive detail indefinitely. M15 should gradually replace the most valuable placeholders with selected, audited production GLBs while keeping approximately the same visual masses and quality-tier ownership.
 
-The first production pass should focus on five hero categories:
+Priority order:
 
-1. restaurant kiosk modules;
-2. table/chair/booth set;
-3. vending and waste stations;
-4. food display props;
-5. overhead signage and light fixtures.
+1. restaurant kiosk/storefront modules;
+2. food-service equipment such as ovens, grills, dispensers, and display cases;
+3. table/chair/booth set;
+4. vending and waste stations;
+5. food display props;
+6. overhead signage and light fixtures.
 
-Any imported asset must pass the repository provenance and structural-budget audit before landing.
+Prefer shared materials, atlases, mesh instancing, and KTX2/Basis textures. Avoid importing whole asset packs merely because they are available. Kenney Food Kit is already an approved controlled source where it fits the art direction; any additional source requires explicit provenance/license review before use.
+
+Every imported asset must pass the repository asset/provenance audit, structural budgets, first-play byte budgets, normal build/performance gates, and a visual review at the actual gameplay camera.
+
+See [Arena hero model pass](arena-hero-model-pass.md) and [Visual production roadmap](visual-production-roadmap.md).
+
+## Ambient animation direction — M17 candidate
+
+Once static production assets are stable, peripheral environmental life can be introduced through slow escalator/vendor/equipment/crowd motion. This work must remain:
+
+- peripheral rather than centered on combat lanes;
+- clearly distinct from players, projectiles, pickups, hazards, and objective feedback;
+- bounded by quality tier and update/instance budgets;
+- suppressed or simplified by reduced-motion mode;
+- easy to disable on Low quality.
 
 ## Readability rules
 
@@ -59,3 +95,5 @@ Any imported asset must pass the repository provenance and structural-budget aud
 - Decorative animation should be slow and peripheral.
 - High-frequency texture detail belongs outside the main combat lanes.
 - New props must be checked at actual gameplay camera distance, not only close-up.
+- New upper-level or hero silhouettes must be checked for player/projectile/objective occlusion at the normal camera.
+- Imported production assets must preserve authoritative map readability even when their source meshes contain more detail than the procedural targets.

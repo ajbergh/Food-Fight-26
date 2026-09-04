@@ -27,13 +27,22 @@ This directory is the product and engineering source of truth for the initial ve
 
 - [Art direction](art-direction.md)
 - [Arena art](arena-art.md)
+- [Arena hero model pass](arena-hero-model-pass.md)
 - [Asset pipeline](asset-pipeline.md)
 - [Character animation](character-animation.md)
+- [Character production pass](character-production-pass.md)
+- [Reactive character animation](reactive-character-animation.md)
+- [Skeletal character pilot](skeletal-character-pilot.md)
+- [Skeletal chef model finish](skeletal-chef-model-finish.md)
+- [Environment finish](environment-finish.md)
+- [Lighting and material finish](lighting-materials.md)
+- [VFX and juice](vfx-juice.md)
 - [Concept-art brief](concept-art/README.md)
 
 ## Planning and governance
 
 - [Roadmap](roadmap.md)
+- [Visual production roadmap](visual-production-roadmap.md)
 - [Legal and IP](legal-and-ip.md)
 - [Glossary](glossary.md)
 - [Architecture decisions](adr/README.md)
