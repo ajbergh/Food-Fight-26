@@ -1,4 +1,5 @@
 export type LocomotionState = "idle" | "walk" | "run";
+export type CharacterActionState = "normal" | "dodge" | "slip";
 
 export interface LocomotionPose {
   strideDegrees: number;
@@ -14,6 +15,18 @@ export interface ThrowPose {
   counterArmDegrees: number;
 }
 
+export interface CharacterActionPose {
+  crouch: number;
+  pitchDegrees: number;
+  rollDegrees: number;
+  headPitchDegrees: number;
+  armLiftDegrees: number;
+  legBendDegrees: number;
+  squashX: number;
+  squashY: number;
+  expression: number;
+}
+
 export const THROW_DURATION_SECONDS = 0.48;
 
 export function resolveLocomotion(normalizedSpeed: number): LocomotionState {
@@ -21,6 +34,12 @@ export function resolveLocomotion(normalizedSpeed: number): LocomotionState {
   if (speed < 0.08) return "idle";
   if (speed < 0.58) return "walk";
   return "run";
+}
+
+export function resolveCharacterAction(parentScaleY: number): CharacterActionState {
+  if (parentScaleY < 0.98) return "dodge";
+  if (parentScaleY < 1.1) return "slip";
+  return "normal";
 }
 
 export function locomotionPose(state: LocomotionState, phase: number): LocomotionPose {
@@ -49,6 +68,53 @@ export function locomotionPose(state: LocomotionState, phase: number): Locomotio
     armSwingDegrees: wave * 38,
     bob: step * 0.07,
     leanDegrees: 10,
+  };
+}
+
+export function characterActionPose(
+  state: CharacterActionState,
+  phase: number,
+): CharacterActionPose {
+  if (state === "dodge") {
+    const side = Math.sin(phase * 1.65);
+    return {
+      crouch: 0.1,
+      pitchDegrees: 16,
+      rollDegrees: side * 9,
+      headPitchDegrees: -11,
+      armLiftDegrees: 14,
+      legBendDegrees: 24,
+      squashX: 1.08,
+      squashY: 0.9,
+      expression: 0.55,
+    };
+  }
+
+  if (state === "slip") {
+    const wobble = Math.sin(phase * 1.9);
+    return {
+      crouch: 0.07,
+      pitchDegrees: -4 + Math.abs(wobble) * 5,
+      rollDegrees: wobble * 14,
+      headPitchDegrees: 8,
+      armLiftDegrees: 34 + Math.abs(wobble) * 8,
+      legBendDegrees: 18,
+      squashX: 1.03,
+      squashY: 0.96,
+      expression: 0.9,
+    };
+  }
+
+  return {
+    crouch: 0,
+    pitchDegrees: 0,
+    rollDegrees: 0,
+    headPitchDegrees: 0,
+    armLiftDegrees: 0,
+    legBendDegrees: 0,
+    squashX: 1,
+    squashY: 1,
+    expression: 0,
   };
 }
 
