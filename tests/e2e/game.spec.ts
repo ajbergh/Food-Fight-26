@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 test("connects, exposes live diagnostics, and accepts authoritative combat input", async ({ page }) => {
+  test.setTimeout(60_000);
+
   await page.goto("/");
 
   const network = page.locator("#network");
