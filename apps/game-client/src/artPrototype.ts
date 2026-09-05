@@ -10,6 +10,7 @@ import {
 } from "./characterVisual";
 import { createEnvironmentFinish } from "./environmentFinish";
 import { createLightingFinish } from "./lightingFinish";
+import { applyProceduralChefFinish } from "./proceduralChefFinish";
 import { createSkeletalCharacterVisual } from "./skeletalCharacterVisual";
 import { instantiateSkeletalPilot, isSkeletalPilotEnabled } from "./skeletalPilot";
 
@@ -284,6 +285,8 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
 
     const sessionId = root.name.startsWith("player-") ? root.name.slice("player-".length) : root.name;
     const procedural = createCharacterVisual({ root, accent, sessionId });
+    const proceduralFinishReady = applyProceduralChefFinish(root, accent, sessionId);
+    document.documentElement.dataset.proceduralChefFinish = proceduralFinishReady ? "ready" : "fallback";
     playerCharacters.set(sessionId, procedural);
     if (skeletalPilotEnabled) {
       document.documentElement.dataset.skeletalPilot = "loading";
