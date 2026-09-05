@@ -41,6 +41,8 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(html).toHaveAttribute("data-production-props", "ready", {
     timeout: 15_000,
   });
+  await expect(html).toHaveAttribute("data-production-furniture", "ready");
+  await expect(html).toHaveAttribute("data-production-mini-market", "ready");
 
   const audio = page.locator("#audio");
   await expect(audio).toHaveAttribute("aria-pressed", "false");
