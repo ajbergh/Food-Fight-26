@@ -173,6 +173,23 @@ function createShakeStation(
   primitive(root, "top-beacon", "sphere", accent, [0.22, 0.22, 0.22], [0, 2.0, 0]);
 }
 
+function createServiceCart(
+  parent: pc.Entity,
+  steel: pc.Material,
+  dark: pc.Material,
+  accent: pc.Material,
+) {
+  const root = new pc.Entity("service-cart");
+  root.setLocalPosition(-5.5, 0, -9.25);
+  parent.addChild(root);
+
+  primitive(root, "upper-deck", "box", steel, [1.8, 0.12, 0.9], [0, 0.72, 0]);
+  primitive(root, "lower-shelf", "box", dark, [1.55, 0.08, 0.72], [0, 0.28, 0]);
+  primitive(root, "upright-left", "box", dark, [0.08, 0.92, 0.08], [-0.73, 0.72, 0.34]);
+  primitive(root, "upright-right", "box", dark, [0.08, 0.92, 0.08], [0.73, 0.72, 0.34]);
+  primitive(root, "handle", "box", accent, [1.55, 0.08, 0.08], [0, 1.18, 0.34]);
+}
+
 function createMezzaninePatron(
   parent: pc.Entity,
   index: number,
@@ -240,6 +257,10 @@ export function createArenaHeroModels(options: ArenaHeroModelsOptions) {
   createPizzaOven(highDetailRoot, "pizza-oven", [-9, 1.52, 10.0], plum, ink, tomato);
   createGrillStation(highDetailRoot, "burger-grill", [0, 1.5, 10.0], steel, ink, warm);
   createShakeStation(highDetailRoot, "shake-machine", [9, 1.48, 10.0], mint, steel, cream, berry);
+
+  // High: a compact, desaturated service cart occasionally crosses the north perimeter concourse.
+  // It is presentation-only and stays outside the authoritative combat topology.
+  createServiceCart(highDetailRoot, steel, charcoal, brass);
 
   // High: eight small, desaturated patron silhouettes sit behind the mezzanine rails.
   // They intentionally omit team colors, player rings, held items, and chef silhouettes so
