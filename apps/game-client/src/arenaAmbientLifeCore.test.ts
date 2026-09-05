@@ -7,6 +7,7 @@ import {
   menuBoardLineScale,
   patronBobOffset,
   patronSwayDegrees,
+  serviceCartProgress,
   wayfindingSwayDegrees,
   wrap01,
 } from "./arenaAmbientLifeCore";
@@ -39,6 +40,7 @@ describe("arena ambient life motion", () => {
     expect(menuBoardLineScale(2, 1, 0, true)).toBe(1);
     expect(patronBobOffset(2, 1, true)).toBe(0);
     expect(patronSwayDegrees(2, 1, true)).toBe(0);
+    expect(serviceCartProgress(16, true)).toBe(0);
   });
 
   it("keeps active ambient motion deliberately subtle", () => {
@@ -70,5 +72,24 @@ describe("arena ambient life motion", () => {
       patronSwayDegrees(5, 2.1, false),
       4,
     );
+  });
+
+  it("gives the service cart slow travel with long parked intervals", () => {
+    expect(serviceCartProgress(0, false)).toBe(0);
+    expect(serviceCartProgress(4.9, false)).toBe(0);
+    expect(serviceCartProgress(11, false)).toBeCloseTo(0.5);
+    expect(serviceCartProgress(17, false)).toBe(1);
+    expect(serviceCartProgress(21.9, false)).toBe(1);
+    expect(serviceCartProgress(28, false)).toBeCloseTo(0.5);
+    expect(serviceCartProgress(34, false)).toBe(0);
+    expect(serviceCartProgress(41, false)).toBe(0);
+  });
+
+  it("keeps service-cart travel normalized throughout its cycle", () => {
+    for (let sample = 0; sample <= 80; sample += 0.5) {
+      const progress = serviceCartProgress(sample, false);
+      expect(progress).toBeGreaterThanOrEqual(0);
+      expect(progress).toBeLessThanOrEqual(1);
+    }
   });
 });
