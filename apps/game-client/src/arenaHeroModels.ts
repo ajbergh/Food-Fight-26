@@ -180,7 +180,7 @@ function createServiceCart(
   accent: pc.Material,
 ) {
   const root = new pc.Entity("service-cart");
-  root.setLocalPosition(-5.5, 0, -9.25);
+  root.setLocalPosition(-5.5, 0, -9.6);
   parent.addChild(root);
 
   primitive(root, "upper-deck", "box", steel, [1.8, 0.12, 0.9], [0, 0.72, 0]);
