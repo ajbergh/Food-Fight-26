@@ -5,6 +5,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
 
   await page.goto("/");
 
+  const html = page.locator("html");
   const network = page.locator("#network");
   await expect(network).toContainText("online");
   await expect(network).toContainText("1/8");
@@ -12,14 +13,32 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(page.locator("#objective")).toBeVisible();
   await expect(page.locator(".blue-score")).toContainText("◆");
   await expect(page.locator(".red-score")).toContainText("●");
-  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "active");
-  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "active");
+  await expect(html).toHaveAttribute("data-arena-ambient-life", "active");
+  await expect(html).toHaveAttribute("data-arena-ambient-menu", "active");
+  await expect(html).toHaveAttribute("data-arena-ambient-crowd", "disabled");
 
   const quality = page.locator("#quality");
-  const initialQuality = (await quality.textContent()) ?? "";
-  await quality.click();
-  await expect(quality).not.toHaveText(initialQuality);
-  await expect(page.locator("html")).toHaveAttribute("data-production-props", "ready", {
+  await expect(quality).toContainText("medium");
+  // Playwright actionability can take long enough on a very slow headless renderer
+  // for the production adaptive-quality safeguard to demote High -> Low before the
+  // next locator assertion. Trigger the synchronous quality transition in-page,
+  // allow two render frames for the ambient controller to publish its diagnostic,
+  // and snapshot that bounded High-quality state before adaptive recovery can fire.
+  const highSnapshot = await page.evaluate(async () => {
+    const button = document.querySelector<HTMLButtonElement>("#quality");
+    if (!button) throw new Error("quality button unavailable");
+    button.click();
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+    return {
+      quality: button.textContent ?? "",
+      crowd: document.documentElement.dataset.arenaAmbientCrowd ?? "",
+    };
+  });
+  expect(highSnapshot.quality).toContain("high");
+  expect(highSnapshot.crowd).toBe("active");
+  await expect(html).toHaveAttribute("data-production-props", "ready", {
     timeout: 15_000,
   });
 
@@ -78,6 +97,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   await expect(body).toHaveAttribute("data-reduced-motion", "true");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
   await expect(motion).toHaveAttribute("aria-pressed", "true");
 
   await motion.click();
@@ -87,6 +107,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   // environmental motion remains suppressed even when the session toggle is off.
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
 
   await expect(body).toHaveAttribute("data-hud-scale", "normal");
   await hudScale.click();
