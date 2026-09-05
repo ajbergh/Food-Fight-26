@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, hardware, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-04):** implementation is merged through the second M15 audited-production-prop tranche in [PR #38](https://github.com/ajbergh/Food-Fight-26/pull/38), including representative food-display and furniture/waste production models. The first M17 ambient arena-life tranche is merged in [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), bounded vendor-menu animation is in [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39), and a High-quality mezzanine-patron tranche is stacked behind it in [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31) and [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35) are documentation-only reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
+**Status snapshot (2026-09-04):** implementation is merged through the second M15 audited-production-prop tranche in [PR #38](https://github.com/ajbergh/Food-Fight-26/pull/38), including representative food-display and furniture/waste production models. The first M17 ambient arena-life tranche is merged in [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), bounded vendor-menu animation is merged in [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39), and the High-quality mezzanine-patron tranche is active in [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31) and [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35) are documentation-only reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
 
 ## M0 — Repository and architecture — complete
 
@@ -213,7 +213,7 @@ Conditional on visual/performance value: produce a purpose-built reusable chef r
 
 ### M17 — Ambient arena life and environmental animation — in progress
 
-[PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37) merged the first bounded ambient-life tranche. [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39) adds bounded vendor-menu motion, and [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40) is stacked behind it with a High-quality mezzanine spectator layer.
+[PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37) and [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39) are merged ambient-life tranches. [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40) is the active High-quality mezzanine spectator tranche.
 
 - Reuses the existing M13 west/east escalator step entities for slow opposing peripheral motion.
 - Adds restrained sway to the three M6 hanging-wayfinding elements.
