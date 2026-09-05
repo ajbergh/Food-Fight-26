@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  CHARACTER_REACTION_DURATION_SECONDS,
   characterActionPose,
+  characterReactionPose,
   locomotionPose,
   resolveCharacterAction,
   resolveLocomotion,
@@ -52,5 +54,50 @@ describe("character animation poses", () => {
     expect(slip.armLiftDegrees).toBeGreaterThan(dodge.armLiftDegrees);
     expect(Math.abs(slip.rollDegrees)).toBeLessThanOrEqual(14);
     expect(slip.expression).toBeGreaterThan(dodge.expression);
+  });
+
+  it("uses a short bounded recoil for authoritative hits", () => {
+    const hit = characterReactionPose("hit", 0.5);
+    expect(CHARACTER_REACTION_DURATION_SECONDS.hit).toBeLessThan(0.5);
+    expect(hit.pitchDegrees).toBeLessThan(-8);
+    expect(hit.armLiftDegrees).toBeGreaterThan(15);
+    expect(hit.squashX).toBeLessThanOrEqual(1.055);
+    expect(hit.squashY).toBeGreaterThanOrEqual(0.93);
+    expect(hit.expression).toBeGreaterThan(0.8);
+  });
+
+  it("gives winners a bounded two-beat celebration", () => {
+    const armsUp = characterReactionPose("celebrate", 0.5);
+    const hop = characterReactionPose("celebrate", 0.625);
+    expect(armsUp.armLiftDegrees).toBeGreaterThan(80);
+    expect(armsUp.expression).toBeCloseTo(1);
+    expect(hop.lift).toBeGreaterThan(0.08);
+    expect(Math.abs(hop.rollDegrees)).toBeLessThanOrEqual(5);
+  });
+
+  it("gives losing players a readable but bounded slump", () => {
+    const defeat = characterReactionPose("defeat", 0.5);
+    expect(defeat.crouch).toBeCloseTo(0.13);
+    expect(defeat.pitchDegrees).toBeCloseTo(27);
+    expect(defeat.headPitchDegrees).toBeCloseTo(22);
+    expect(defeat.squashY).toBeGreaterThanOrEqual(0.92);
+  });
+
+  it("returns every transient reaction to a neutral pose", () => {
+    for (const kind of ["hit", "celebrate", "defeat"] as const) {
+      expect(characterReactionPose(kind, 0)).toEqual(characterReactionPose(kind, 1));
+      expect(characterReactionPose(kind, 1)).toEqual({
+        lift: 0,
+        crouch: 0,
+        pitchDegrees: 0,
+        rollDegrees: 0,
+        headPitchDegrees: 0,
+        armLiftDegrees: 0,
+        legBendDegrees: 0,
+        squashX: 1,
+        squashY: 1,
+        expression: 0,
+      });
+    }
   });
 });

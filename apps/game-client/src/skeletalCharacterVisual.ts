@@ -1,9 +1,12 @@
 import { GAME } from "@foodfight/game-core";
 import * as pc from "playcanvas";
 import {
+  CHARACTER_REACTION_DURATION_SECONDS,
   characterActionPose,
+  characterReactionPose,
   resolveCharacterAction,
   resolveLocomotion,
+  type CharacterReactionKind,
 } from "./characterAnimation";
 import { decorateSkeletalChefPilot } from "./characterModelFinish";
 import type { CharacterThrowKind, CharacterVisual } from "./characterVisual";
@@ -32,21 +35,32 @@ export function createSkeletalCharacterVisual(
   let locomotion: SkeletalPilotClip = "idle";
   let throwRemaining = 0;
   let actionPhase = 0;
+  let reactionKind: CharacterReactionKind = "hit";
+  let reactionElapsed = CHARACTER_REACTION_DURATION_SECONDS.hit;
 
   function applyModelTransform() {
     const parentScale = root.getLocalScale();
     const action = characterActionPose(resolveCharacterAction(parentScale.y), actionPhase);
+    const reactionDuration = CHARACTER_REACTION_DURATION_SECONDS[reactionKind];
+    const reaction = characterReactionPose(
+      reactionKind,
+      reactionElapsed < reactionDuration ? reactionElapsed / reactionDuration : 1,
+    );
     pilot.entity.setLocalScale(
-      (PILOT_WORLD_SCALE * action.squashX) / Math.max(0.01, parentScale.x),
-      (PILOT_WORLD_SCALE * action.squashY) / Math.max(0.01, parentScale.y),
-      (PILOT_WORLD_SCALE * action.squashX) / Math.max(0.01, parentScale.z),
+      (PILOT_WORLD_SCALE * action.squashX * reaction.squashX) / Math.max(0.01, parentScale.x),
+      (PILOT_WORLD_SCALE * action.squashY * reaction.squashY) / Math.max(0.01, parentScale.y),
+      (PILOT_WORLD_SCALE * action.squashX * reaction.squashX) / Math.max(0.01, parentScale.z),
     );
     pilot.entity.setLocalPosition(
       0,
-      (-PLAYER_ROOT_HEIGHT - action.crouch) / Math.max(0.01, parentScale.y),
+      (-PLAYER_ROOT_HEIGHT - action.crouch - reaction.crouch + reaction.lift) / Math.max(0.01, parentScale.y),
       0,
     );
-    pilot.entity.setLocalEulerAngles(action.pitchDegrees, currentYaw, action.rollDegrees);
+    pilot.entity.setLocalEulerAngles(
+      action.pitchDegrees + reaction.pitchDegrees,
+      currentYaw,
+      action.rollDegrees + reaction.rollDegrees,
+    );
   }
 
   applyModelTransform();
@@ -66,6 +80,10 @@ export function createSkeletalCharacterVisual(
       throwRemaining = Math.max(0.1, pilot.duration("throw_food"));
       pilot.transition("throw_food", 0.06);
     },
+    triggerReaction(kind: CharacterReactionKind) {
+      reactionKind = kind;
+      reactionElapsed = 0;
+    },
     update(dt: number) {
       const position = root.getPosition();
       const dx = position.x - lastPosition.x;
@@ -79,6 +97,9 @@ export function createSkeletalCharacterVisual(
       }
       currentYaw +=
         shortestAngleDelta(currentYaw, targetYaw) * (1 - Math.exp(-12 * dt));
+
+      const reactionDuration = CHARACTER_REACTION_DURATION_SECONDS[reactionKind];
+      reactionElapsed = Math.min(reactionDuration, reactionElapsed + dt);
 
       const nextLocomotion = resolveLocomotion(speed / GAME.playerSpeed);
       if (throwRemaining > 0) {
