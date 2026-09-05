@@ -2,7 +2,7 @@
 
 This document extends the master roadmap with the next art-production gates after M12–M14. It is deliberately ordered so visual ambition does not outrun multiplayer readability, asset provenance, or client performance.
 
-## Current baseline — complete through M15 and scoped M17 implementation
+## Current baseline — M15/M17 complete, M16 in progress
 
 The repository now has a coherent presentation stack rather than a single graybox art pass:
 
@@ -10,7 +10,8 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
 - **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit path; PR #38 added audited perimeter furniture/waste; PR #41 added Mini Market service, refrigeration, checkout, and recycling fixtures; PR #42 added production food-service equipment; PR #43 added authored commercial fixtures and hardened runtime-manifest coverage. The scoped replacement implementation is complete.
-- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 added bounded vendor-menu activity; PR #40 added High-quality-only mezzanine spectators; PR #45 adds one occasional peripheral service cart on the same 30 Hz scheduler. This completes the scoped ambient-animation implementation without increasing crowd density.
+- **M16 — default chef shipping candidate/final-character decision:** PR #46 begins by bringing the existing default procedural chef closer to the environment's production finish with deterministic, zero-download costume/silhouette detailing. The eventual authored-skeletal/default decision remains gated by measured value and M18 evidence.
+- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 added bounded vendor-menu activity; PR #40 added High-quality-only mezzanine spectators; merged PR #45 added one occasional peripheral service cart on the same 30 Hz scheduler. The scoped ambient-animation implementation is complete without increasing crowd density.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate M18 requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -118,13 +119,30 @@ Representative audited coverage is therefore complete for food displays, furnitu
 
 M18 remains the shipping-validation owner for representative-hardware frame pacing, eight simultaneously rendered animated players, gameplay-camera readability/accessibility, default quality, first-play asset inventory, and the final Food Court production-readiness decision. M18 findings may produce targeted visual fixes, but M15 should not remain open merely to maximize imported-asset coverage.
 
-## M16 — Final authored Food Fight chef
+## M16 — Default chef shipping candidate and final authored Food Fight chef — in progress
 
 ### Goal
 
-Move from the KayKit-derived technical pilot to a purpose-built Food Fight character if the authored result is materially better than the procedural chef and still meets the performance contract.
+Raise the default procedural chef to a credible shipping-candidate finish first, then move to a purpose-built Food Fight skeletal character only if the authored result is materially better and still meets the performance contract.
 
-### Character requirements
+### Tranche 1 — PR #46: procedural shipping-candidate finish
+
+PR #46 improves the character path players actually see by default without adding a new asset dependency:
+
+- layers off-white double-breasted jacket panels over the large prototype accent torso;
+- adds dark jacket piping, a compact chest pocket, neckerchief tails, apron knot/tails, side towel, and a small shared-position headwear badge;
+- keeps session accent on restrained trim rather than treating it as authoritative team information;
+- derives pocket/towel side, small badge tilt, and neckerchief bias deterministically from session ID;
+- keeps all cosmetic variation bounded so the common chef silhouette remains readable with eight players;
+- inherits the existing procedural locomotion/throw/dodge/slip hierarchy with no new per-frame scheduler;
+- adds no GLB, texture, audio, runtime download, collision, protocol, replicated state, lights, particles, probes, post-process passes, or shadow casters;
+- exposes `data-procedural-chef-finish="ready|fallback"` for browser validation.
+
+See [M16 Procedural Chef Finish](procedural-chef-finish.md) for the detailed visual/performance contract.
+
+### Final authored-character requirements
+
+If a new skeletal character is pursued after the improved procedural path is reviewed, it must provide:
 
 - unmistakable chef/food-fight silhouette at the gameplay camera;
 - clean low-poly or stylized production topology suitable for eight simultaneous players;
@@ -149,7 +167,7 @@ The current M12 transform-layer dodge/slip reactions remain valid fallbacks; aut
 
 ### Exit gate
 
-The final chef passes provenance/structural audits, first-play budgets, eight-character render testing, animation/readability review, and color-vision/accessibility review. Only then should the project decide whether to make the skeletal path the default.
+The M16 exit gate remains open. The project should compare the improved procedural chef against any purpose-built authored candidate, and a final skeletal chef must pass provenance/structural audits, first-play budgets, eight-character render testing, animation/readability review, and color-vision/accessibility review. Only then should the project decide whether to make the skeletal path the default.
 
 ## M17 — Ambient arena life and environmental animation — complete at scoped animation level
 
@@ -195,7 +213,7 @@ The third bounded tranche adds distant visual occupancy without creating gamepla
 - exposes `data-arena-ambient-crowd="active|reduced|disabled|unavailable"`, with `disabled` used when High detail is off;
 - preserves the existing adaptive High-to-Low quality fallback, with deterministic E2E coverage that snapshots the High-quality crowd state before a slow headless runner can auto-demote.
 
-### Tranche 4 — PR #45
+### Tranche 4 — merged in PR #45
 
 The fourth and final scoped animation tranche adds occasional peripheral service motion without increasing crowd density:
 
