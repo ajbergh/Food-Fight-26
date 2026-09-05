@@ -77,3 +77,26 @@ export function patronSwayDegrees(
   if (reducedMotion) return 0;
   return Math.sin(elapsedSeconds * 0.34 + phase) * 2.2;
 }
+
+export function serviceCartProgress(
+  elapsedSeconds: number,
+  reducedMotion: boolean,
+) {
+  if (reducedMotion) return 0;
+
+  const cycleSeconds = wrap01(elapsedSeconds / 40) * 40;
+  if (cycleSeconds < 5) return 0;
+  if (cycleSeconds < 17) {
+    return smoothStep01((cycleSeconds - 5) / 12);
+  }
+  if (cycleSeconds < 22) return 1;
+  if (cycleSeconds < 34) {
+    return 1 - smoothStep01((cycleSeconds - 22) / 12);
+  }
+  return 0;
+}
+
+function smoothStep01(value: number) {
+  const clamped = Math.max(0, Math.min(1, value));
+  return clamped * clamped * (3 - 2 * clamped);
+}
