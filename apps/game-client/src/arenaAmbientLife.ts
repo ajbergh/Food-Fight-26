@@ -3,6 +3,8 @@ import {
   equipmentPulse,
   escalatorStepProgress,
   handleRockDegrees,
+  menuBoardAccentScale,
+  menuBoardLineScale,
   wayfindingSwayDegrees,
 } from "./arenaAmbientLifeCore";
 
@@ -30,7 +32,7 @@ interface SwayTarget {
   phase: number;
 }
 
-interface PulseTarget {
+interface ScaleTarget {
   entity: pc.Entity;
   baseScale: [number, number, number];
   phase: number;
@@ -39,6 +41,11 @@ interface PulseTarget {
 interface HandleTarget {
   entity: pc.Entity;
   phase: number;
+}
+
+interface MenuBoardTarget {
+  accent: ScaleTarget | null;
+  lines: ScaleTarget[];
 }
 
 export function createArenaAmbientLife(
@@ -60,9 +67,9 @@ export function createArenaAmbientLife(
     target(app, "hanging-wayfinding-2", 4.2),
   ].filter((value): value is SwayTarget => value !== null);
 
-  const pulseTargets: PulseTarget[] = [];
-  addPulseTarget(app, pulseTargets, "fire-bed", [0.88, 0.1, 0.05], 0.4);
-  addPulseTarget(app, pulseTargets, "heat-line", [1.45, 0.045, 0.05], 2.2);
+  const pulseTargets: ScaleTarget[] = [];
+  addScaleTarget(app, pulseTargets, "fire-bed", [0.88, 0.1, 0.05], 0.4);
+  addScaleTarget(app, pulseTargets, "heat-line", [1.45, 0.045, 0.05], 2.2);
 
   const handles = [
     handle(app, "handle--0.42", 0),
@@ -70,9 +77,17 @@ export function createArenaAmbientLife(
     handle(app, "handle-0.42", 3.6),
   ].filter((value): value is HandleTarget => value !== null);
 
+  const menuBoards = [
+    menuBoard(app, "menu-pizza", 0.15),
+    menuBoard(app, "menu-burger", 1.7),
+    menuBoard(app, "menu-shake", 3.25),
+    menuBoard(app, "menu-dessert", 4.8),
+  ].filter((value): value is MenuBoardTarget => value !== null);
+
   let elapsed = 0;
   let accumulator = UPDATE_INTERVAL_SECONDS;
   let lastDiagnostic = "";
+  let lastMenuDiagnostic = "";
 
   function reducedMotion() {
     return (
@@ -94,6 +109,12 @@ export function createArenaAmbientLife(
       lastDiagnostic = diagnostic;
     }
 
+    const menuDiagnostic = menuBoards.length === 0 ? "unavailable" : diagnostic;
+    if (menuDiagnostic !== lastMenuDiagnostic) {
+      document.documentElement.dataset.arenaAmbientMenu = menuDiagnostic;
+      lastMenuDiagnostic = menuDiagnostic;
+    }
+
     if (mediumDetailRoot?.enabled) {
       updateEscalators(escalators, elapsed, reduced);
       for (const target of swayTargets) {
@@ -103,6 +124,7 @@ export function createArenaAmbientLife(
           wayfindingSwayDegrees(elapsed, target.phase, reduced),
         );
       }
+      updateMenuBoards(menuBoards, elapsed, reduced);
     }
 
     if (highDetailRoot?.enabled) {
@@ -161,6 +183,41 @@ function updateEscalators(
   }
 }
 
+function updateMenuBoards(
+  boards: readonly MenuBoardTarget[],
+  elapsed: number,
+  reducedMotion: boolean,
+) {
+  for (const board of boards) {
+    if (board.accent) {
+      const accentScale = menuBoardAccentScale(
+        elapsed,
+        board.accent.phase,
+        reducedMotion,
+      );
+      board.accent.entity.setLocalScale(
+        board.accent.baseScale[0] * accentScale,
+        board.accent.baseScale[1],
+        board.accent.baseScale[2],
+      );
+    }
+
+    board.lines.forEach((line, index) => {
+      const lineScale = menuBoardLineScale(
+        elapsed,
+        line.phase,
+        index,
+        reducedMotion,
+      );
+      line.entity.setLocalScale(
+        line.baseScale[0] * lineScale,
+        line.baseScale[1],
+        line.baseScale[2],
+      );
+    });
+  }
+}
+
 function target(
   app: pc.Application,
   name: string,
@@ -170,15 +227,42 @@ function target(
   return entity ? { entity, phase } : null;
 }
 
-function addPulseTarget(
+function addScaleTarget(
   app: pc.Application,
-  targets: PulseTarget[],
+  targets: ScaleTarget[],
   name: string,
   baseScale: [number, number, number],
   phase: number,
 ) {
   const entity = app.root.findByName(name) as pc.Entity | null;
   if (entity) targets.push({ entity, baseScale, phase });
+}
+
+function menuBoard(
+  app: pc.Application,
+  name: string,
+  phase: number,
+): MenuBoardTarget | null {
+  const root = app.root.findByName(name) as pc.Entity | null;
+  if (!root) return null;
+
+  const accentEntity = root.findByName("accent") as pc.Entity | null;
+  const accent = accentEntity ? scaleTarget(accentEntity, phase) : null;
+  const lines = Array.from({ length: 3 }, (_, index) => {
+    const entity = root.findByName(`menu-line-${index}`) as pc.Entity | null;
+    return entity ? scaleTarget(entity, phase + index * 0.45) : null;
+  }).filter((value): value is ScaleTarget => value !== null);
+
+  return accent || lines.length > 0 ? { accent, lines } : null;
+}
+
+function scaleTarget(entity: pc.Entity, phase: number): ScaleTarget {
+  const scale = entity.getLocalScale();
+  return {
+    entity,
+    baseScale: [scale.x, scale.y, scale.z],
+    phase,
+  };
 }
 
 function handle(
