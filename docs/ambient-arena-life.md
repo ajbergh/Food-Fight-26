@@ -56,7 +56,7 @@ The final scoped ambient-animation tranche adds one compact service cart to the 
 
 - five simple non-shadow-casting box renderers form an upper deck, lower shelf, two uprights, and handle;
 - the cart uses existing dark/desaturated steel, charcoal, and brass environment materials rather than team or gameplay colors;
-- its authored west parking position is `x=-5.5`, `z=-9.25`, outside the authoritative combat topology;
+- its authored west parking position is `x=-5.5`, `z=-9.6`; the cart's 0.9-unit depth therefore remains fully beyond the authoritative map boundary at `z=-9`;
 - it traverses an 11-world-unit horizontal perimeter route to the east parking position and back;
 - the motion uses a 40-second cycle with 5-second parked dwell periods at each end and 12-second eased crossings;
 - the cart is High-only and reuses the existing 30 Hz ambient scheduler rather than registering another update callback.
