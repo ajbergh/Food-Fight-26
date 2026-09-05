@@ -19,12 +19,25 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
 
   const quality = page.locator("#quality");
   await expect(quality).toContainText("medium");
-  await quality.click();
-  // Validate the High-quality crowd path immediately. Slow headless CI runners can
-  // legitimately trigger the existing adaptive High -> Low recovery after four
-  // sub-30-fps samples, so asset-loading time must not be conflated with this check.
-  await expect(quality).toContainText("high");
-  await expect(html).toHaveAttribute("data-arena-ambient-crowd", "active");
+  // Playwright actionability can take long enough on a very slow headless renderer
+  // for the production adaptive-quality safeguard to demote High -> Low before the
+  // next locator assertion. Trigger the synchronous quality transition in-page,
+  // allow two render frames for the ambient controller to publish its diagnostic,
+  // and snapshot that bounded High-quality state before adaptive recovery can fire.
+  const highSnapshot = await page.evaluate(async () => {
+    const button = document.querySelector<HTMLButtonElement>("#quality");
+    if (!button) throw new Error("quality button unavailable");
+    button.click();
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+    return {
+      quality: button.textContent ?? "",
+      crowd: document.documentElement.dataset.arenaAmbientCrowd ?? "",
+    };
+  });
+  expect(highSnapshot.quality).toContain("high");
+  expect(highSnapshot.crowd).toBe("active");
   await expect(html).toHaveAttribute("data-production-props", "ready", {
     timeout: 15_000,
   });
