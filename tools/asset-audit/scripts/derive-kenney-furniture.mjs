@@ -40,6 +40,31 @@ const MODELS = Object.freeze([
     path: `${SOURCE_ROOT}/trashcan.glb`,
     gitBlobSha1: "7c7d381cd693c9ffcc37a520750f5eb6de56f462",
   },
+  {
+    name: "stove-electric",
+    path: `${SOURCE_ROOT}/kitchenStoveElectric.glb`,
+    gitBlobSha1: "1418ed1fc1e54ae552834def86979ec2c8be753a",
+  },
+  {
+    name: "hood-large",
+    path: `${SOURCE_ROOT}/hoodLarge.glb`,
+    gitBlobSha1: "cd555ba7d57ad2aabe373b0dfbaa00539c5d7d22",
+  },
+  {
+    name: "blender",
+    path: `${SOURCE_ROOT}/kitchenBlender.glb`,
+    gitBlobSha1: "c2068a71ccd628c7ccd9850242b04fba597967c6",
+  },
+  {
+    name: "coffee-machine",
+    path: `${SOURCE_ROOT}/kitchenCoffeeMachine.glb`,
+    gitBlobSha1: "f10641b44f34270570796a6115e524b53a4ecb71",
+  },
+  {
+    name: "microwave",
+    path: `${SOURCE_ROOT}/kitchenMicrowave.glb`,
+    gitBlobSha1: "1ef2100740f1935324f9ea7d3875d00b9f0659c0",
+  },
 ]);
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
