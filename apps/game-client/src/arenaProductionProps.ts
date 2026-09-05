@@ -17,9 +17,13 @@ type ProductionPropId =
   | "bench"
   | "chair"
   | "table-round"
-  | "trashcan";
+  | "trashcan"
+  | "service-window"
+  | "freezers-standing"
+  | "cash-register"
+  | "bottle-return";
 
-type ProductionPropGroup = "food" | "furniture";
+type ProductionPropGroup = "food" | "furniture" | "mini-market";
 
 interface ProductionPropPlacement {
   position: [number, number, number];
@@ -105,6 +109,61 @@ const PRODUCTION_PROPS: readonly ProductionPropDefinition[] = [
       { position: [13.55, 0, -9.55], scale: 0.94, euler: [0, -18, 0] },
     ],
   },
+  {
+    id: "service-window",
+    group: "mini-market",
+    url: "/assets/third-party/kenney-mini-market/service-window.glb",
+    placements: [
+      { position: [10.5, 0.02, -10.12], scale: 1.52, euler: [0, 180, 0] },
+    ],
+  },
+  {
+    id: "freezers-standing",
+    group: "mini-market",
+    url: "/assets/third-party/kenney-mini-market/freezers-standing.glb",
+    placements: [
+      {
+        position: [-15.35, 0, 1.7],
+        scale: 1.08,
+        euler: [0, 90, 0],
+        replaceName: "vending-west",
+      },
+      {
+        position: [15.35, 0, -1.7],
+        scale: 1.08,
+        euler: [0, -90, 0],
+        replaceName: "vending-east",
+      },
+    ],
+  },
+  {
+    id: "cash-register",
+    group: "mini-market",
+    url: "/assets/third-party/kenney-mini-market/cash-register.glb",
+    placements: [
+      { position: [-10.5, 1.33, -9.48], scale: 0.82, euler: [0, 180, 0] },
+      { position: [10.5, 1.33, -9.48], scale: 0.82, euler: [0, 180, 0] },
+    ],
+  },
+  {
+    id: "bottle-return",
+    group: "mini-market",
+    url: "/assets/third-party/kenney-mini-market/bottle-return.glb",
+    placements: [
+      {
+        position: [-15.35, 0, -2.2],
+        scale: 1.06,
+        euler: [0, 90, 0],
+        replaceName: "recycling-west",
+      },
+      {
+        position: [15.35, 0, 2.2],
+        scale: 1.06,
+        euler: [0, -90, 0],
+        replaceName: "recycling-east",
+      },
+    ],
+  },
 ] as const;
 
 const sharedAssets = new Map<string, Promise<pc.Asset>>();
@@ -117,18 +176,19 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
     if (loadPromise) return loadPromise;
     document.documentElement.dataset.productionProps = "loading";
     document.documentElement.dataset.productionFurniture = "loading";
+    document.documentElement.dataset.productionMiniMarket = "loading";
     loadPromise = loadAllProps(app, highDetailRoot)
       .then(({ loaded, failed }) => {
         document.documentElement.dataset.productionProps = stateFor(loaded, failed);
-
-        const furnitureIds = PRODUCTION_PROPS
-          .filter((definition) => definition.group === "furniture")
-          .map((definition) => definition.id);
-        const furnitureLoaded = loaded.filter((id) => furnitureIds.includes(id));
-        const furnitureFailed = failed.filter((id) => furnitureIds.includes(id));
-        document.documentElement.dataset.productionFurniture = stateFor(
-          furnitureLoaded,
-          furnitureFailed,
+        document.documentElement.dataset.productionFurniture = stateForGroup(
+          "furniture",
+          loaded,
+          failed,
+        );
+        document.documentElement.dataset.productionMiniMarket = stateForGroup(
+          "mini-market",
+          loaded,
+          failed,
         );
 
         if (failed.length > 0) {
@@ -138,12 +198,27 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
       .catch((error: unknown) => {
         document.documentElement.dataset.productionProps = "fallback";
         document.documentElement.dataset.productionFurniture = "fallback";
+        document.documentElement.dataset.productionMiniMarket = "fallback";
         console.warn("Production props failed; retaining procedural arena dressing.", error);
       });
     return loadPromise;
   }
 
   return { ensureLoaded };
+}
+
+function stateForGroup(
+  group: ProductionPropGroup,
+  loaded: readonly ProductionPropId[],
+  failed: readonly ProductionPropId[],
+) {
+  const ids = PRODUCTION_PROPS
+    .filter((definition) => definition.group === group)
+    .map((definition) => definition.id);
+  return stateFor(
+    loaded.filter((id) => ids.includes(id)),
+    failed.filter((id) => ids.includes(id)),
+  );
 }
 
 function stateFor(loaded: readonly ProductionPropId[], failed: readonly ProductionPropId[]) {
