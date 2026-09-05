@@ -4,7 +4,7 @@
 
 M15 replaces recognizable procedural food-court dressing with controlled production assets without weakening provenance, performance, or fallback behavior.
 
-Four production-safe tranches are merged and the authored commercial-fixture tranche is active in PR #43.
+Five production-safe implementation tranches are merged. The scoped replacement phase is complete; representative rendered-client and gameplay-camera validation is tracked separately in M18.
 
 ## Tranche 1 — Kenney Food Kit, PR #36
 
@@ -108,7 +108,7 @@ Measured generated outputs remain texture-free and compact:
 
 ## Tranche 5 — Kenney Furniture Kit authored commercial fixtures, PR #43
 
-The active fixture tranche replaces generic High-quality luminous cards with authored commercial-lighting silhouettes while deliberately keeping the M9 lighting budget unchanged:
+The fifth tranche replaces generic High-quality luminous cards with authored commercial-lighting silhouettes while deliberately keeping the M9 lighting budget unchanged:
 
 - `lamp-square-ceiling`, sourced from `lampSquareCeiling.glb` pinned to Git blob `8aaf95cd620ab2b96b326012137af3e8534a2e4d`;
 - `lamp-wall`, sourced from `lampWall.glb` pinned to Git blob `cc2d160260a0b7ef08e611a22013043378209898`.
@@ -124,6 +124,8 @@ The source GLBs are exceptionally small and texture-free:
 | **Total** | **10,456** | **102** | **4** | **4** | **0** | **0** |
 
 These are geometry-only fixtures. They do **not** add PlayCanvas light components, shadow casters, probes, post-processing, or per-frame lighting work. High quality therefore retains the existing M9 maximum of two additional static non-shadow-casting vendor omni fills; Medium and Low add none.
+
+PR #43 also closed an audit gap discovered after PR #42: the five kitchen GLBs were deterministically generated and runtime-used but had not been explicitly listed in the third-party manifest. The manifest now covers the complete runtime model set, and the audit CLI fails closed when a supported runtime asset exists below `manifest.runtimeRoot` without a corresponding `manifest.assets` entry.
 
 ## Runtime policy
 
@@ -145,28 +147,31 @@ All production prop renderers remain presentation-only, non-colliding, non-shado
 
 M15 is not permission to import complete asset packs. Future props require an explicit visual role, an individual manifest budget, a pinned source/derivation record, and gameplay-camera review. Prefer a few recognizable silhouettes over catalog-scale dressing.
 
-## Remaining M15 coverage
+## M15 closure decisions
 
-Representative audited coverage now exists for food displays, perimeter furniture/waste, storefront/service fixtures, cold-display/vending, checkout/recycling, core food-service equipment, and authored commercial-lighting fixtures.
+Representative audited coverage now exists for food displays, perimeter furniture/waste, storefront/service fixtures, cold-display/vending, checkout/recycling, core food-service equipment, and authored commercial-lighting fixtures. The final approved-source inventory was checked before closure so retained procedural elements are explicit decisions rather than forgotten placeholders.
 
-The remaining work should be selective rather than catalog-driven:
+### Intentionally retained procedural/art-directed elements
 
-1. overhead signage only if an approved/pinnable source contains a semantically correct model that materially improves the current wayfinding/signage silhouette;
-2. a true pizza-oven or other missing specialist food-service asset only if it clearly outperforms the existing stylized M13 silhouette;
-3. additional kiosk/storefront modules only where gameplay-camera review shows a meaningful readability improvement;
-4. final gameplay-camera and representative-client performance review before M15 closure.
+1. **Overhead wayfinding and signage.** The pinned Kenney Mini Market catalog contains no signage model, and the approved Furniture Kit GLB tree contains no semantically correct sign/board candidate. The existing M6 wayfinding remains stronger and more readable than adding an unrelated asset dependency for a weak replacement.
+2. **Stylized pizza oven.** The approved Furniture Kit source contains no true pizza-oven silhouette. A domestic stove is not an acceptable semantic replacement, so the M13 oven is retained.
+3. **`display-burger`, `display-lettuce`, and `display-shake`.** The pinned Food Kit runtime subset at revision `d00f54f4acd328bc2162656a09f4b78a9a1e6364` contains only `can-open`, `can-small`, `can`, `carton`, `pizza-box`, `pizza`, and the shared colormap. There is no adequate burger, lettuce, shake, sandwich, salad, or drink model in that controlled subset. These tiny counter cues therefore remain stylized procedural presentation geometry.
+4. **Additional kiosk/grocery clutter.** Mini Market includes other grocery-specific models, but importing them would add catalog breadth rather than materially improve combat-camera readability. They are intentionally out of scope for M15.
 
-M15 should close when the remaining procedural elements are either intentionally retained or replaced, gameplay-camera review demonstrates a material improvement, and High quality remains within client performance/download budgets while Low and Medium retain clean fallbacks.
+**M15 implementation status:** complete. The replacement phase should not remain open merely to maximize the percentage of imported meshes. Future asset additions are playtest/readability-driven follow-ons, not M15 blockers.
 
 ## Validation gates
 
-Every M15 tranche must keep these gates green:
+Every M15 implementation tranche kept these automated gates green before merge:
 
 - exact derived SHA-256 values and structural ceilings recorded in the manifest;
 - deterministic derivation in CI;
 - `pnpm assets:audit` on generated outputs;
+- inverse runtime-root coverage so generated-but-unmanifested supported assets fail CI;
 - High-quality browser loading with procedural fallback retained;
-- bundle and eight-player room budgets;
+- bundle and eight-player authoritative-room budgets;
 - release-image/container smoke for generated runtime assets;
 - E2E coverage for the High-quality production-prop path;
-- roadmap reconciliation with delivered and remaining replacement categories.
+- roadmap reconciliation with delivered and retained replacement categories.
+
+M18 owns the remaining **rendered-client** validation: representative laptop/tablet frame pacing, draw calls/geometry/skinning/texture/GPU-memory measurements, structured gameplay-camera readability/accessibility review, and the final decision that the Food Court visual stack is production-ready. Those gates may generate targeted follow-up fixes, but they do not require M15 to keep importing assets.
