@@ -5,6 +5,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
 
   await page.goto("/");
 
+  const html = page.locator("html");
   const network = page.locator("#network");
   await expect(network).toContainText("online");
   await expect(network).toContainText("1/8");
@@ -12,18 +13,21 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(page.locator("#objective")).toBeVisible();
   await expect(page.locator(".blue-score")).toContainText("◆");
   await expect(page.locator(".red-score")).toContainText("●");
-  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "active");
-  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "active");
-  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
+  await expect(html).toHaveAttribute("data-arena-ambient-life", "active");
+  await expect(html).toHaveAttribute("data-arena-ambient-menu", "active");
+  await expect(html).toHaveAttribute("data-arena-ambient-crowd", "disabled");
 
   const quality = page.locator("#quality");
-  const initialQuality = (await quality.textContent()) ?? "";
+  await expect(quality).toContainText("medium");
   await quality.click();
-  await expect(quality).not.toHaveText(initialQuality);
-  await expect(page.locator("html")).toHaveAttribute("data-production-props", "ready", {
+  // Validate the High-quality crowd path immediately. Slow headless CI runners can
+  // legitimately trigger the existing adaptive High -> Low recovery after four
+  // sub-30-fps samples, so asset-loading time must not be conflated with this check.
+  await expect(quality).toContainText("high");
+  await expect(html).toHaveAttribute("data-arena-ambient-crowd", "active");
+  await expect(html).toHaveAttribute("data-production-props", "ready", {
     timeout: 15_000,
   });
-  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "active");
 
   const audio = page.locator("#audio");
   await expect(audio).toHaveAttribute("aria-pressed", "false");
