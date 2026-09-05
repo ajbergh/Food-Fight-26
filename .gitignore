@@ -10,3 +10,4 @@ coverage/
 .playcanvas/
 artifacts/
 apps/game-client/public/assets/third-party/kenney-food-kit/
+apps/game-client/public/assets/third-party/kenney-furniture-kit/

@@ -3,7 +3,7 @@
 FROM node:22-bookworm-slim AS workspace
 WORKDIR /workspace
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends git ca-certificates \
+    && apt-get install --yes --no-install-recommends git ca-certificates unzip \
     && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
 COPY . .
@@ -37,6 +37,8 @@ CMD ["node", "dist/index.js"]
 
 FROM workspace AS game-client-build
 RUN pnpm assets:derive:kenney-props
+RUN pnpm assets:derive:kenney-furniture
+RUN pnpm assets:audit
 RUN pnpm --filter @foodfight/game-client build
 
 FROM nginx:1.27-alpine AS game-client-static

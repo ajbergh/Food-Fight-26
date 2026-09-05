@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node --check src/audit.mjs && node --check src/gltf.mjs && node --check src/kaykit-pilot.mjs && node --check src/kenney-props.mjs && node --check src/skeletal.mjs && node --check src/index.mjs && node --check scripts/derive-kaykit-pilot.mjs && node --check scripts/derive-kenney-props.mjs",
-    "check": "node --check src/audit.mjs && node --check src/gltf.mjs && node --check src/kaykit-pilot.mjs && node --check src/kenney-props.mjs && node --check src/skeletal.mjs && node --check src/index.mjs && node --check scripts/derive-kaykit-pilot.mjs && node --check scripts/derive-kenney-props.mjs",
+    "build": "node --check src/audit.mjs && node --check src/gltf.mjs && node --check src/kaykit-pilot.mjs && node --check src/kenney-props.mjs && node --check src/skeletal.mjs && node --check src/index.mjs && node --check scripts/derive-kaykit-pilot.mjs && node --check scripts/derive-kenney-props.mjs && node --check scripts/derive-kenney-furniture.mjs",
+    "check": "node --check src/audit.mjs && node --check src/gltf.mjs && node --check src/kaykit-pilot.mjs && node --check src/kenney-props.mjs && node --check src/skeletal.mjs && node --check src/index.mjs && node --check scripts/derive-kaykit-pilot.mjs && node --check scripts/derive-kenney-props.mjs && node --check scripts/derive-kenney-furniture.mjs",
     "test": "node --test",
     "audit": "node src/index.mjs ../../assets/third-party/manifest.json",
     "derive:kaykit-pilot": "node scripts/derive-kaykit-pilot.mjs",
-    "derive:kenney-props": "node scripts/derive-kenney-props.mjs"
+    "derive:kenney-props": "node scripts/derive-kenney-props.mjs",
+    "derive:kenney-furniture": "node scripts/derive-kenney-furniture.mjs"
   }
 }
