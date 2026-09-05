@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { auditManifest, formatAuditReport, loadManifest } from "./audit.mjs";
+import { findUnmanifestedRuntimeAssets } from "./runtime-coverage.mjs";
 import { auditSkeletalContracts, formatSkeletalAuditReport } from "./skeletal.mjs";
 
 const manifestPath = resolve(process.argv[2] ?? "../../assets/third-party/manifest.json");
@@ -13,6 +14,11 @@ if (!repoRoot) {
   try {
     const manifest = loadManifest(manifestPath);
     const result = auditManifest(manifest, repoRoot);
+    for (const assetPath of findUnmanifestedRuntimeAssets(manifest, repoRoot)) {
+      result.errors.push(
+        `Runtime asset '${assetPath}' exists under manifest.runtimeRoot but is not declared in manifest.assets.`,
+      );
+    }
     const skeletalResult = auditSkeletalContracts(manifest, repoRoot);
     const report = `${formatAuditReport(result)}\n${formatSkeletalAuditReport(skeletalResult)}`;
     process.stdout.write(report);
