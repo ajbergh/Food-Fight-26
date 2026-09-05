@@ -10,7 +10,7 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
 - **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit intake/derivation path; PR #38 broadened the production set with audited furniture/waste models from Kenney Furniture Kit.
-- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 adds equally bounded vendor-menu activity; PR #40 adds a High-quality-only mezzanine spectator layer.
+- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 merged bounded vendor-menu activity; PR #40 is the active High-quality-only mezzanine spectator tranche.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -124,7 +124,7 @@ The first implementation tranche deliberately animates only scene nodes that alr
 - `data-arena-ambient-life="active|reduced"` diagnostics for stable browser validation;
 - complete static-pose fallback when product or OS reduced motion is active.
 
-### Tranche 2 — PR #39
+### Tranche 2 — merged in PR #39
 
 The second bounded tranche gives the existing vendor wall subtle operational life without introducing new assets or screen-rendering cost:
 
@@ -136,7 +136,7 @@ The second bounded tranche gives the existing vendor wall subtle operational lif
 - restores exact authored scales under reduced motion;
 - adds `data-arena-ambient-menu="active|reduced|unavailable"` plus unit/E2E coverage.
 
-### Tranche 3 — PR #40
+### Tranche 3 — active in PR #40
 
 The third bounded tranche adds distant visual occupancy without creating gameplay-like actors:
 
