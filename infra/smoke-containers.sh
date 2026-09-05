@@ -121,6 +121,14 @@ for furniture_prop in bench chair table-round trashcan; do
   fi
 done
 
+for market_fixture in service-window freezers-standing cash-register bottle-return; do
+  fixture_url="http://127.0.0.1:38081/assets/third-party/kenney-mini-market/${market_fixture}.glb"
+  if ! curl --fail --silent --show-error --output /dev/null "$fixture_url"; then
+    echo "Game-client image is missing generated Mini Market fixture: ${market_fixture}.glb" >&2
+    exit 1
+  fi
+done
+
 GAME_SERVER_URL=http://127.0.0.1:32567 \
 BOT_COUNT=2 \
 BOT_DURATION_SECONDS=3 \
