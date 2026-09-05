@@ -43,6 +43,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   });
   await expect(html).toHaveAttribute("data-production-furniture", "ready");
   await expect(html).toHaveAttribute("data-production-mini-market", "ready");
+  await expect(html).toHaveAttribute("data-production-kitchen", "ready");
 
   const audio = page.locator("#audio");
   await expect(audio).toHaveAttribute("aria-pressed", "false");

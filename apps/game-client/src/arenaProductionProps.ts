@@ -21,9 +21,14 @@ type ProductionPropId =
   | "service-window"
   | "freezers-standing"
   | "cash-register"
-  | "bottle-return";
+  | "bottle-return"
+  | "stove-electric"
+  | "hood-large"
+  | "blender"
+  | "coffee-machine"
+  | "microwave";
 
-type ProductionPropGroup = "food" | "furniture" | "mini-market";
+type ProductionPropGroup = "food" | "furniture" | "mini-market" | "kitchen";
 
 interface ProductionPropPlacement {
   position: [number, number, number];
@@ -164,6 +169,52 @@ const PRODUCTION_PROPS: readonly ProductionPropDefinition[] = [
       },
     ],
   },
+  {
+    id: "stove-electric",
+    group: "kitchen",
+    url: "/assets/third-party/kenney-furniture-kit/stove-electric.glb",
+    placements: [
+      {
+        position: [0, 1.48, 9.98],
+        scale: 1.7,
+        euler: [0, 180, 0],
+        replaceName: "burger-grill",
+      },
+    ],
+  },
+  {
+    id: "hood-large",
+    group: "kitchen",
+    url: "/assets/third-party/kenney-furniture-kit/hood-large.glb",
+    placements: [{ position: [0, 3.18, 10.08], scale: 1.72, euler: [0, 180, 0] }],
+  },
+  {
+    id: "blender",
+    group: "kitchen",
+    url: "/assets/third-party/kenney-furniture-kit/blender.glb",
+    placements: [
+      {
+        position: [8.48, 1.5, 9.72],
+        scale: 1.02,
+        euler: [0, 180, 0],
+        replaceName: "shake-machine",
+      },
+      { position: [9, 1.5, 9.72], scale: 1.02, euler: [0, 180, 0] },
+      { position: [9.52, 1.5, 9.72], scale: 1.02, euler: [0, 180, 0] },
+    ],
+  },
+  {
+    id: "coffee-machine",
+    group: "kitchen",
+    url: "/assets/third-party/kenney-furniture-kit/coffee-machine.glb",
+    placements: [{ position: [10.3, 1.5, 9.72], scale: 1.08, euler: [0, 180, 0] }],
+  },
+  {
+    id: "microwave",
+    group: "kitchen",
+    url: "/assets/third-party/kenney-furniture-kit/microwave.glb",
+    placements: [{ position: [-7.85, 1.5, 9.72], scale: 1.05, euler: [0, 180, 0] }],
+  },
 ] as const;
 
 const sharedAssets = new Map<string, Promise<pc.Asset>>();
@@ -177,6 +228,7 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
     document.documentElement.dataset.productionProps = "loading";
     document.documentElement.dataset.productionFurniture = "loading";
     document.documentElement.dataset.productionMiniMarket = "loading";
+    document.documentElement.dataset.productionKitchen = "loading";
     loadPromise = loadAllProps(app, highDetailRoot)
       .then(({ loaded, failed }) => {
         document.documentElement.dataset.productionProps = stateFor(loaded, failed);
@@ -190,6 +242,11 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
           loaded,
           failed,
         );
+        document.documentElement.dataset.productionKitchen = stateForGroup(
+          "kitchen",
+          loaded,
+          failed,
+        );
 
         if (failed.length > 0) {
           console.warn(`Production prop fallback retained for: ${failed.join(", ")}.`);
@@ -199,6 +256,7 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
         document.documentElement.dataset.productionProps = "fallback";
         document.documentElement.dataset.productionFurniture = "fallback";
         document.documentElement.dataset.productionMiniMarket = "fallback";
+        document.documentElement.dataset.productionKitchen = "fallback";
         console.warn("Production props failed; retaining procedural arena dressing.", error);
       });
     return loadPromise;
