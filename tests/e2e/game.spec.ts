@@ -13,6 +13,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(page.locator("#objective")).toBeVisible();
   await expect(page.locator(".blue-score")).toContainText("◆");
   await expect(page.locator(".red-score")).toContainText("●");
+  await expect(html).toHaveAttribute("data-procedural-chef-finish", "ready");
   await expect(html).toHaveAttribute("data-arena-ambient-life", "active");
   await expect(html).toHaveAttribute("data-arena-ambient-menu", "active");
   await expect(html).toHaveAttribute("data-arena-ambient-crowd", "disabled");

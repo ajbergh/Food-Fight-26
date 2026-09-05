@@ -29,6 +29,7 @@ This directory is the product and engineering source of truth for the initial ve
 - [Arena art](arena-art.md)
 - [Arena hero model pass](arena-hero-model-pass.md)
 - [M15 production prop intake](production-prop-intake.md)
+- [M16 procedural chef finish](procedural-chef-finish.md)
 - [M17 ambient arena life](ambient-arena-life.md)
 - [Asset pipeline](asset-pipeline.md)
 - [Character animation](character-animation.md)

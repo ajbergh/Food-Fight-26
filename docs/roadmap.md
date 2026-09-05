@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, hardware, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-05):** M15 audited production-prop replacement implementation is complete through [PR #43](https://github.com/ajbergh/Food-Fight-26/pull/43). The five merged M15 implementation tranches ([#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38), [#41](https://github.com/ajbergh/Food-Fight-26/pull/41), [#42](https://github.com/ajbergh/Food-Fight-26/pull/42), and [#43](https://github.com/ajbergh/Food-Fight-26/pull/43)) cover food displays, perimeter furniture/waste, storefront/service and cold-display fixtures, checkout/recycling, core food-service equipment, and authored commercial-lighting fixtures. M17 ambient arena-life implementation is complete at scoped animation level through [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39), [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40), and the final peripheral-service tranche in [PR #45](https://github.com/ajbergh/Food-Fight-26/pull/45). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31), [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35), and [PR #44](https://github.com/ajbergh/Food-Fight-26/pull/44) are documentation/reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate M18 graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
+**Status snapshot (2026-09-05):** M15 audited production-prop replacement implementation is complete through [PR #43](https://github.com/ajbergh/Food-Fight-26/pull/43). The five merged M15 implementation tranches ([#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38), [#41](https://github.com/ajbergh/Food-Fight-26/pull/41), [#42](https://github.com/ajbergh/Food-Fight-26/pull/42), and [#43](https://github.com/ajbergh/Food-Fight-26/pull/43)) cover food displays, perimeter furniture/waste, storefront/service and cold-display fixtures, checkout/recycling, core food-service equipment, and authored commercial-lighting fixtures. M16 character-production work is now in progress through [PR #46](https://github.com/ajbergh/Food-Fight-26/pull/46), beginning with a production-facing finish for the existing default procedural chef while the final procedural-vs-authored-skeletal decision remains gated. M17 ambient arena-life implementation is complete at scoped animation level through [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39), [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40), and the final peripheral-service tranche in [PR #45](https://github.com/ajbergh/Food-Fight-26/pull/45). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31), [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35), and [PR #44](https://github.com/ajbergh/Food-Fight-26/pull/44) are documentation/reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate M18 graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
 
 ## M0 — Repository and architecture — complete
 
@@ -60,7 +60,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Third-party provenance manifest and automated CI audits for source approval, hashes, runtime formats, byte ceilings, first-play buckets, and glTF/GLB structure.
 - Kenney Food Kit, Kenney Furniture Kit, and Kenney Mini Market are approved as controlled CC0 production-prop sources. Quaternius Ultimate Food Pack remains on hold pending explicit license/provenance resolution.
 
-**Production status after M12–M17:** the procedural art stack is no longer only a graybox. M13 established stronger hero architecture and food-service equipment footprints, M14 moved the opt-in skeletal pilot toward a chef identity, M15 completed a deterministic audited production-GLB replacement pass, and M17 completed a bounded environmental-life pass without changing gameplay. Remaining production work is concentrated in the final authored-chef decision and M18 representative rendered-client/readability/performance evidence.
+**Production status after M12–M17:** the procedural art stack is no longer only a graybox. M13 established stronger hero architecture and food-service equipment footprints, M14 moved the opt-in skeletal pilot toward a chef identity, M15 completed a deterministic audited production-GLB replacement pass, M16 has begun strengthening the default procedural chef as a credible shipping candidate, and M17 completed a bounded environmental-life pass without changing gameplay. Remaining production work is concentrated in the final character/default-path decision and M18 representative rendered-client/readability/performance evidence.
 
 ## M5 — First polished playtest foundation — in progress
 
@@ -103,7 +103,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Replaced the earlier nearest-player throw heuristic with authoritative `ownerSessionId` presentation, including banana actions.
 - Approved KayKit Adventurers as the CC0 source for the first production-character pilot.
 
-**Exit status:** the procedural production pass merged in PR #25, the skinned technical pilot merged in PR #30, M12 added combat-reaction posing, and M14 added a chef identity finish. The procedural chef remains the default until the final-character and rendered-client performance gates are met.
+**Exit status:** the procedural production pass merged in PR #25, the skinned technical pilot merged in PR #30, M12 added combat-reaction posing, and M14 added a chef identity finish. The procedural chef remains the default; M16 now improves that default as a shipping candidate while the final character decision still waits for rendered-client performance/readability evidence.
 
 ## M8 — VFX and juice pass — complete at bounded prototype level
 
@@ -218,9 +218,21 @@ The final approved-source inventory was reviewed rather than forcing one-for-one
 
 **Exit status:** complete for the scoped production-replacement implementation. The visually important replacement categories now have representative audited production coverage, and remaining procedural elements are explicit art-direction decisions rather than unreviewed placeholders. M18 owns representative-hardware frame pacing, eight-simultaneously-rendered-character measurement, gameplay-camera readability/accessibility review, and the final production-readiness decision; those validation gates do not require M15 to continue importing assets.
 
-### M16 — Final authored Food Fight chef — conditional/planned
+### M16 — Default chef shipping candidate and final authored-chef decision — in progress
 
-Conditional on visual/performance value: produce a purpose-built reusable chef rig and production action/results clips, then benchmark eight instances before considering default enablement.
+[PR #46](https://github.com/ajbergh/Food-Fight-26/pull/46) begins M16 by strengthening the existing default procedural chef before the project spends the asset/performance budget required for a purpose-built skeletal replacement.
+
+- Adds neutral double-breasted jacket panels and dark piping over the prototype-colored torso so the gameplay-camera silhouette reads more immediately as a chef.
+- Adds a compact chest pocket, neckerchief, apron knot/tails, side towel, and a small headwear badge.
+- Uses bounded deterministic session-derived variation for pocket/towel side, badge tilt, and neckerchief bias so eight chefs do not read as exact clones.
+- Keeps session accent as secondary trim only; external team rings and hue-independent diamond/disc markers remain the authoritative team language.
+- Adds no binary assets, textures, downloads, collision, networking, lights, particles, shadows, or additional animation scheduler.
+- Reuses the existing articulated procedural hierarchy so idle/walk/run/throw/dodge/slip presentation continues unchanged.
+- Exposes `data-procedural-chef-finish="ready|fallback"` for browser validation.
+
+The next M16 decision remains conditional on measured visual value: produce a purpose-built reusable chef rig and the missing production action/results clips only if it can materially beat the improved procedural shipping candidate while meeting eight-player render budgets.
+
+**Exit status:** not yet met. M16 remains open until the procedural-vs-authored-skeletal choice is supported by production animation/readability evidence and M18 representative-client measurements.
 
 ### M17 — Ambient arena life and environmental animation — complete at scoped animation level
 
@@ -268,6 +280,7 @@ Only begin a second arena after M18 proves that the first arena's production art
 | M13 | [#33](https://github.com/ajbergh/Food-Fight-26/pull/33) |
 | M14 | [#34](https://github.com/ajbergh/Food-Fight-26/pull/34) |
 | M15 | [#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38), [#41](https://github.com/ajbergh/Food-Fight-26/pull/41), [#42](https://github.com/ajbergh/Food-Fight-26/pull/42), [#43](https://github.com/ajbergh/Food-Fight-26/pull/43) |
+| M16 | [#46](https://github.com/ajbergh/Food-Fight-26/pull/46) |
 | M17 | [#37](https://github.com/ajbergh/Food-Fight-26/pull/37), [#39](https://github.com/ajbergh/Food-Fight-26/pull/39), [#40](https://github.com/ajbergh/Food-Fight-26/pull/40), [#45](https://github.com/ajbergh/Food-Fight-26/pull/45) |
 
 M0 is the repository baseline and predates this PR ledger. PR #31, PR #35, and PR #44 are documentation/reconciliation passes and are intentionally not counted as implementation pull requests.
