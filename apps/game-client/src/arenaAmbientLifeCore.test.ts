@@ -3,6 +3,8 @@ import {
   equipmentPulse,
   escalatorStepProgress,
   handleRockDegrees,
+  menuBoardAccentScale,
+  menuBoardLineScale,
   wayfindingSwayDegrees,
   wrap01,
 } from "./arenaAmbientLifeCore";
@@ -31,6 +33,8 @@ describe("arena ambient life motion", () => {
     expect(wayfindingSwayDegrees(2, 1, true)).toBe(0);
     expect(equipmentPulse(2, 1, true)).toBe(1);
     expect(handleRockDegrees(2, 1, true)).toBe(20);
+    expect(menuBoardAccentScale(2, 1, true)).toBe(1);
+    expect(menuBoardLineScale(2, 1, 0, true)).toBe(1);
   });
 
   it("keeps active ambient motion deliberately subtle", () => {
@@ -39,5 +43,15 @@ describe("arena ambient life motion", () => {
     expect(equipmentPulse(4, 0.5, false)).toBeLessThanOrEqual(1.035);
     expect(handleRockDegrees(4, 0.5, false)).toBeGreaterThanOrEqual(15.5);
     expect(handleRockDegrees(4, 0.5, false)).toBeLessThanOrEqual(24.5);
+    expect(menuBoardAccentScale(4, 0.5, false)).toBeGreaterThanOrEqual(0.982);
+    expect(menuBoardAccentScale(4, 0.5, false)).toBeLessThanOrEqual(1.018);
+    expect(menuBoardLineScale(4, 0.5, 1, false)).toBeGreaterThanOrEqual(0.988);
+    expect(menuBoardLineScale(4, 0.5, 1, false)).toBeLessThanOrEqual(1.012);
+  });
+
+  it("keeps menu lines out of phase so boards do not pulse as one block", () => {
+    const first = menuBoardLineScale(5, 0.4, 0, false);
+    const second = menuBoardLineScale(5, 0.4, 1, false);
+    expect(first).not.toBeCloseTo(second, 4);
   });
 });
