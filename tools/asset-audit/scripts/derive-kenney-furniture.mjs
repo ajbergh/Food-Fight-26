@@ -41,6 +41,16 @@ const MODELS = Object.freeze([
     gitBlobSha1: "7c7d381cd693c9ffcc37a520750f5eb6de56f462",
   },
   {
+    name: "lamp-square-ceiling",
+    path: `${SOURCE_ROOT}/lampSquareCeiling.glb`,
+    gitBlobSha1: "8aaf95cd620ab2b96b326012137af3e8534a2e4d",
+  },
+  {
+    name: "lamp-wall",
+    path: `${SOURCE_ROOT}/lampWall.glb`,
+    gitBlobSha1: "cc2d160260a0b7ef08e611a22013043378209898",
+  },
+  {
     name: "stove-electric",
     path: `${SOURCE_ROOT}/kitchenStoveElectric.glb`,
     gitBlobSha1: "1418ed1fc1e54ae552834def86979ec2c8be753a",
