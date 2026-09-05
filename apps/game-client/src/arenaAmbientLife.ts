@@ -7,6 +7,7 @@ import {
   menuBoardLineScale,
   patronBobOffset,
   patronSwayDegrees,
+  serviceCartProgress,
   wayfindingSwayDegrees,
 } from "./arenaAmbientLifeCore";
 
@@ -23,6 +24,7 @@ const ESCALATOR_BASE_Y = 0.74;
 const ESCALATOR_RISE = 2.72;
 const ESCALATOR_NEAR_Z = 2.05;
 const ESCALATOR_RUN = 4.1;
+const SERVICE_CART_TRAVEL = 11;
 
 interface EscalatorTrack {
   steps: pc.Entity[];
@@ -55,6 +57,11 @@ interface PatronTarget {
   basePosition: [number, number, number];
   baseYaw: number;
   phase: number;
+}
+
+interface ServiceCartTarget {
+  entity: pc.Entity;
+  basePosition: [number, number, number];
 }
 
 export function createArenaAmbientLife(
@@ -97,11 +104,14 @@ export function createArenaAmbientLife(
     patron(app, `mezzanine-patron-${index}`, index * 0.93),
   ).filter((value): value is PatronTarget => value !== null);
 
+  const serviceCart = positionTarget(app, "service-cart");
+
   let elapsed = 0;
   let accumulator = UPDATE_INTERVAL_SECONDS;
   let lastDiagnostic = "";
   let lastMenuDiagnostic = "";
   let lastCrowdDiagnostic = "";
+  let lastServiceDiagnostic = "";
 
   function reducedMotion() {
     return (
@@ -139,6 +149,16 @@ export function createArenaAmbientLife(
       lastCrowdDiagnostic = crowdDiagnostic;
     }
 
+    const serviceDiagnostic = !serviceCart
+      ? "unavailable"
+      : highDetailRoot?.enabled
+        ? diagnostic
+        : "disabled";
+    if (serviceDiagnostic !== lastServiceDiagnostic) {
+      document.documentElement.dataset.arenaAmbientService = serviceDiagnostic;
+      lastServiceDiagnostic = serviceDiagnostic;
+    }
+
     if (mediumDetailRoot?.enabled) {
       updateEscalators(escalators, elapsed, reduced);
       for (const target of swayTargets) {
@@ -168,6 +188,7 @@ export function createArenaAmbientLife(
         );
       }
       updatePatrons(patrons, elapsed, reduced);
+      updateServiceCart(serviceCart, elapsed, reduced);
     }
   }
 
@@ -262,6 +283,20 @@ function updatePatrons(
   }
 }
 
+function updateServiceCart(
+  target: ServiceCartTarget | null,
+  elapsed: number,
+  reducedMotion: boolean,
+) {
+  if (!target) return;
+  const progress = serviceCartProgress(elapsed, reducedMotion);
+  target.entity.setLocalPosition(
+    target.basePosition[0] + progress * SERVICE_CART_TRAVEL,
+    target.basePosition[1],
+    target.basePosition[2],
+  );
+}
+
 function target(
   app: pc.Application,
   name: string,
@@ -323,6 +358,19 @@ function patron(
     basePosition: [position.x, position.y, position.z],
     baseYaw: rotation.y,
     phase,
+  };
+}
+
+function positionTarget(
+  app: pc.Application,
+  name: string,
+): ServiceCartTarget | null {
+  const entity = app.root.findByName(name) as pc.Entity | null;
+  if (!entity) return null;
+  const position = entity.getLocalPosition();
+  return {
+    entity,
+    basePosition: [position.x, position.y, position.z],
   };
 }
 

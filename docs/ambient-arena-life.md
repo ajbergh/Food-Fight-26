@@ -37,7 +37,7 @@ The four boards use different phase offsets so the north wall does not pulse as 
 
 ## Third tranche — mezzanine patron silhouettes, PR #40
 
-The next arena-life pass adds eight deliberately simple spectators to the High-detail mezzanines:
+The third arena-life pass adds eight deliberately simple spectators to the High-detail mezzanines:
 
 - four silhouettes behind the north rail and four behind the south rail;
 - two render primitives per patron: one cylindrical body and one spherical head;
@@ -50,11 +50,26 @@ The silhouettes sit above and behind the authoritative combat plane. Their scale
 
 This tranche adds 16 non-shadow-casting renderers and no textures, downloads, particles, lights, skeletal animation, or network state.
 
+## Fourth tranche — peripheral service cart, PR #45
+
+The final scoped ambient-animation tranche adds one compact service cart to the High-detail north perimeter concourse:
+
+- five simple non-shadow-casting box renderers form an upper deck, lower shelf, two uprights, and handle;
+- the cart uses existing dark/desaturated steel, charcoal, and brass environment materials rather than team or gameplay colors;
+- its authored west parking position is `x=-5.5`, `z=-9.6`; the cart's 0.9-unit depth therefore remains fully beyond the authoritative map boundary at `z=-9`;
+- it traverses an 11-world-unit horizontal perimeter route to the east parking position and back;
+- the motion uses a 40-second cycle with 5-second parked dwell periods at each end and 12-second eased crossings;
+- the cart is High-only and reuses the existing 30 Hz ambient scheduler rather than registering another update callback.
+
+The long dwell periods and slow eased transit are deliberate. The cart should read as occasional background food-court service activity, not as an NPC, moving pickup, projectile, or gameplay hazard.
+
+This tranche adds five renderers and only one root-position update per High-quality ambient sample. It adds no assets, textures, downloads, collision, lights, particles, audio, networking, skeletal animation, or gameplay state.
+
 ## Motion budget
 
 Ambient life uses one existing presentation update path and samples at 30 Hz rather than registering another render-frame callback.
 
-With the mezzanine crowd enabled on High, the fixed transform budget is:
+With the mezzanine crowd and service cart enabled on High, the fixed transform budget is:
 
 - 16 escalator-step positions;
 - 3 wayfinding rotations;
@@ -63,9 +78,10 @@ With the mezzanine crowd enabled on High, the fixed transform budget is:
 - 4 menu accent scales;
 - 12 menu-line scales;
 - 8 patron root positions;
-- 8 patron root yaw rotations.
+- 8 patron root yaw rotations;
+- 1 service-cart root position.
 
-That is a maximum of 56 small transform updates per ambient sample on High quality. Medium performs the first 40 updates but does not render or animate patrons. Low quality disables the Medium/High scene roots.
+That is a maximum of **57 small transform updates per ambient sample on High quality**. Medium performs the escalator, wayfinding, and menu-board work only: **35 transform updates per sample**. The prior documentation value of 40 for Medium incorrectly included High-only equipment/handle updates. Low quality disables the Medium/High scene roots.
 
 ## Readability rules
 
@@ -79,6 +95,8 @@ That is a maximum of 56 small transform updates per ambient sample on High quali
 - Menu-board activity changes only primitive scale, stays below ±1.8 percent, and never changes color or emissive intensity.
 - Patron silhouettes remain dark/desaturated, behind mezzanine rails, and substantially smaller/less detailed than active players.
 - Patrons never use team colors, team shapes, chef silhouettes, item silhouettes, or player labels.
+- The service cart stays outside authoritative combat topology, uses no gameplay identification language, and pauses for more than a quarter of each cycle.
+- Crowd density must not increase before M18 representative-client evidence confirms the current High-detail budget is comfortably affordable.
 
 ## Reduced motion
 
@@ -91,19 +109,24 @@ When reduced motion is active:
 - equipment cues return to their base scale;
 - shake handles return to their base angle;
 - menu accent bars and menu lines return exactly to their authored scale;
-- patron roots return exactly to their authored position and yaw.
+- patron roots return exactly to their authored position and yaw;
+- the service cart returns exactly to its authored west parking position.
 
-The runtime exposes `data-arena-ambient-life="active|reduced"` on the document element. Vendor menus additionally expose `data-arena-ambient-menu="active|reduced|unavailable"`. Mezzanine patrons expose `data-arena-ambient-crowd="active|reduced|disabled|unavailable"`; `disabled` means the patron entities exist but High detail is not enabled.
+The runtime exposes `data-arena-ambient-life="active|reduced"` on the document element. Vendor menus additionally expose `data-arena-ambient-menu="active|reduced|unavailable"`. Mezzanine patrons expose `data-arena-ambient-crowd="active|reduced|disabled|unavailable"`, and the service cart exposes `data-arena-ambient-service="active|reduced|disabled|unavailable"`; `disabled` means the High-detail entity exists but High detail is not enabled.
 
 ## Validation
 
 M17 must keep these existing gates green:
 
-- TypeScript checks and unit tests;
+- TypeScript checks and unit tests, including service-cart dwell/bounds/reduced-motion coverage;
 - asset audit and production build;
 - client bundle-size budget;
 - eight-player authoritative-room benchmark;
 - staging container smoke;
-- browser E2E, including quality-tier ambient crowd diagnostics and active/reduced ambient-life/menu diagnostics.
+- browser E2E, including quality-tier ambient crowd/service diagnostics and active/reduced ambient-life/menu diagnostics.
 
-M17 remains open after the mezzanine-patron tranche. Later ambient work can add occasional peripheral service/cart motion or restrained environment audio only when each addition has an explicit update/readability/performance budget and demonstrates value from the gameplay camera. Crowd density should not increase until M18 rendered-client evidence proves the current High-detail cost is comfortably inside budget.
+## Scoped completion boundary
+
+After PR #45, M17's scoped implementation consists of four bounded motion layers: architectural/sign/equipment movement, vendor-menu activity, distant spectators, and occasional peripheral service motion. That is sufficient implementation coverage to stop adding ambient movement before representative-client validation.
+
+Restrained environmental audio remains a possible playtest-driven enhancement, not a requirement for M17 completion. M18 owns the structured eight-player rendered-client, gameplay-readability, reduced-motion, and performance evidence that determines whether any current ambient density or motion should be reduced, retained, or expanded.
