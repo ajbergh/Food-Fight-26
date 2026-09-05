@@ -5,6 +5,8 @@ import {
   handleRockDegrees,
   menuBoardAccentScale,
   menuBoardLineScale,
+  patronBobOffset,
+  patronSwayDegrees,
   wayfindingSwayDegrees,
 } from "./arenaAmbientLifeCore";
 
@@ -48,6 +50,13 @@ interface MenuBoardTarget {
   lines: ScaleTarget[];
 }
 
+interface PatronTarget {
+  entity: pc.Entity;
+  basePosition: [number, number, number];
+  baseYaw: number;
+  phase: number;
+}
+
 export function createArenaAmbientLife(
   options: ArenaAmbientLifeOptions,
 ): ArenaAmbientLifeController {
@@ -84,10 +93,15 @@ export function createArenaAmbientLife(
     menuBoard(app, "menu-dessert", 4.8),
   ].filter((value): value is MenuBoardTarget => value !== null);
 
+  const patrons = Array.from({ length: 8 }, (_, index) =>
+    patron(app, `mezzanine-patron-${index}`, index * 0.93),
+  ).filter((value): value is PatronTarget => value !== null);
+
   let elapsed = 0;
   let accumulator = UPDATE_INTERVAL_SECONDS;
   let lastDiagnostic = "";
   let lastMenuDiagnostic = "";
+  let lastCrowdDiagnostic = "";
 
   function reducedMotion() {
     return (
@@ -113,6 +127,16 @@ export function createArenaAmbientLife(
     if (menuDiagnostic !== lastMenuDiagnostic) {
       document.documentElement.dataset.arenaAmbientMenu = menuDiagnostic;
       lastMenuDiagnostic = menuDiagnostic;
+    }
+
+    const crowdDiagnostic = patrons.length === 0
+      ? "unavailable"
+      : highDetailRoot?.enabled
+        ? diagnostic
+        : "disabled";
+    if (crowdDiagnostic !== lastCrowdDiagnostic) {
+      document.documentElement.dataset.arenaAmbientCrowd = crowdDiagnostic;
+      lastCrowdDiagnostic = crowdDiagnostic;
     }
 
     if (mediumDetailRoot?.enabled) {
@@ -143,6 +167,7 @@ export function createArenaAmbientLife(
           handleRockDegrees(elapsed, target.phase, reduced),
         );
       }
+      updatePatrons(patrons, elapsed, reduced);
     }
   }
 
@@ -218,6 +243,25 @@ function updateMenuBoards(
   }
 }
 
+function updatePatrons(
+  patrons: readonly PatronTarget[],
+  elapsed: number,
+  reducedMotion: boolean,
+) {
+  for (const target of patrons) {
+    target.entity.setLocalPosition(
+      target.basePosition[0],
+      target.basePosition[1] + patronBobOffset(elapsed, target.phase, reducedMotion),
+      target.basePosition[2],
+    );
+    target.entity.setLocalEulerAngles(
+      0,
+      target.baseYaw + patronSwayDegrees(elapsed, target.phase, reducedMotion),
+      0,
+    );
+  }
+}
+
 function target(
   app: pc.Application,
   name: string,
@@ -261,6 +305,23 @@ function scaleTarget(entity: pc.Entity, phase: number): ScaleTarget {
   return {
     entity,
     baseScale: [scale.x, scale.y, scale.z],
+    phase,
+  };
+}
+
+function patron(
+  app: pc.Application,
+  name: string,
+  phase: number,
+): PatronTarget | null {
+  const entity = app.root.findByName(name) as pc.Entity | null;
+  if (!entity) return null;
+  const position = entity.getLocalPosition();
+  const rotation = entity.getLocalEulerAngles();
+  return {
+    entity,
+    basePosition: [position.x, position.y, position.z],
+    baseYaw: rotation.y,
     phase,
   };
 }

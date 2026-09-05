@@ -14,6 +14,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(page.locator(".red-score")).toContainText("●");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "active");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "active");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
 
   const quality = page.locator("#quality");
   const initialQuality = (await quality.textContent()) ?? "";
@@ -22,6 +23,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(page.locator("html")).toHaveAttribute("data-production-props", "ready", {
     timeout: 15_000,
   });
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "active");
 
   const audio = page.locator("#audio");
   await expect(audio).toHaveAttribute("aria-pressed", "false");
@@ -78,6 +80,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   await expect(body).toHaveAttribute("data-reduced-motion", "true");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
   await expect(motion).toHaveAttribute("aria-pressed", "true");
 
   await motion.click();
@@ -87,6 +90,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   // environmental motion remains suppressed even when the session toggle is off.
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
 
   await expect(body).toHaveAttribute("data-hud-scale", "normal");
   await hudScale.click();

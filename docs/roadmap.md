@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, hardware, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-04):** implementation is merged through the second M15 audited-production-prop tranche in [PR #38](https://github.com/ajbergh/Food-Fight-26/pull/38), including representative food-display and furniture/waste production models. The first M17 ambient arena-life tranche is merged in [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), and bounded vendor-menu animation is the active graphics tranche in [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31) and [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35) are documentation-only reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
+**Status snapshot (2026-09-04):** implementation is merged through the second M15 audited-production-prop tranche in [PR #38](https://github.com/ajbergh/Food-Fight-26/pull/38), including representative food-display and furniture/waste production models. The first M17 ambient arena-life tranche is merged in [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), bounded vendor-menu animation is in [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39), and a High-quality mezzanine-patron tranche is stacked behind it in [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31) and [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35) are documentation-only reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
 
 ## M0 — Repository and architecture — complete
 
@@ -213,18 +213,20 @@ Conditional on visual/performance value: produce a purpose-built reusable chef r
 
 ### M17 — Ambient arena life and environmental animation — in progress
 
-[PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37) merged the first bounded ambient-life tranche. [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39) is the active vendor-menu graphics tranche.
+[PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37) merged the first bounded ambient-life tranche. [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39) adds bounded vendor-menu motion, and [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40) is stacked behind it with a High-quality mezzanine spectator layer.
 
 - Reuses the existing M13 west/east escalator step entities for slow opposing peripheral motion.
 - Adds restrained sway to the three M6 hanging-wayfinding elements.
 - Adds subtle pizza-oven, grill, and shake-machine equipment movement on High quality.
 - Adds slow, out-of-phase horizontal breathing to the four existing vendor menu-board accent/line primitives with a maximum ±1.8 percent scale change.
-- Runs all ambient updates through the existing presentation update path with a fixed 30 Hz budget instead of another render-frame subscription.
-- Uses the existing reduced-motion contract to return all nonessential movement to stable authored poses/scales.
-- Adds unit coverage for bounded motion math and E2E-visible `data-arena-ambient-life` / `data-arena-ambient-menu` diagnostics.
-- Changes no collision, gameplay authority, networking, projectiles, pickups, objective behavior, dynamic lights, textures, or runtime assets.
+- Adds eight High-quality-only, dark/desaturated two-primitive mezzanine patrons behind the rails, with ±0.025-unit bob and ±2.2-degree yaw sway.
+- Keeps the crowd free of team colors/shapes, chef hats, player rings, held items, labels, collision, skeletal animation, and shadows so it cannot masquerade as gameplay actors.
+- Runs all ambient updates through the existing presentation update path with a fixed 30 Hz budget instead of another render-frame subscription; the crowd brings the High-detail ceiling to 56 small transform updates per sample.
+- Uses the existing reduced-motion contract to return all nonessential movement to stable authored poses/scales/positions.
+- Adds unit coverage for bounded motion math and E2E-visible `data-arena-ambient-life`, `data-arena-ambient-menu`, and `data-arena-ambient-crowd` diagnostics.
+- Changes no collision, gameplay authority, networking, projectiles, pickups, objective behavior, dynamic lights, textures, or runtime downloads.
 
-**Exit status:** M17 remains in progress after the vendor-menu tranche. Distant crowd cards, service/cart motion, and restrained environmental audio remain optional follow-on work and require explicit readability/performance budgets.
+**Exit status:** M17 remains in progress after the mezzanine-patron tranche. Occasional peripheral service/cart motion and restrained environmental audio remain optional follow-on work and require explicit readability/performance budgets. Do not increase crowd density until M18 representative-client evidence validates the current High-quality cost.
 
 ### M18 — Visual validation and regression gates — planned
 
@@ -253,7 +255,7 @@ Only begin a second arena after M18 proves that the first arena's production art
 | M13 | [#33](https://github.com/ajbergh/Food-Fight-26/pull/33) |
 | M14 | [#34](https://github.com/ajbergh/Food-Fight-26/pull/34) |
 | M15 | [#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38) |
-| M17 | [#37](https://github.com/ajbergh/Food-Fight-26/pull/37), [#39](https://github.com/ajbergh/Food-Fight-26/pull/39) |
+| M17 | [#37](https://github.com/ajbergh/Food-Fight-26/pull/37), [#39](https://github.com/ajbergh/Food-Fight-26/pull/39), [#40](https://github.com/ajbergh/Food-Fight-26/pull/40) |
 
 M0 is the repository baseline and predates this PR ledger. PR #31 and PR #35 are documentation-only reconciliation passes and are intentionally not counted as implementation pull requests.
 

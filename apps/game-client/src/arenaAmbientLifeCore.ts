@@ -59,3 +59,21 @@ export function menuBoardLineScale(
   if (reducedMotion) return 1;
   return 1 + Math.sin(elapsedSeconds * 0.36 + phase + lineIndex * 1.65) * 0.012;
 }
+
+export function patronBobOffset(
+  elapsedSeconds: number,
+  phase: number,
+  reducedMotion: boolean,
+) {
+  if (reducedMotion) return 0;
+  return Math.sin(elapsedSeconds * 0.48 + phase) * 0.025;
+}
+
+export function patronSwayDegrees(
+  elapsedSeconds: number,
+  phase: number,
+  reducedMotion: boolean,
+) {
+  if (reducedMotion) return 0;
+  return Math.sin(elapsedSeconds * 0.34 + phase) * 2.2;
+}

@@ -9,6 +9,7 @@ interface ArenaHeroModelsOptions {
 
 const C = {
   ink: new pc.Color(0.035, 0.028, 0.048),
+  charcoal: new pc.Color(0.08, 0.072, 0.09),
   plum: new pc.Color(0.19, 0.12, 0.23),
   steel: new pc.Color(0.42, 0.46, 0.54),
   glass: new pc.Color(0.22, 0.34, 0.42),
@@ -172,10 +173,51 @@ function createShakeStation(
   primitive(root, "top-beacon", "sphere", accent, [0.22, 0.22, 0.22], [0, 2.0, 0]);
 }
 
+function createMezzaninePatron(
+  parent: pc.Entity,
+  index: number,
+  position: [number, number, number],
+  facing: number,
+  body: pc.Material,
+  head: pc.Material,
+  heightScale: number,
+) {
+  const root = new pc.Entity(`mezzanine-patron-${index}`);
+  root.setLocalPosition(...position);
+  root.setLocalEulerAngles(0, facing, 0);
+  parent.addChild(root);
+
+  primitive(root, "body", "cylinder", body, [0.22, 0.48 * heightScale, 0.22], [0, 0.43 * heightScale, 0]);
+  primitive(root, "head", "sphere", head, [0.23, 0.23, 0.23], [0, 1.02 * heightScale, 0]);
+}
+
+function createMezzaninePatrons(
+  parent: pc.Entity,
+  dark: pc.Material,
+  mid: pc.Material,
+  head: pc.Material,
+) {
+  const patrons = [
+    [-11.2, 5.0, -11.25, 8, dark, 0.94],
+    [-5.6, 5.0, -11.28, -10, mid, 1.04],
+    [1.4, 5.0, -11.24, 7, dark, 1.0],
+    [8.9, 5.0, -11.27, -6, mid, 0.9],
+    [-8.8, 5.0, 11.26, 174, mid, 1.02],
+    [-2.2, 5.0, 11.24, 188, dark, 0.92],
+    [4.7, 5.0, 11.29, 177, mid, 1.06],
+    [11.0, 5.0, 11.23, 184, dark, 0.96],
+  ] as const;
+
+  patrons.forEach(([x, y, z, facing, body, heightScale], index) => {
+    createMezzaninePatron(parent, index, [x, y, z], facing, body, head, heightScale);
+  });
+}
+
 export function createArenaHeroModels(options: ArenaHeroModelsOptions) {
   const { mediumDetailRoot, highDetailRoot } = options;
 
   const ink = material(C.ink, 0.15);
+  const charcoal = material(C.charcoal, 0.16);
   const plum = material(C.plum, 0.26);
   const steel = material(C.steel, 0.68, 0.34);
   const glass = material(C.glass, 0.72, 0.05);
@@ -198,4 +240,9 @@ export function createArenaHeroModels(options: ArenaHeroModelsOptions) {
   createPizzaOven(highDetailRoot, "pizza-oven", [-9, 1.52, 10.0], plum, ink, tomato);
   createGrillStation(highDetailRoot, "burger-grill", [0, 1.5, 10.0], steel, ink, warm);
   createShakeStation(highDetailRoot, "shake-machine", [9, 1.48, 10.0], mint, steel, cream, berry);
+
+  // High: eight small, desaturated patron silhouettes sit behind the mezzanine rails.
+  // They intentionally omit team colors, player rings, held items, and chef silhouettes so
+  // they read as distant spectators rather than gameplay actors.
+  createMezzaninePatrons(highDetailRoot, ink, charcoal, brass);
 }

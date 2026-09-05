@@ -10,7 +10,7 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
 - **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit intake/derivation path; PR #38 broadened the production set with audited furniture/waste models from Kenney Furniture Kit.
-- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 adds equally bounded activity to the existing vendor menu boards.
+- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 adds equally bounded vendor-menu activity; PR #40 adds a High-quality-only mezzanine spectator layer.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -136,26 +136,41 @@ The second bounded tranche gives the existing vendor wall subtle operational lif
 - restores exact authored scales under reduced motion;
 - adds `data-arena-ambient-menu="active|reduced|unavailable"` plus unit/E2E coverage.
 
-See [M17 Ambient Arena Life](ambient-arena-life.md) for the motion/readability budget.
+### Tranche 3 — PR #40
+
+The third bounded tranche adds distant visual occupancy without creating gameplay-like actors:
+
+- adds eight High-quality-only patron silhouettes, four behind each mezzanine rail;
+- uses two non-shadow-casting primitives per patron and dark/desaturated environment materials;
+- introduces no team colors, team shapes, chef hats, player rings, item silhouettes, labels, textures, downloads, lights, particles, or skeletal animation;
+- varies silhouette height slightly to avoid obvious duplication;
+- caps root bob to ±0.025 world units and yaw sway to ±2.2 degrees;
+- adds 16 root-transform updates to the 30 Hz High-quality ambient ceiling and 16 simple renderers total;
+- restores exact authored positions/yaw under reduced motion;
+- exposes `data-arena-ambient-crowd="active|reduced|disabled|unavailable"`, with `disabled` used when High detail is off.
+
+See [M17 Ambient Arena Life](ambient-arena-life.md) for the complete motion/readability budget.
 
 ### Remaining candidates
 
-- distant mezzanine patron silhouettes or low-cost crowd cards;
 - occasional peripheral service/cart motion;
 - restrained environmental audio loops tied to quality/audio settings.
+
+Do not increase crowd density before M18 representative-client evidence confirms that the current High-quality crowd/render budget is comfortably affordable.
 
 ### Rules
 
 - Environmental animation must be slow, peripheral, and non-gameplay-signaling.
 - Reduced-motion mode must suppress or simplify nonessential movement.
 - No animated decoration may resemble a projectile, banana hazard, pickup, player, or objective state.
-- Crowd/ambient systems need hard instance/update budgets and must disable cleanly on Low quality.
+- Crowd/ambient systems need hard instance/update budgets and must disable cleanly outside their owning quality tier.
 - New ambient systems should reuse the existing presentation update path unless a measured need justifies another scheduler.
 - Screen/menu treatments must not flash, strobe, rapidly change hue, or use high-contrast timing that could compete with gameplay cues.
+- Crowd silhouettes must remain spatially separated from combatants and may not borrow player/team identification language.
 
 ### Exit gate
 
-M17 remains open until the arena feels materially more alive in motion while player/hazard tracking is unchanged in structured eight-player readability tests. Any additional crowd/audio/service motion must remain inside explicit update and quality-tier budgets.
+M17 remains open until the arena feels materially more alive in motion while player/hazard tracking is unchanged in structured eight-player readability tests. Service motion or environmental audio, if added, must remain inside explicit update and quality-tier budgets. M18 performance evidence is required before any increase in crowd density.
 
 ## M18 — Visual validation and regression gates
 

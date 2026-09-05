@@ -5,6 +5,8 @@ import {
   handleRockDegrees,
   menuBoardAccentScale,
   menuBoardLineScale,
+  patronBobOffset,
+  patronSwayDegrees,
   wayfindingSwayDegrees,
   wrap01,
 } from "./arenaAmbientLifeCore";
@@ -35,6 +37,8 @@ describe("arena ambient life motion", () => {
     expect(handleRockDegrees(2, 1, true)).toBe(20);
     expect(menuBoardAccentScale(2, 1, true)).toBe(1);
     expect(menuBoardLineScale(2, 1, 0, true)).toBe(1);
+    expect(patronBobOffset(2, 1, true)).toBe(0);
+    expect(patronSwayDegrees(2, 1, true)).toBe(0);
   });
 
   it("keeps active ambient motion deliberately subtle", () => {
@@ -47,11 +51,24 @@ describe("arena ambient life motion", () => {
     expect(menuBoardAccentScale(4, 0.5, false)).toBeLessThanOrEqual(1.018);
     expect(menuBoardLineScale(4, 0.5, 1, false)).toBeGreaterThanOrEqual(0.988);
     expect(menuBoardLineScale(4, 0.5, 1, false)).toBeLessThanOrEqual(1.012);
+    expect(Math.abs(patronBobOffset(4, 0.5, false))).toBeLessThanOrEqual(0.025);
+    expect(Math.abs(patronSwayDegrees(4, 0.5, false))).toBeLessThanOrEqual(2.2);
   });
 
   it("keeps menu lines out of phase so boards do not pulse as one block", () => {
     const first = menuBoardLineScale(5, 0.4, 0, false);
     const second = menuBoardLineScale(5, 0.4, 1, false);
     expect(first).not.toBeCloseTo(second, 4);
+  });
+
+  it("keeps patron silhouettes out of phase", () => {
+    expect(patronBobOffset(5, 0.2, false)).not.toBeCloseTo(
+      patronBobOffset(5, 2.1, false),
+      4,
+    );
+    expect(patronSwayDegrees(5, 0.2, false)).not.toBeCloseTo(
+      patronSwayDegrees(5, 2.1, false),
+      4,
+    );
   });
 });
