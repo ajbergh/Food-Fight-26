@@ -18,6 +18,8 @@ type ProductionPropId =
   | "chair"
   | "table-round"
   | "trashcan"
+  | "lamp-square-ceiling"
+  | "lamp-wall"
   | "service-window"
   | "freezers-standing"
   | "cash-register"
@@ -28,7 +30,7 @@ type ProductionPropId =
   | "coffee-machine"
   | "microwave";
 
-type ProductionPropGroup = "food" | "furniture" | "mini-market" | "kitchen";
+type ProductionPropGroup = "food" | "furniture" | "fixtures" | "mini-market" | "kitchen";
 
 interface ProductionPropPlacement {
   position: [number, number, number];
@@ -112,6 +114,38 @@ const PRODUCTION_PROPS: readonly ProductionPropDefinition[] = [
     placements: [
       { position: [-13.55, 0, -9.55], scale: 0.94, euler: [0, 18, 0] },
       { position: [13.55, 0, -9.55], scale: 0.94, euler: [0, -18, 0] },
+    ],
+  },
+  {
+    id: "lamp-square-ceiling",
+    group: "fixtures",
+    url: "/assets/third-party/kenney-furniture-kit/lamp-square-ceiling.glb",
+    placements: [
+      {
+        position: [-6.7, 5.18, 8.55],
+        scale: 4.4,
+        replaceName: "ceiling-card-west",
+      },
+      {
+        position: [0, 5.18, 8.55],
+        scale: 4.4,
+        replaceName: "ceiling-card-center",
+      },
+      {
+        position: [6.7, 5.18, 8.55],
+        scale: 4.4,
+        replaceName: "ceiling-card-east",
+      },
+    ],
+  },
+  {
+    id: "lamp-wall",
+    group: "fixtures",
+    url: "/assets/third-party/kenney-furniture-kit/lamp-wall.glb",
+    placements: [
+      { position: [-9, 2.78, 10.16], scale: 2.6, euler: [0, 180, 0] },
+      { position: [0, 2.78, 10.16], scale: 2.6, euler: [0, 180, 0] },
+      { position: [9, 2.78, 10.16], scale: 2.6, euler: [0, 180, 0] },
     ],
   },
   {
@@ -227,6 +261,7 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
     if (loadPromise) return loadPromise;
     document.documentElement.dataset.productionProps = "loading";
     document.documentElement.dataset.productionFurniture = "loading";
+    document.documentElement.dataset.productionFixtures = "loading";
     document.documentElement.dataset.productionMiniMarket = "loading";
     document.documentElement.dataset.productionKitchen = "loading";
     loadPromise = loadAllProps(app, highDetailRoot)
@@ -234,6 +269,11 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
         document.documentElement.dataset.productionProps = stateFor(loaded, failed);
         document.documentElement.dataset.productionFurniture = stateForGroup(
           "furniture",
+          loaded,
+          failed,
+        );
+        document.documentElement.dataset.productionFixtures = stateForGroup(
+          "fixtures",
           loaded,
           failed,
         );
@@ -255,6 +295,7 @@ export function createArenaProductionProps(options: ArenaProductionPropsOptions)
       .catch((error: unknown) => {
         document.documentElement.dataset.productionProps = "fallback";
         document.documentElement.dataset.productionFurniture = "fallback";
+        document.documentElement.dataset.productionFixtures = "fallback";
         document.documentElement.dataset.productionMiniMarket = "fallback";
         document.documentElement.dataset.productionKitchen = "fallback";
         console.warn("Production props failed; retaining procedural arena dressing.", error);

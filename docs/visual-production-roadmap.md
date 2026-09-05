@@ -9,7 +9,7 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M12 — reactive character animation:** procedural and skeletal character paths react to dodge and slip/stun states without changing authoritative gameplay.
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
-- **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit intake/derivation path; PR #38 broadened the production set with audited furniture/waste models from Kenney Furniture Kit; PR #41 is the active Mini Market storefront/service/vending/recycling fixture tranche.
+- **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit path; PR #38 added audited perimeter furniture/waste; PR #41 added Mini Market service, refrigeration, checkout, and recycling fixtures; PR #42 added production food-service equipment; PR #43 is the authored commercial-fixture and audit-hardening tranche.
 - **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 merged bounded vendor-menu activity; PR #40 merged the High-quality-only mezzanine spectator tranche.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate requirement to measure eight simultaneously rendered animated clients on representative hardware.
@@ -36,43 +36,68 @@ The first implementation tranche intentionally proved the production-asset path 
 
 ### Tranche 2 — merged in PR #38
 
-The second tranche expands representative coverage beyond food-display props:
+The second tranche expanded representative coverage beyond food-display props:
 
-- approves Kenney Furniture Kit as a controlled CC0 source;
-- verifies a pinned official Kenney archive and internal CC0 marker;
-- retrieves only selected runtime source models from an immutable mirrored revision with exact Git blob verification;
-- adds audited `bench`, `chair`, `table-round`, and `trashcan` GLBs;
-- places furniture/waste models only around the safe perimeter;
-- replaces selected procedural perimeter-table presentation entities only after successful production-model loading;
-- exposes furniture-specific runtime readiness while retaining the same High-quality lazy-load/fallback contract;
-- reproduces furniture derivation in CI and the production game-client image and verifies generated files in container smoke.
+- approved Kenney Furniture Kit as a controlled CC0 source;
+- verified a pinned official Kenney archive and internal CC0 marker;
+- retrieved only selected runtime source models from an immutable mirrored revision with exact Git blob verification;
+- added audited `bench`, `chair`, `table-round`, and `trashcan` GLBs;
+- placed furniture/waste models only around the safe perimeter;
+- replaced selected procedural perimeter-table presentation entities only after successful production-model loading;
+- exposed furniture-specific runtime readiness while retaining the same High-quality lazy-load/fallback contract;
+- reproduced furniture derivation in CI and the production game-client image and verified generated files in container smoke.
 
-### Tranche 3 — active in PR #41
+### Tranche 3 — merged in PR #41
 
-The third tranche moves from small dressing to recognizable food-court service/store fixtures using a tightly scoped Kenney Mini Market subset:
+The third tranche moved from small dressing to recognizable food-court service/store fixtures using a tightly scoped Kenney Mini Market subset:
 
-- approves Kenney Mini Market as a controlled CC0 source while using an immutable public mirror only for deterministic source bytes;
-- pins exact Git blob SHA-1 identities for `wall-window`, `freezers-standing`, `cash-register`, `bottle-return`, and the shared colormap;
-- derives only four self-contained runtime GLBs: `service-window`, `freezers-standing`, `cash-register`, and `bottle-return`;
-- records exact output SHA-256 plus per-model byte, triangle, primitive, material, texture, and animation ceilings;
-- replaces the west/east procedural vending blocks with standing freezer banks after successful High-quality loading;
-- replaces the west/east procedural recycling blocks with bottle-return stations after successful loading;
-- adds a service-window module and registers to the north vendor perimeter without changing collision or map topology;
-- exposes `data-production-mini-market="loading|ready|partial|fallback"` and requires successful High-quality loading in browser E2E;
-- reproduces the derivation in CI and the production game-client Docker image and directly verifies all four runtime files in container smoke.
+- approved Kenney Mini Market as a controlled CC0 source while using an immutable public mirror only for deterministic source bytes;
+- pinned exact Git blob SHA-1 identities for `wall-window`, `freezers-standing`, `cash-register`, `bottle-return`, and the shared colormap;
+- derived only four self-contained runtime GLBs: `service-window`, `freezers-standing`, `cash-register`, and `bottle-return`;
+- recorded exact output SHA-256 plus per-model byte, triangle, primitive, material, texture, and animation ceilings;
+- replaced the west/east procedural vending blocks with standing freezer banks after successful High-quality loading;
+- replaced the west/east procedural recycling blocks with bottle-return stations after successful loading;
+- added a service-window module and registers to the north vendor perimeter without changing collision or map topology;
+- exposed `data-production-mini-market="loading|ready|partial|fallback"` and required successful High-quality loading in browser E2E;
+- reproduced the derivation in CI and the production game-client Docker image and directly verified all four runtime files in container smoke.
 
 The four models total 117,188 generated bytes and 829 triangles, keeping the tranche far below the arena asset and geometry budgets while materially improving perimeter recognizability.
 
-See [M15 Audited Production Prop Intake](production-prop-intake.md) for the derivation and runtime contract.
+### Tranche 4 — merged in PR #42
+
+The fourth tranche reused the already approved Furniture Kit for recognizable food-service equipment instead of introducing another dependency:
+
+- `stove-electric` replaces the procedural burger-grill presentation block;
+- `hood-large` provides a production extraction silhouette above the grill station;
+- three `blender` instances replace the procedural shake-machine cabinet;
+- `microwave` and `coffee-machine` add recognizable counter equipment;
+- the stylized pizza oven remains procedural because the approved source does not contain a semantically correct pizza-oven replacement;
+- all equipment remains High-only, lazy-loaded, non-colliding, non-shadow-casting presentation geometry with procedural fallback;
+- the five source models total 66,564 generated bytes and 938 triangles.
+
+### Tranche 5 — active in PR #43
+
+The fifth tranche replaces generic High-quality luminous cards with authored commercial-lighting silhouettes while preserving the M9 light budget:
+
+- pins Kenney Furniture Kit `lampSquareCeiling.glb` and `lampWall.glb` to exact Git blob identities at the already approved mirror revision;
+- derives texture-free runtime outputs totaling 10,456 bytes and 102 triangles;
+- replaces the three High-detail procedural ceiling cards with authored ceiling-lamp instances after successful load;
+- adds three wall-lamp instances along the vendor wall;
+- treats fixtures as geometry only: no additional PlayCanvas lights, shadow casters, probes, post-process passes, collision, or replicated state;
+- adds `data-production-fixtures="loading|ready|partial|fallback"` and explicit High-quality E2E coverage;
+- corrects the PR #42 manifest omission by adding all five already-generated kitchen models to the fail-closed asset manifest;
+- hardens the audit CLI so supported runtime assets present below `manifest.runtimeRoot` but absent from `manifest.assets` fail CI, preventing the same omission from recurring.
+
+See [M15 Audited Production Prop Intake](production-prop-intake.md) for exact source pins, derivation hashes, structural ceilings, and the runtime fallback contract.
 
 ### Remaining priority order
 
-1. actual food-service equipment such as ovens, grills, fryers, dispensers, and display cases where a suitably licensed production source materially improves the M13 procedural equipment;
-2. overhead signage and lighting fixtures;
+1. overhead signage only if an already approved or newly reviewed/pinnable source contains a semantically correct model that materially improves current wayfinding at the gameplay camera;
+2. a true pizza oven or other specialist food-service model only if it clearly outperforms the existing stylized M13 silhouette;
 3. additional kiosk/storefront modules only where gameplay-camera review shows a clear silhouette/readability benefit;
-4. additional food or furniture props only when they improve gameplay-camera recognition.
+4. final gameplay-camera and representative-client performance review, then explicitly retain any remaining procedural elements that are already stronger than available production replacements.
 
-Food-display, furniture/waste, storefront/service, cold-display/vending, and recycling representative coverage is now established; those categories should grow only when gameplay-camera review demonstrates a clear benefit.
+Representative audited coverage is now established for food displays, furniture/waste, storefront/service, cold-display/vending, checkout/recycling, core food-service equipment, and commercial-lighting fixtures. These categories should grow only when gameplay-camera review demonstrates a clear benefit.
 
 ### Asset rules
 
@@ -80,13 +105,14 @@ Food-display, furniture/waste, storefront/service, cold-display/vending, and rec
 - Add another source only after license/provenance review and manifest approval.
 - Vendor or reproducibly derive only selected production assets, never a whole pack by default.
 - Keep first-play download buckets and per-model structural ceilings enforced in CI.
+- Every supported runtime asset below `manifest.runtimeRoot` must have an explicit manifest entry; generated-but-unmanifested assets are a CI failure.
 - Prefer self-contained/shared-material assets, KTX2/Basis texture compression when larger texture sets justify it, and instancing where practical.
 - Do not change collision or map topology merely to match an imported prop.
 - A distribution mirror may supply pinned bytes, but the original publisher remains the provenance/license authority.
 
 ### Exit gate
 
-M15 remains open until the visually important Food Court replacement categories have representative audited assets, gameplay-camera review confirms a material improvement over their procedural targets, and the resulting High-quality arena stays within client performance/download budgets. Low and Medium must retain clean fallback behavior.
+M15 remains open until the remaining procedural elements are either intentionally retained or replaced, gameplay-camera review confirms a material improvement over the original targets, and the resulting High-quality arena stays within client performance/download budgets. Low and Medium must retain clean fallback behavior. Representative-hardware evidence remains part of M18 and must be considered before declaring the overall visual production pass complete.
 
 ## M16 — Final authored Food Fight chef
 

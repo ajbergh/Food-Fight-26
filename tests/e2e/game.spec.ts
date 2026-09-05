@@ -42,6 +42,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
     timeout: 15_000,
   });
   await expect(html).toHaveAttribute("data-production-furniture", "ready");
+  await expect(html).toHaveAttribute("data-production-fixtures", "ready");
   await expect(html).toHaveAttribute("data-production-mini-market", "ready");
   await expect(html).toHaveAttribute("data-production-kitchen", "ready");
 
