@@ -38,6 +38,7 @@ CMD ["node", "dist/index.js"]
 FROM workspace AS game-client-build
 RUN pnpm assets:derive:kenney-props
 RUN pnpm assets:derive:kenney-furniture
+RUN pnpm assets:derive:kenney-mini-market
 RUN pnpm assets:audit
 RUN pnpm --filter @foodfight/game-client build
 
