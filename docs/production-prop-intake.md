@@ -4,7 +4,7 @@
 
 M15 replaces recognizable procedural food-court dressing with controlled production assets without weakening provenance, performance, or fallback behavior.
 
-Two production-safe tranches are now merged.
+Two production-safe tranches are merged and a third is active in PR #41.
 
 ## Tranche 1 — Kenney Food Kit, PR #36
 
@@ -72,6 +72,45 @@ The derivation script accepts only the selected furniture GLBs, structurally ins
 
 CI performs furniture derivation before the asset audit, and the production game-client Docker build reproduces the same generated files. Container smoke verifies that the generated furniture GLBs are present in the release-shaped image.
 
+## Tranche 3 — Kenney Mini Market, PR #41
+
+The third tranche targets larger recognizable perimeter fixtures rather than adding more small clutter:
+
+- `service-window`
+- `freezers-standing`
+- `cash-register`
+- `bottle-return`
+
+The standing-freezer instances replace the existing west/east procedural vending blocks after successful loading. Bottle-return stations replace the procedural recycling blocks. The service-window module and two registers add production geometry to the north vendor perimeter. All placements remain presentation-only and outside authoritative collision/topology.
+
+### Source and license boundary
+
+Kenney Mini Market is approved in `assets/third-party/manifest.json`. Kenney's official Mini Market publisher page is the provenance and CC0 license authority.
+
+For reproducible CI, only the four selected GLBs and their shared colormap are retrieved from immutable revision `2821b7fc7ba39960bc1f555bb4ebef7bc32efabc` of a public GitHub mirror. Every source file and the shared texture are pinned by exact Git blob SHA-1. Kenney remains the asset and license authority; the mirror is only a deterministic byte host and the complete pack is not vendored.
+
+### Deterministic derivation and measured budget
+
+Run:
+
+```bash
+pnpm assets:derive:kenney-mini-market
+```
+
+The derivation script verifies source identities, embeds the shared colormap into self-contained runtime GLBs, structurally inspects each result, and writes only the four selected files under `apps/game-client/public/assets/third-party/kenney-mini-market/`.
+
+Measured generated outputs are deliberately small:
+
+| Model | Bytes | Triangles | Primitives | Materials | Textures |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `service-window` | 24,316 | 146 | 2 | 2 | 1 |
+| `freezers-standing` | 24,068 | 156 | 1 | 1 | 1 |
+| `cash-register` | 29,060 | 203 | 1 | 1 | 1 |
+| `bottle-return` | 39,744 | 324 | 1 | 1 | 1 |
+| **Total** | **117,188** | **829** | **5** | **5** | **4 embedded references** |
+
+Exact SHA-256 outputs and hard per-model structural ceilings are recorded in the third-party manifest. CI, the production game-client Docker build, and container smoke all reproduce/verify the same four runtime files.
+
 ## Runtime policy
 
 All M15 production models are High-quality presentation assets. They load lazily when High graphics quality is selected rather than increasing the default Medium first-play payload.
@@ -81,7 +120,8 @@ The procedural arena remains the fallback. A production model may replace its ma
 The runtime exposes:
 
 - `data-production-props="loading|ready|partial|fallback"` for the complete production-prop set;
-- `data-production-furniture="loading|ready|partial|fallback"` for the Furniture Kit tranche.
+- `data-production-furniture="loading|ready|partial|fallback"` for the Furniture Kit tranche;
+- `data-production-mini-market="loading|ready|partial|fallback"` for the Mini Market fixture tranche.
 
 All production prop renderers remain:
 
@@ -97,13 +137,12 @@ M15 is not permission to import complete asset packs. Future props require an ex
 
 ## Remaining M15 coverage
 
-The merged food-display and furniture/waste tranches now provide representative coverage for small food props, seating/tables, benches, and trash stations. The highest-priority remaining audited replacement categories are:
+Food-display, furniture/waste, storefront/service, cold-display/vending, and recycling now have representative audited production coverage. The highest-priority remaining replacement categories are:
 
-1. restaurant kiosk/storefront modules;
-2. food-service equipment such as ovens, grills, dispensers, and display cases;
-3. vending/recycling stations where they add recognizable perimeter detail;
-4. overhead signage and lighting fixtures;
-5. additional food display props only when gameplay-camera review shows a clear benefit.
+1. actual food-service equipment such as ovens, grills, fryers, dispensers, and display cases where a suitably licensed production source materially improves the M13 procedural equipment;
+2. overhead signage and lighting fixtures;
+3. additional kiosk/storefront modules only where gameplay-camera review shows a meaningful silhouette/readability improvement;
+4. additional food or furniture props only when a specific visual gap justifies them.
 
 M15 remains open until those visually important categories have enough representative production coverage, gameplay-camera review demonstrates a material improvement over their procedural targets, and High quality remains within client performance/download budgets while Low and Medium retain clean fallbacks.
 
