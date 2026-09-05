@@ -4,7 +4,7 @@
 
 M15 replaces recognizable procedural food-court dressing with controlled production assets without weakening provenance, performance, or fallback behavior.
 
-Two production-safe tranches are merged and a third is active in PR #41.
+Four production-safe tranches are merged and the authored commercial-fixture tranche is active in PR #43.
 
 ## Tranche 1 — Kenney Food Kit, PR #36
 
@@ -33,34 +33,24 @@ Run:
 pnpm assets:derive:kenney-props
 ```
 
-The derivation script:
+The derivation script downloads only the selected GLBs plus their shared colormap, verifies pinned Git object identities, embeds the shared PNG into self-contained runtime GLBs, structurally inspects the results, and prints deterministic SHA-256 and geometry metrics for manifest reconciliation.
 
-1. downloads only the four selected GLBs plus their shared `Textures/colormap.png`;
-2. verifies every downloaded byte stream against its pinned Git blob identity;
-3. embeds the shared PNG into each GLB as an internal image buffer view;
-4. removes the external texture URI from the runtime model;
-5. writes self-contained runtime GLBs under `apps/game-client/public/assets/third-party/kenney-food-kit/`;
-6. runs the same structural glTF inspection used by the repository asset audit;
-7. prints deterministic SHA-256 and geometry metrics for manifest reconciliation.
+## Tranche 2 — Kenney Furniture Kit perimeter furniture, PR #38
 
-## Tranche 2 — Kenney Furniture Kit, PR #38
-
-The second tranche broadens M15 beyond food-display props with a small furniture/waste set:
+The second tranche broadened M15 beyond food-display props with a small furniture/waste set:
 
 - `bench`
 - `chair`
 - `table-round`
 - `trashcan`
 
-These models are placed only around the safe perimeter. The imported table models replace selected procedural perimeter-table presentation entities after successful loading; the remaining furniture augments existing dressing without changing authoritative collision or map topology.
+These models are placed only around the safe perimeter. Selected imported tables replace procedural perimeter-table presentation entities after successful loading; the remaining furniture augments existing dressing without changing authoritative collision or map topology.
 
 ### Source and license boundary
 
 Kenney Furniture Kit is approved in `assets/third-party/manifest.json` with Kenney's official Furniture Kit page as the provenance and CC0 license authority.
 
-The derivation path verifies a pinned official Kenney archive and its internal CC0 marker. Selected runtime source GLBs are then retrieved from an immutable `RetroDECK/RetroQUEST` revision with exact Git blob SHA-1 verification. The mirror is used only as a reproducible byte host; Kenney remains the asset and license authority, and the complete pack is never vendored into the repository.
-
-### Deterministic derivation
+The derivation path verifies a pinned official Kenney archive and its internal CC0 marker. Selected runtime source GLBs are then retrieved from immutable `RetroDECK/RetroQUEST` revision `dfa19a5602a31f64bd890d15279a61f43b127328` with exact Git blob SHA-1 verification. The mirror is used only as a reproducible byte host; Kenney remains the asset and license authority, and the complete pack is never vendored into the repository.
 
 Run:
 
@@ -68,38 +58,22 @@ Run:
 pnpm assets:derive:kenney-furniture
 ```
 
-The derivation script accepts only the selected furniture GLBs, structurally inspects them, and writes generated runtime files under `apps/game-client/public/assets/third-party/kenney-furniture-kit/`. Exact source/output identities and per-model byte/geometry ceilings are recorded in the third-party manifest.
-
-CI performs furniture derivation before the asset audit, and the production game-client Docker build reproduces the same generated files. Container smoke verifies that the generated furniture GLBs are present in the release-shaped image.
+CI performs Furniture Kit derivation before the asset audit, and the production game-client Docker build reproduces the same generated files.
 
 ## Tranche 3 — Kenney Mini Market, PR #41
 
-The third tranche targets larger recognizable perimeter fixtures rather than adding more small clutter:
+The third tranche targeted larger recognizable perimeter fixtures rather than adding more small clutter:
 
 - `service-window`
 - `freezers-standing`
 - `cash-register`
 - `bottle-return`
 
-The standing-freezer instances replace the existing west/east procedural vending blocks after successful loading. Bottle-return stations replace the procedural recycling blocks. The service-window module and two registers add production geometry to the north vendor perimeter. All placements remain presentation-only and outside authoritative collision/topology.
+The standing-freezer instances replace the existing west/east procedural vending blocks after successful loading. Bottle-return stations replace the procedural recycling blocks. The service-window module and two registers add production geometry to the vendor perimeter. All placements remain presentation-only and outside authoritative collision/topology.
 
-### Source and license boundary
+For reproducible CI, only the four selected GLBs and their shared colormap are retrieved from immutable revision `2821b7fc7ba39960bc1f555bb4ebef7bc32efabc` of a public GitHub mirror. Every source file and the shared texture are pinned by exact Git blob SHA-1. Kenney remains the asset and license authority.
 
-Kenney Mini Market is approved in `assets/third-party/manifest.json`. Kenney's official Mini Market publisher page is the provenance and CC0 license authority.
-
-For reproducible CI, only the four selected GLBs and their shared colormap are retrieved from immutable revision `2821b7fc7ba39960bc1f555bb4ebef7bc32efabc` of a public GitHub mirror. Every source file and the shared texture are pinned by exact Git blob SHA-1. Kenney remains the asset and license authority; the mirror is only a deterministic byte host and the complete pack is not vendored.
-
-### Deterministic derivation and measured budget
-
-Run:
-
-```bash
-pnpm assets:derive:kenney-mini-market
-```
-
-The derivation script verifies source identities, embeds the shared colormap into self-contained runtime GLBs, structurally inspects each result, and writes only the four selected files under `apps/game-client/public/assets/third-party/kenney-mini-market/`.
-
-Measured generated outputs are deliberately small:
+Measured generated outputs:
 
 | Model | Bytes | Triangles | Primitives | Materials | Textures |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -109,7 +83,47 @@ Measured generated outputs are deliberately small:
 | `bottle-return` | 39,744 | 324 | 1 | 1 | 1 |
 | **Total** | **117,188** | **829** | **5** | **5** | **4 embedded references** |
 
-Exact SHA-256 outputs and hard per-model structural ceilings are recorded in the third-party manifest. CI, the production game-client Docker build, and container smoke all reproduce/verify the same four runtime files.
+## Tranche 4 — Kenney Furniture Kit food-service equipment, PR #42
+
+The fourth tranche reused the already approved/pinned Furniture Kit instead of adding another dependency:
+
+- `stove-electric`
+- `hood-large`
+- `blender`
+- `coffee-machine`
+- `microwave`
+
+The electric stove replaces the procedural burger-grill presentation block. A production hood restores the extraction silhouette above it. Three blender instances replace the procedural shake-machine cabinet while the microwave and coffee machine add recognizable counter equipment. The stylized pizza oven remains procedural because the approved source does not contain a semantically correct pizza-oven replacement; substituting a domestic stove would reduce visual clarity.
+
+Measured generated outputs remain texture-free and compact:
+
+| Model | Bytes | Triangles | Primitives | Materials |
+| --- | ---: | ---: | ---: | ---: |
+| `stove-electric` | 18,604 | 338 | 6 | 6 |
+| `hood-large` | 4,652 | 36 | 2 | 2 |
+| `blender` | 18,728 | 246 | 4 | 3 |
+| `coffee-machine` | 13,332 | 166 | 3 | 3 |
+| `microwave` | 11,248 | 152 | 6 | 4 |
+| **Total** | **66,564** | **938** | **21** | **18** |
+
+## Tranche 5 — Kenney Furniture Kit authored commercial fixtures, PR #43
+
+The active fixture tranche replaces generic High-quality luminous cards with authored commercial-lighting silhouettes while deliberately keeping the M9 lighting budget unchanged:
+
+- `lamp-square-ceiling`, sourced from `lampSquareCeiling.glb` pinned to Git blob `8aaf95cd620ab2b96b326012137af3e8534a2e4d`;
+- `lamp-wall`, sourced from `lampWall.glb` pinned to Git blob `cc2d160260a0b7ef08e611a22013043378209898`.
+
+Three ceiling-lamp instances replace the High-detail `ceiling-card-west`, `ceiling-card-center`, and `ceiling-card-east` procedural entities after successful loading. Three wall-lamp instances add a repeated authored fixture rhythm at the vendor wall.
+
+The source GLBs are exceptionally small and texture-free:
+
+| Model | Bytes | Triangles | Primitives | Materials | Textures | Animations |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `lamp-square-ceiling` | 5,628 | 60 | 2 | 2 | 0 | 0 |
+| `lamp-wall` | 4,828 | 42 | 2 | 2 | 0 | 0 |
+| **Total** | **10,456** | **102** | **4** | **4** | **0** | **0** |
+
+These are geometry-only fixtures. They do **not** add PlayCanvas light components, shadow casters, probes, post-processing, or per-frame lighting work. High quality therefore retains the existing M9 maximum of two additional static non-shadow-casting vendor omni fills; Medium and Low add none.
 
 ## Runtime policy
 
@@ -120,16 +134,12 @@ The procedural arena remains the fallback. A production model may replace its ma
 The runtime exposes:
 
 - `data-production-props="loading|ready|partial|fallback"` for the complete production-prop set;
-- `data-production-furniture="loading|ready|partial|fallback"` for the Furniture Kit tranche;
-- `data-production-mini-market="loading|ready|partial|fallback"` for the Mini Market fixture tranche.
+- `data-production-furniture="loading|ready|partial|fallback"` for perimeter Furniture Kit dressing;
+- `data-production-mini-market="loading|ready|partial|fallback"` for Mini Market fixtures;
+- `data-production-kitchen="loading|ready|partial|fallback"` for food-service equipment;
+- `data-production-fixtures="loading|ready|partial|fallback"` for authored commercial-lighting fixture geometry.
 
-All production prop renderers remain:
-
-- presentation-only;
-- non-colliding;
-- non-shadow-casting in the current tranches;
-- outside authoritative gameplay state;
-- subordinate to player, hazard, projectile, and objective readability.
+All production prop renderers remain presentation-only, non-colliding, non-shadow-casting in the current tranches, outside authoritative gameplay state, and subordinate to player/hazard/projectile/objective readability.
 
 ## Asset-growth rule
 
@@ -137,14 +147,16 @@ M15 is not permission to import complete asset packs. Future props require an ex
 
 ## Remaining M15 coverage
 
-Food-display, furniture/waste, storefront/service, cold-display/vending, and recycling now have representative audited production coverage. The highest-priority remaining replacement categories are:
+Representative audited coverage now exists for food displays, perimeter furniture/waste, storefront/service fixtures, cold-display/vending, checkout/recycling, core food-service equipment, and authored commercial-lighting fixtures.
 
-1. actual food-service equipment such as ovens, grills, fryers, dispensers, and display cases where a suitably licensed production source materially improves the M13 procedural equipment;
-2. overhead signage and lighting fixtures;
-3. additional kiosk/storefront modules only where gameplay-camera review shows a meaningful silhouette/readability improvement;
-4. additional food or furniture props only when a specific visual gap justifies them.
+The remaining work should be selective rather than catalog-driven:
 
-M15 remains open until those visually important categories have enough representative production coverage, gameplay-camera review demonstrates a material improvement over their procedural targets, and High quality remains within client performance/download budgets while Low and Medium retain clean fallbacks.
+1. overhead signage only if an approved/pinnable source contains a semantically correct model that materially improves the current wayfinding/signage silhouette;
+2. a true pizza-oven or other missing specialist food-service asset only if it clearly outperforms the existing stylized M13 silhouette;
+3. additional kiosk/storefront modules only where gameplay-camera review shows a meaningful readability improvement;
+4. final gameplay-camera and representative-client performance review before M15 closure.
+
+M15 should close when the remaining procedural elements are either intentionally retained or replaced, gameplay-camera review demonstrates a material improvement, and High quality remains within client performance/download budgets while Low and Medium retain clean fallbacks.
 
 ## Validation gates
 
