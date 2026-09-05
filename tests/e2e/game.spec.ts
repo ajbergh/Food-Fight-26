@@ -16,6 +16,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(html).toHaveAttribute("data-arena-ambient-life", "active");
   await expect(html).toHaveAttribute("data-arena-ambient-menu", "active");
   await expect(html).toHaveAttribute("data-arena-ambient-crowd", "disabled");
+  await expect(html).toHaveAttribute("data-arena-ambient-service", "disabled");
 
   const quality = page.locator("#quality");
   await expect(quality).toContainText("medium");
@@ -34,10 +35,12 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
     return {
       quality: button.textContent ?? "",
       crowd: document.documentElement.dataset.arenaAmbientCrowd ?? "",
+      service: document.documentElement.dataset.arenaAmbientService ?? "",
     };
   });
   expect(highSnapshot.quality).toContain("high");
   expect(highSnapshot.crowd).toBe("active");
+  expect(highSnapshot.service).toBe("active");
   await expect(html).toHaveAttribute("data-production-props", "ready", {
     timeout: 15_000,
   });
@@ -102,6 +105,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-service", "disabled");
   await expect(motion).toHaveAttribute("aria-pressed", "true");
 
   await motion.click();
@@ -112,6 +116,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-crowd", "disabled");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-service", "disabled");
 
   await expect(body).toHaveAttribute("data-hud-scale", "normal");
   await hudScale.click();
