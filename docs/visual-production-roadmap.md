@@ -2,7 +2,7 @@
 
 This document extends the master roadmap with the next art-production gates after M12–M14. It is deliberately ordered so visual ambition does not outrun multiplayer readability, asset provenance, or client performance.
 
-## Current baseline — complete through M15, M17 in progress
+## Current baseline — complete through M15 and scoped M17 implementation
 
 The repository now has a coherent presentation stack rather than a single graybox art pass:
 
@@ -10,7 +10,7 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
 - **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit path; PR #38 added audited perimeter furniture/waste; PR #41 added Mini Market service, refrigeration, checkout, and recycling fixtures; PR #42 added production food-service equipment; PR #43 added authored commercial fixtures and hardened runtime-manifest coverage. The scoped replacement implementation is complete.
-- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 merged bounded vendor-menu activity; PR #40 merged the High-quality-only mezzanine spectator tranche.
+- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 added bounded vendor-menu activity; PR #40 added High-quality-only mezzanine spectators; PR #45 adds one occasional peripheral service cart on the same 30 Hz scheduler. This completes the scoped ambient-animation implementation without increasing crowd density.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate M18 requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -151,7 +151,7 @@ The current M12 transform-layer dodge/slip reactions remain valid fallbacks; aut
 
 The final chef passes provenance/structural audits, first-play budgets, eight-character render testing, animation/readability review, and color-vision/accessibility review. Only then should the project decide whether to make the skeletal path the default.
 
-## M17 — Ambient arena life and environmental animation — in progress
+## M17 — Ambient arena life and environmental animation — complete at scoped animation level
 
 ### Goal
 
@@ -195,14 +195,20 @@ The third bounded tranche adds distant visual occupancy without creating gamepla
 - exposes `data-arena-ambient-crowd="active|reduced|disabled|unavailable"`, with `disabled` used when High detail is off;
 - preserves the existing adaptive High-to-Low quality fallback, with deterministic E2E coverage that snapshots the High-quality crowd state before a slow headless runner can auto-demote.
 
+### Tranche 4 — PR #45
+
+The fourth and final scoped animation tranche adds occasional peripheral service motion without increasing crowd density:
+
+- adds one five-primitive High-quality service cart on the north perimeter concourse outside authoritative combat topology;
+- reuses existing steel/charcoal/brass environment materials and remains non-shadow-casting, non-colliding, and free of gameplay identifiers;
+- uses a 40-second shuttle cycle with 5-second parked dwell periods and 12-second eased crossings across an 11-world-unit route;
+- adds only one root-position write to the existing 30 Hz High-quality ambient scheduler;
+- freezes exactly at the authored west parking position under reduced motion;
+- exposes `data-arena-ambient-service="active|reduced|disabled|unavailable"` with unit and browser regression coverage.
+
+The reconciled ambient budget is 35 transform writes per Medium sample and 57 per High sample. The previous Medium documentation value of 40 incorrectly counted five High-only equipment/handle writes.
+
 See [M17 Ambient Arena Life](ambient-arena-life.md) for the complete motion/readability budget.
-
-### Remaining candidates
-
-- occasional peripheral service/cart motion;
-- restrained environmental audio loops tied to quality/audio settings.
-
-Do not increase crowd density before M18 representative-client evidence confirms that the current High-quality crowd/render budget is comfortably affordable.
 
 ### Rules
 
@@ -213,10 +219,13 @@ Do not increase crowd density before M18 representative-client evidence confirms
 - New ambient systems should reuse the existing presentation update path unless a measured need justifies another scheduler.
 - Screen/menu treatments must not flash, strobe, rapidly change hue, or use high-contrast timing that could compete with gameplay cues.
 - Crowd silhouettes must remain spatially separated from combatants and may not borrow player/team identification language.
+- Crowd density must not increase before M18 representative-client evidence confirms the current High-quality cost is affordable.
 
 ### Exit gate
 
-M17 remains open until the arena feels materially more alive in motion while player/hazard tracking is unchanged in structured eight-player readability tests. Service motion or environmental audio, if added, must remain inside explicit update and quality-tier budgets. M18 performance evidence is required before any increase in crowd density.
+**M17 scoped implementation is complete with PR #45.** The Food Court now has bounded architecture/sign/equipment movement, subtle menu activity, distant spectators, and occasional service motion, all on one 30 Hz scheduler with deterministic reduced-motion fallbacks and browser diagnostics.
+
+Restrained environmental audio remains an optional playtest-driven enhancement rather than an M17 blocker. M18 owns structured eight-player rendered-client readability and performance evidence; its findings may require reducing or retuning current ambient motion before shipping.
 
 ## M18 — Visual validation and regression gates
 
