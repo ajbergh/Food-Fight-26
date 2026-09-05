@@ -1,5 +1,6 @@
 export type LocomotionState = "idle" | "walk" | "run";
 export type CharacterActionState = "normal" | "dodge" | "slip";
+export type CharacterReactionKind = "hit" | "celebrate" | "defeat";
 
 export interface LocomotionPose {
   strideDegrees: number;
@@ -27,7 +28,25 @@ export interface CharacterActionPose {
   expression: number;
 }
 
+export interface CharacterReactionPose {
+  lift: number;
+  crouch: number;
+  pitchDegrees: number;
+  rollDegrees: number;
+  headPitchDegrees: number;
+  armLiftDegrees: number;
+  legBendDegrees: number;
+  squashX: number;
+  squashY: number;
+  expression: number;
+}
+
 export const THROW_DURATION_SECONDS = 0.48;
+export const CHARACTER_REACTION_DURATION_SECONDS: Record<CharacterReactionKind, number> = {
+  hit: 0.34,
+  celebrate: 1.4,
+  defeat: 1.45,
+};
 
 export function resolveLocomotion(normalizedSpeed: number): LocomotionState {
   const speed = Math.max(0, normalizedSpeed);
@@ -118,6 +137,65 @@ export function characterActionPose(
   };
 }
 
+export function characterReactionPose(
+  kind: CharacterReactionKind,
+  progress: number,
+): CharacterReactionPose {
+  const t = clamp01(progress);
+  if (t <= 0 || t >= 1) return neutralReactionPose();
+
+  if (kind === "hit") {
+    const impulse = Math.sin(Math.PI * t);
+    return {
+      lift: 0,
+      crouch: 0.045 * impulse,
+      pitchDegrees: -12 * impulse,
+      rollDegrees: 7 * impulse,
+      headPitchDegrees: -10 * impulse,
+      armLiftDegrees: 24 * impulse,
+      legBendDegrees: 10 * impulse,
+      squashX: 1 + 0.055 * impulse,
+      squashY: 1 - 0.07 * impulse,
+      expression: 0.95 * impulse,
+    };
+  }
+
+  if (kind === "celebrate") {
+    const envelope = Math.sin(Math.PI * t);
+    const beat = Math.sin(t * Math.PI * 4);
+    const upBeat = Math.max(0, beat);
+    const downBeat = Math.max(0, -beat);
+    return {
+      lift: 0.11 * upBeat * envelope,
+      crouch: 0.035 * downBeat * envelope,
+      pitchDegrees: -6 * envelope,
+      rollDegrees: Math.sin(t * Math.PI * 2) * 5 * envelope,
+      headPitchDegrees: -10 * envelope,
+      armLiftDegrees: 90 * envelope,
+      legBendDegrees: (8 + downBeat * 10) * envelope,
+      squashX: 1 + 0.035 * downBeat * envelope,
+      squashY: 1 - 0.035 * downBeat * envelope,
+      expression: envelope,
+    };
+  }
+
+  const enter = smoothstep(t / 0.22);
+  const exit = smoothstep((1 - t) / 0.22);
+  const slump = Math.min(enter, exit);
+  return {
+    lift: 0,
+    crouch: 0.13 * slump,
+    pitchDegrees: 27 * slump,
+    rollDegrees: -4 * slump,
+    headPitchDegrees: 22 * slump,
+    armLiftDegrees: -8 * slump,
+    legBendDegrees: 18 * slump,
+    squashX: 1 + 0.05 * slump,
+    squashY: 1 - 0.08 * slump,
+    expression: 0.65 * slump,
+  };
+}
+
 export function throwPose(progress: number): ThrowPose {
   const t = clamp01(progress);
 
@@ -147,6 +225,21 @@ export function throwPose(progress: number): ThrowPose {
     elbowDegrees: lerp(16, 0, recovery),
     torsoTwistDegrees: lerp(26, 0, recovery),
     counterArmDegrees: lerp(-16, 0, recovery),
+  };
+}
+
+function neutralReactionPose(): CharacterReactionPose {
+  return {
+    lift: 0,
+    crouch: 0,
+    pitchDegrees: 0,
+    rollDegrees: 0,
+    headPitchDegrees: 0,
+    armLiftDegrees: 0,
+    legBendDegrees: 0,
+    squashX: 1,
+    squashY: 1,
+    expression: 0,
   };
 }
 
