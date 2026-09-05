@@ -40,3 +40,22 @@ export function handleRockDegrees(
   if (reducedMotion) return 20;
   return 20 + Math.sin(elapsedSeconds * 0.9 + phase) * 4.5;
 }
+
+export function menuBoardAccentScale(
+  elapsedSeconds: number,
+  phase: number,
+  reducedMotion: boolean,
+) {
+  if (reducedMotion) return 1;
+  return 1 + Math.sin(elapsedSeconds * 0.42 + phase) * 0.018;
+}
+
+export function menuBoardLineScale(
+  elapsedSeconds: number,
+  phase: number,
+  lineIndex: number,
+  reducedMotion: boolean,
+) {
+  if (reducedMotion) return 1;
+  return 1 + Math.sin(elapsedSeconds * 0.36 + phase + lineIndex * 1.65) * 0.012;
+}

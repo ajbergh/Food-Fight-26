@@ -13,6 +13,7 @@ test("connects, exposes live diagnostics, and accepts authoritative combat input
   await expect(page.locator(".blue-score")).toContainText("◆");
   await expect(page.locator(".red-score")).toContainText("●");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "active");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "active");
 
   const quality = page.locator("#quality");
   const initialQuality = (await quality.textContent()) ?? "";
@@ -76,6 +77,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   await expect(settings).toBeVisible();
   await expect(body).toHaveAttribute("data-reduced-motion", "true");
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
   await expect(motion).toHaveAttribute("aria-pressed", "true");
 
   await motion.click();
@@ -84,6 +86,7 @@ test("responsive HUD accessibility settings persist on a phone viewport", async 
   // The emulated OS preference still requests reduced motion, so nonessential 3D
   // environmental motion remains suppressed even when the session toggle is off.
   await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-life", "reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-arena-ambient-menu", "reduced");
 
   await expect(body).toHaveAttribute("data-hud-scale", "normal");
   await hudScale.click();

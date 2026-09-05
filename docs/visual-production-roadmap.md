@@ -9,8 +9,8 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M12 — reactive character animation:** procedural and skeletal character paths react to dodge and slip/stun states without changing authoritative gameplay.
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
-- **M15 — audited production prop replacement:** the first merged tranche establishes a deterministic Kenney Food Kit intake/derivation path and High-quality runtime loading for selected food-display props.
-- **M17 — ambient arena life:** the first tranche animates existing escalators, hanging wayfinding, and vendor equipment with a fixed transform budget and explicit reduced-motion fallback.
+- **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit intake/derivation path; PR #38 broadened the production set with audited furniture/waste models from Kenney Furniture Kit.
+- **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 adds equally bounded activity to the existing vendor menu boards.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -20,9 +20,9 @@ The automated eight-player multiplayer/room gate is treated as passing for this 
 
 Replace the highest-value procedural arena placeholders with a deliberately small set of audited production GLBs while preserving the footprints and quality-tier ownership established by M13.
 
-### First tranche — merged in PR #36
+### Tranche 1 — merged in PR #36
 
-The first implementation tranche is intentionally narrow and proves the production-asset path before larger environment imports:
+The first implementation tranche intentionally proved the production-asset path before larger environment imports:
 
 - selected Kenney Food Kit `pizza`, `pizza-box`, `can`, and `carton` models;
 - immutable mirror revision and Git-blob verification for downloaded source bytes;
@@ -34,22 +34,34 @@ The first implementation tranche is intentionally narrow and proves the producti
 - Docker-image smoke checks proving all four derived GLBs ship in release-shaped images;
 - browser E2E coverage for successful High-quality production-prop readiness.
 
+### Tranche 2 — merged in PR #38
+
+The second tranche expands representative coverage beyond food-display props:
+
+- approves Kenney Furniture Kit as a controlled CC0 source;
+- verifies a pinned official Kenney archive and internal CC0 marker;
+- retrieves only selected runtime source models from an immutable mirrored revision with exact Git blob verification;
+- adds audited `bench`, `chair`, `table-round`, and `trashcan` GLBs;
+- places furniture/waste models only around the safe perimeter;
+- replaces selected procedural perimeter-table presentation entities only after successful production-model loading;
+- exposes furniture-specific runtime readiness while retaining the same High-quality lazy-load/fallback contract;
+- reproduces furniture derivation in CI and the production game-client image and verifies generated files in container smoke.
+
 See [M15 Audited Production Prop Intake](production-prop-intake.md) for the derivation and runtime contract.
 
 ### Remaining priority order
 
 1. restaurant kiosk/storefront modules;
 2. food-service equipment such as ovens, grills, dispensers, and display cases;
-3. table/chair/booth set;
-4. vending, trash, and recycling stations;
-5. additional food display props only when they improve gameplay-camera recognition;
-6. overhead signage and lighting fixtures.
+3. vending/recycling stations where they add recognizable perimeter detail;
+4. overhead signage and lighting fixtures;
+5. additional food display props only when they improve gameplay-camera recognition.
 
-The first tranche addresses the food-display path; it does not imply the other categories are complete.
+Food-display and furniture/waste representative coverage is now established; those categories should grow only when gameplay-camera review demonstrates a clear benefit.
 
 ### Asset rules
 
-- Prefer the already approved Kenney Food Kit where it satisfies the art direction.
+- Prefer already approved Kenney sources where they satisfy the art direction.
 - Add another source only after license/provenance review and manifest approval.
 - Vendor or reproducibly derive only selected production assets, never a whole pack by default.
 - Keep first-play download buckets and per-model structural ceilings enforced in CI.
@@ -100,7 +112,7 @@ The final chef passes provenance/structural audits, first-play budgets, eight-ch
 
 Make the arena feel occupied and alive without putting high-frequency motion into the combat lanes.
 
-### First tranche
+### Tranche 1 — merged in PR #37
 
 The first implementation tranche deliberately animates only scene nodes that already exist:
 
@@ -112,11 +124,22 @@ The first implementation tranche deliberately animates only scene nodes that alr
 - `data-arena-ambient-life="active|reduced"` diagnostics for stable browser validation;
 - complete static-pose fallback when product or OS reduced motion is active.
 
+### Tranche 2 — PR #39
+
+The second bounded tranche gives the existing vendor wall subtle operational life without introducing new assets or screen-rendering cost:
+
+- reuses the four M6 vendor menu-board roots;
+- adds slow out-of-phase horizontal scale motion to each existing accent bar and three menu-line primitives;
+- caps accent motion to ±1.8 percent and menu-line motion to ±1.2 percent;
+- keeps all menu work on the same 30 Hz ambient update path;
+- performs no color/emissive flashing, texture swaps, material cloning, particles, lights, or render-to-texture work;
+- restores exact authored scales under reduced motion;
+- adds `data-arena-ambient-menu="active|reduced|unavailable"` plus unit/E2E coverage.
+
 See [M17 Ambient Arena Life](ambient-arena-life.md) for the motion/readability budget.
 
 ### Remaining candidates
 
-- bounded vendor-screen/menu animation;
 - distant mezzanine patron silhouettes or low-cost crowd cards;
 - occasional peripheral service/cart motion;
 - restrained environmental audio loops tied to quality/audio settings.
@@ -128,6 +151,7 @@ See [M17 Ambient Arena Life](ambient-arena-life.md) for the motion/readability b
 - No animated decoration may resemble a projectile, banana hazard, pickup, player, or objective state.
 - Crowd/ambient systems need hard instance/update budgets and must disable cleanly on Low quality.
 - New ambient systems should reuse the existing presentation update path unless a measured need justifies another scheduler.
+- Screen/menu treatments must not flash, strobe, rapidly change hue, or use high-contrast timing that could compete with gameplay cues.
 
 ### Exit gate
 

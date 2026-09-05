@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, hardware, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-04):** implementation is merged through the first M15 audited-production-prop tranche in [PR #36](https://github.com/ajbergh/Food-Fight-26/pull/36). M17 ambient arena life is the active visual-production phase in [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31) and [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35) are documentation-only reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
+**Status snapshot (2026-09-04):** implementation is merged through the second M15 audited-production-prop tranche in [PR #38](https://github.com/ajbergh/Food-Fight-26/pull/38), including representative food-display and furniture/waste production models. The first M17 ambient arena-life tranche is merged in [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), and bounded vendor-menu animation is the active graphics tranche in [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39). [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31) and [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35) are documentation-only reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
 
 ## M0 — Repository and architecture — complete
 
@@ -58,9 +58,9 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Readable sundae objective and team-control ring.
 - Low/medium/high quality tiers, synthesized action/match audio, reduced-motion feedback, and live FPS/frame-time instrumentation.
 - Third-party provenance manifest and automated CI audits for source approval, hashes, runtime formats, byte ceilings, first-play buckets, and glTF/GLB structure.
-- Kenney Food Kit is approved as a controlled food-prop source. Quaternius Ultimate Food Pack remains on hold pending explicit license/provenance resolution.
+- Kenney Food Kit and Kenney Furniture Kit are approved as controlled CC0 production-prop sources. Quaternius Ultimate Food Pack remains on hold pending explicit license/provenance resolution.
 
-**Production status after M12–M15:** the procedural art stack is no longer only a graybox. M13 established stronger hero architecture and food-service equipment footprints, M14 moved the opt-in skeletal pilot toward a chef identity, and M15 proved a deterministic audited production-GLB intake/runtime path. Remaining production work is concentrated in broader audited environment replacement, the final authored-chef decision, ambient-life validation, and representative rendered-client performance evidence.
+**Production status after M12–M17:** the procedural art stack is no longer only a graybox. M13 established stronger hero architecture and food-service equipment footprints, M14 moved the opt-in skeletal pilot toward a chef identity, M15 proved and expanded a deterministic audited production-GLB intake/runtime path, and M17 is adding bounded environmental life without changing gameplay. Remaining production work is concentrated in broader audited environment replacement, the final authored-chef decision, ambient-life/readability validation, and representative rendered-client performance evidence.
 
 ## M5 — First polished playtest foundation — in progress
 
@@ -196,15 +196,16 @@ The detailed sequence and acceptance gates live in [Visual production roadmap](v
 
 ### M15 — Audited production prop replacement — in progress
 
-[PR #36](https://github.com/ajbergh/Food-Fight-26/pull/36) merged the first production-safe tranche.
+[PR #36](https://github.com/ajbergh/Food-Fight-26/pull/36) merged the first production-safe food-display tranche. [PR #38](https://github.com/ajbergh/Food-Fight-26/pull/38) merged the second audited furniture/waste tranche.
 
 - Added deterministic, pinned Kenney Food Kit intake for `pizza`, `pizza-box`, `can`, and `carton`.
-- Verifies immutable mirror revision/Git blob identities while retaining Kenney as provenance/license authority.
-- Embeds the shared colormap into self-contained runtime GLBs and applies exact hash/geometry ceilings in the asset manifest.
+- Added approved Kenney Furniture Kit intake for `bench`, `chair`, `table-round`, and `trashcan` with pinned official archive/license verification and immutable mirrored source-byte checks.
+- Applies exact source/output integrity and geometry ceilings in the asset manifest.
 - Lazy-loads the models only on High graphics quality and preserves procedural fallback.
-- Reproduces the same derivation in CI and the production game-client Docker image; container smoke directly fetches every generated GLB.
+- Replaces only selected presentation primitives after successful model loading; authoritative collision and map topology remain unchanged.
+- Reproduces both derivation paths in CI and the production game-client Docker image; container smoke directly verifies generated GLBs.
 
-**Remaining:** representative audited kiosk/storefront, food-service equipment, seating, vending/waste, and signage replacements plus gameplay-camera/performance review. M15 remains open until those categories have enough production coverage to justify closing the replacement phase.
+**Remaining:** representative audited kiosk/storefront modules, food-service equipment, vending/recycling, and signage/lighting replacements plus gameplay-camera/performance review. Seating/tables/bench/trash representative coverage is now established and should expand only when it materially improves the gameplay view. M15 remains open until the remaining categories have enough production coverage to justify closing the replacement phase.
 
 ### M16 — Final authored Food Fight chef — conditional/planned
 
@@ -212,17 +213,18 @@ Conditional on visual/performance value: produce a purpose-built reusable chef r
 
 ### M17 — Ambient arena life and environmental animation — in progress
 
-[PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37) is the first bounded ambient-life tranche.
+[PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37) merged the first bounded ambient-life tranche. [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39) is the active vendor-menu graphics tranche.
 
 - Reuses the existing M13 west/east escalator step entities for slow opposing peripheral motion.
 - Adds restrained sway to the three M6 hanging-wayfinding elements.
 - Adds subtle pizza-oven, grill, and shake-machine equipment movement on High quality.
-- Runs ambient updates through the existing presentation update path with a fixed 30 Hz budget instead of another render-frame subscription.
-- Uses the existing reduced-motion contract to return all nonessential movement to stable authored poses.
-- Adds unit coverage for bounded motion math and E2E-visible `data-arena-ambient-life` diagnostics.
-- Changes no collision, gameplay authority, networking, projectiles, pickups, objective behavior, dynamic lights, or runtime assets.
+- Adds slow, out-of-phase horizontal breathing to the four existing vendor menu-board accent/line primitives with a maximum ±1.8 percent scale change.
+- Runs all ambient updates through the existing presentation update path with a fixed 30 Hz budget instead of another render-frame subscription.
+- Uses the existing reduced-motion contract to return all nonessential movement to stable authored poses/scales.
+- Adds unit coverage for bounded motion math and E2E-visible `data-arena-ambient-life` / `data-arena-ambient-menu` diagnostics.
+- Changes no collision, gameplay authority, networking, projectiles, pickups, objective behavior, dynamic lights, textures, or runtime assets.
 
-**Exit status:** M17 remains in progress after this tranche. Additional ambient work should be driven by gameplay-camera/readability review; crowd/service-cart/audio additions remain optional until their value is demonstrated.
+**Exit status:** M17 remains in progress after the vendor-menu tranche. Distant crowd cards, service/cart motion, and restrained environmental audio remain optional follow-on work and require explicit readability/performance budgets.
 
 ### M18 — Visual validation and regression gates — planned
 
@@ -250,8 +252,8 @@ Only begin a second arena after M18 proves that the first arena's production art
 | M12 | [#32](https://github.com/ajbergh/Food-Fight-26/pull/32) |
 | M13 | [#33](https://github.com/ajbergh/Food-Fight-26/pull/33) |
 | M14 | [#34](https://github.com/ajbergh/Food-Fight-26/pull/34) |
-| M15 | [#36](https://github.com/ajbergh/Food-Fight-26/pull/36) |
-| M17 | [#37](https://github.com/ajbergh/Food-Fight-26/pull/37) |
+| M15 | [#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38) |
+| M17 | [#37](https://github.com/ajbergh/Food-Fight-26/pull/37), [#39](https://github.com/ajbergh/Food-Fight-26/pull/39) |
 
 M0 is the repository baseline and predates this PR ledger. PR #31 and PR #35 are documentation-only reconciliation passes and are intentionally not counted as implementation pull requests.
 
