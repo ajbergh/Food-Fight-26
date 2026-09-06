@@ -32,6 +32,7 @@ This directory is the product and engineering source of truth for the initial ve
 - [M16 procedural chef finish](procedural-chef-finish.md)
 - [M16 character reactions](character-reactions.md)
 - [M17 ambient arena life](ambient-arena-life.md)
+- [M18 visual validation harness](visual-validation-harness.md)
 - [Asset pipeline](asset-pipeline.md)
 - [Character animation](character-animation.md)
 - [Character production pass](character-production-pass.md)
