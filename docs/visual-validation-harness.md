@@ -24,13 +24,13 @@ Add `visualValidation=1` to the game-client URL.
 Recommended representative-device run:
 
 ```text
-?visualValidation=1&visualValidationWarmupMs=5000&visualValidationMs=30000&visualValidationQuality=medium&visualValidationLabel=win-laptop-medium-procedural-run1
+?visualValidation=1&visualValidationPlayers=8&visualValidationWarmupMs=5000&visualValidationMs=30000&visualValidationQuality=medium&visualValidationLabel=win-laptop-medium-procedural-run1
 ```
 
 To measure the skeletal pilot with the same contract, add the existing opt-in flag:
 
 ```text
-?skeletalPilot=1&visualValidation=1&visualValidationWarmupMs=5000&visualValidationMs=30000&visualValidationQuality=medium&visualValidationLabel=win-laptop-medium-skeletal-run1
+?skeletalPilot=1&visualValidation=1&visualValidationPlayers=8&visualValidationWarmupMs=5000&visualValidationMs=30000&visualValidationQuality=medium&visualValidationLabel=win-laptop-medium-skeletal-run1
 ```
 
 Supported harness parameters:
@@ -38,9 +38,10 @@ Supported harness parameters:
 | Parameter | Default | Bounds / values | Purpose |
 | --- | ---: | --- | --- |
 | `visualValidation` | off | `1` enables | Keeps normal play completely outside the benchmark path. |
-| `visualValidationWarmupMs` | 2000 | 0–10000 ms | Allows shaders/assets/runtime state to settle before sampling. |
+| `visualValidationPlayers` | any known population | integer 1–8 | Waits for the requested rendered-player count before warm-up and invalidates if it is not maintained. Use `8` for M18 acceptance runs. |
+| `visualValidationWarmupMs` | 2000 | 0–10000 ms | Allows shaders/assets/runtime state to settle after the room population is ready. |
 | `visualValidationMs` | 15000 | 500–120000 ms | Controls the measured requestAnimationFrame window. |
-| `visualValidationQuality` | current tier | `low`, `medium`, `high` | Requests a repeatable tier before warm-up. |
+| `visualValidationQuality` | current tier | `low`, `medium`, `high` | Requests a tier once before warm-up; adaptive fallback remains authoritative afterward. |
 | `visualValidationLabel` | empty | sanitized, 80 characters | Human-readable device/tier/path/run identifier. |
 
 For M18 acceptance runs, use a **5-second warm-up and 30-second sample** unless a later ADR changes the standard.
@@ -49,10 +50,11 @@ For M18 acceptance runs, use a **5-second warm-up and 30-second sample** unless 
 
 When enabled, the root `<html>` element progresses through:
 
-- `data-visual-validation="warming"`
-- `data-visual-validation="collecting"`
-- `data-visual-validation="ready"` for a valid completed run
-- `data-visual-validation="invalid"` when a trustworthiness guard is violated
+- `data-visual-validation="waiting-players"` while the room population is unknown or below/above an explicitly required count;
+- `data-visual-validation="warming"` after the population gate is satisfied;
+- `data-visual-validation="collecting"` during the measured window;
+- `data-visual-validation="ready"` for a valid completed run;
+- `data-visual-validation="invalid"` when a trustworthiness guard is violated.
 
 A completed report is published at:
 
@@ -69,9 +71,9 @@ The report includes:
 - frame-time p50, p95, p99, and worst frame;
 - viewport width/height and DPR;
 - browser-reported hardware concurrency and device-memory hint where available;
-- graphics tier at the start and end of the sample;
-- procedural/skeletal character path;
-- visible player count parsed from live network diagnostics;
+- requested graphics tier plus graphics tier at sample start and finish;
+- procedural/skeletal character path at sample start and finish plus a final convenience alias;
+- required player count, player count at sample start and finish, plus a final convenience alias;
 - reduced-motion state;
 - team-palette state;
 - sanitized run label and capture timestamp.
@@ -86,15 +88,22 @@ If the browser does not provide the DevTools `copy()` helper, evaluate `JSON.str
 
 ## Trustworthiness guards
 
+The harness waits for a known live room population before beginning warm-up. When `visualValidationPlayers` is supplied, it waits until that exact count is present.
+
 A report is marked invalid when:
 
-- the document becomes hidden during the measured window;
-- the graphics tier differs between sample start and finish, including an adaptive-quality fallback;
+- the document becomes hidden during the measured window, including an interval in which `requestAnimationFrame` is paused by the browser;
+- the requested graphics tier cannot survive the warm-up;
+- the graphics tier changes during the measured window, including an adaptive-quality fallback;
+- the procedural/skeletal character path changes during the measured window;
+- an explicitly required player count is not maintained throughout the measured window;
+- reduced-motion or team-palette settings change during the measured window;
+- viewport size or DPR changes during the measured window;
 - fewer than 10 valid frame samples are recorded.
 
 An invalid run should be retained only as diagnostic evidence. It must be repeated before comparing tiers or character paths.
 
-The harness intentionally does **not** disable adaptive quality. If High cannot remain High on a device under the current production workload, that is evidence M18 needs to see rather than behavior the benchmark should mask.
+The harness intentionally does **not** disable adaptive quality. `visualValidationQuality` is applied once before warm-up. If High cannot remain High on a device under the current production workload, the run is invalid rather than the benchmark repeatedly forcing High back on. That failure is evidence M18 needs to see.
 
 ## Representative-device procedure
 
@@ -103,8 +112,8 @@ For each device under review:
 1. Record the physical device model, CPU/SoC, GPU, RAM, OS version, browser/version, display resolution, browser viewport, power mode, and whether the device is plugged in.
 2. Close unrelated high-load applications and avoid OS updates, screen recording, remote-desktop capture, or background GPU workloads during the measured window.
 3. Start the normal release-shaped client/server stack. For local development, `pnpm dev` starts the web, game-client, game-server, and platform API; `pnpm bots` starts the existing bot harness.
-4. Populate the room to **8/8** before the measured window. M18 is specifically concerned with eight simultaneously rendered characters; the server-only eight-client benchmark is a separate gate and is not a substitute.
-5. Confirm the intended character path and graphics tier before accepting the result.
+4. Use `visualValidationPlayers=8`. The harness will remain in `waiting-players` until the room reaches **8/8**, then it begins the warm-up. M18 is specifically concerned with eight simultaneously rendered characters; the server-only eight-client benchmark is a separate gate and is not a substitute.
+5. Confirm the intended character path and requested graphics tier before accepting the result. A tier/path transition during sampling invalidates the report.
 6. Run at least **three valid 30-second samples** for each required configuration. Use distinct `visualValidationLabel` values ending in `run1`, `run2`, and `run3`.
 7. Save the JSON reports with the hardware notes and screenshots/reference captures from the same build.
 8. Repeat any run marked invalid rather than averaging it into the comparison.
@@ -135,13 +144,15 @@ M18 should compare repeated runs and investigate material regressions rather tha
 
 ## CI contract
 
-Unit tests validate percentile ordering, invalid-sample filtering, empty windows, and bounded query durations. Browser E2E runs a deliberately short sample to prove that:
+Unit tests validate percentile ordering, invalid-sample filtering, empty windows, and bounded query durations. Browser E2E runs deliberately short samples to prove that:
 
 - the harness activates only when requested;
+- it waits for a known live room population;
 - the report becomes machine-readable;
 - frame-time percentiles remain ordered;
 - tier start/end metadata is coherent;
-- the default character path and player-count metadata are exposed.
+- the default character path and player-count metadata are exposed;
+- an explicit requested tier and required rendered-player count are honored in the valid report contract.
 
 **Headless CI values are plumbing diagnostics only and must not be copied into the M18 representative-device evidence table.**
 
