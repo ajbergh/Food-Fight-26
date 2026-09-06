@@ -62,7 +62,7 @@ describe("character animation poses", () => {
     expect(hit.pitchDegrees).toBeLessThan(-8);
     expect(hit.armLiftDegrees).toBeGreaterThan(15);
     expect(hit.squashX).toBeLessThanOrEqual(1.055);
-    expect(hit.squashY).toBeGreaterThanOrEqual(0.93);
+    expect(hit.squashY).toBeCloseTo(0.93, 10);
     expect(hit.expression).toBeGreaterThan(0.8);
   });
 
