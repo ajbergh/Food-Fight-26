@@ -85,6 +85,52 @@ test("opt-in skeletal pilot loads and preserves authoritative combat input", asy
   expect(consoleErrors).toEqual([]);
 });
 
+test("opt-in visual validation harness publishes a bounded machine-readable report", async ({ page }) => {
+  await page.goto("/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=700&visualValidationLabel=e2e");
+
+  const html = page.locator("html");
+  await expect(page.locator("#network")).toContainText("online");
+  await expect(html).toHaveAttribute("data-visual-validation", "ready", { timeout: 15_000 });
+
+  const report = await page.evaluate(() => {
+    const validationWindow = window as Window & {
+      __foodfightVisualValidation?: {
+        label: string;
+        valid: boolean;
+        invalidReasons: string[];
+        sampleCount: number;
+        fps: number;
+        frameMsP50: number;
+        frameMsP95: number;
+        frameMsP99: number;
+        worstFrameMs: number;
+        viewportWidth: number;
+        viewportHeight: number;
+        graphicsTierStart: string;
+        graphicsTierEnd: string;
+        characterPath: string;
+        playerCount: number | null;
+      };
+    };
+    return validationWindow.__foodfightVisualValidation;
+  });
+
+  expect(report).toBeDefined();
+  expect(report!.label).toBe("e2e");
+  expect(report!.valid).toBe(true);
+  expect(report!.invalidReasons).toEqual([]);
+  expect(report!.sampleCount).toBeGreaterThan(10);
+  expect(report!.fps).toBeGreaterThan(0);
+  expect(report!.frameMsP50).toBeLessThanOrEqual(report!.frameMsP95);
+  expect(report!.frameMsP95).toBeLessThanOrEqual(report!.frameMsP99);
+  expect(report!.frameMsP99).toBeLessThanOrEqual(report!.worstFrameMs);
+  expect(report!.viewportWidth).toBeGreaterThan(0);
+  expect(report!.viewportHeight).toBeGreaterThan(0);
+  expect(report!.graphicsTierStart).toBe(report!.graphicsTierEnd);
+  expect(report!.characterPath).toBe("procedural");
+  expect(report!.playerCount).toBe(1);
+});
+
 test("responsive HUD accessibility settings persist on a phone viewport", async ({ page }) => {
   test.setTimeout(60_000);
 
