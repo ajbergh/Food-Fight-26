@@ -70,6 +70,10 @@ function startVisualValidation() {
   let graphicsTierStart: GraphicsTier = "unknown";
   const frameTimes: number[] = [];
 
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && sampleStartedAt !== undefined) hiddenDuringSample = true;
+  });
+
   function tick(now: number) {
     if (document.hidden) {
       if (sampleStartedAt !== undefined) hiddenDuringSample = true;
