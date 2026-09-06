@@ -10,7 +10,7 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
 - **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit path; PR #38 added audited perimeter furniture/waste; PR #41 added Mini Market service, refrigeration, checkout, and recycling fixtures; PR #42 added production food-service equipment; PR #43 added authored commercial fixtures and hardened runtime-manifest coverage. The scoped replacement implementation is complete.
-- **M16 — default chef shipping candidate/final-character decision:** PR #46 begins by bringing the existing default procedural chef closer to the environment's production finish with deterministic, zero-download costume/silhouette detailing. The eventual authored-skeletal/default decision remains gated by measured value and M18 evidence.
+- **M16 — default chef shipping candidate/final-character decision:** merged PR #46 brings the existing default procedural chef closer to the environment's production finish with deterministic, zero-download costume/silhouette detailing. PR #47 adds authoritative hit, celebration, and defeat reactions to both the procedural and skeletal presentation paths. The eventual authored-skeletal/default decision remains gated by measured value and M18 evidence.
 - **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 added bounded vendor-menu activity; PR #40 added High-quality-only mezzanine spectators; merged PR #45 added one occasional peripheral service cart on the same 30 Hz scheduler. The scoped ambient-animation implementation is complete without increasing crowd density.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate M18 requirement to measure eight simultaneously rendered animated clients on representative hardware.
@@ -125,7 +125,7 @@ M18 remains the shipping-validation owner for representative-hardware frame paci
 
 Raise the default procedural chef to a credible shipping-candidate finish first, then move to a purpose-built Food Fight skeletal character only if the authored result is materially better and still meets the performance contract.
 
-### Tranche 1 — PR #46: procedural shipping-candidate finish
+### Tranche 1 — merged in PR #46: procedural shipping-candidate finish
 
 PR #46 improves the character path players actually see by default without adding a new asset dependency:
 
@@ -140,6 +140,21 @@ PR #46 improves the character path players actually see by default without addin
 
 See [M16 Procedural Chef Finish](procedural-chef-finish.md) for the detailed visual/performance contract.
 
+### Tranche 2 — PR #47: authoritative character reactions
+
+PR #47 closes the remaining presentation-level `hit`, `celebrate`, and `defeat` behavior gap without introducing new replicated state or authored binary clips:
+
+- uses the existing authoritative `ImpactMessage.targetSessionId` to trigger hit recoil on the actual target;
+- uses the existing authoritative `round_finished.team` event to drive celebration for winners and defeat for losers;
+- adds a bounded 0.34-second hit recoil, 1.4-second winner celebration, and 1.45-second defeat slump;
+- layers the same reaction semantics over both the procedural chef and opt-in skeletal pilot;
+- guarantees neutral recovery after each transient reaction;
+- keeps server simulation, protocol, collision, scoring, objective behavior, input, and map state unchanged;
+- adds no new GLB, texture, audio, download, light, particle, post-process pass, or scheduler;
+- adds focused unit coverage for timing, bounds, and neutral recovery.
+
+See [M16 Character Reactions](character-reactions.md) for the event and timing contract.
+
 ### Final authored-character requirements
 
 If a new skeletal character is pursued after the improved procedural path is reviewed, it must provide:
@@ -151,7 +166,7 @@ If a new skeletal character is pursued after the improved procedural path is rev
 - deterministic cosmetic variation without eight unique hero downloads;
 - external team ring/shape markers preserved so hue is never the only team cue.
 
-### Required production clips
+### Authored production clip targets for a final skeletal candidate
 
 - `idle`
 - `walk`
@@ -163,7 +178,7 @@ If a new skeletal character is pursued after the improved procedural path is rev
 - `celebrate`
 - `defeat`
 
-The current M12 transform-layer dodge/slip reactions remain valid fallbacks; authored clips should replace them only when they improve readability and timing.
+The current M12 transform-layer dodge/slip reactions and PR #47 hit/celebrate/defeat reactions are valid shipping fallbacks. Authored clips should replace them only when they improve readability, timing, and measured production value enough to justify their runtime and authoring cost.
 
 ### Exit gate
 
