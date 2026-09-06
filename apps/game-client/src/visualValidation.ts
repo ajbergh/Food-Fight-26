@@ -27,9 +27,11 @@ export interface VisualValidationReport {
   requestedGraphicsTier: RequestedGraphicsTier | null;
   graphicsTierStart: GraphicsTier;
   graphicsTierEnd: GraphicsTier;
+  characterPath: CharacterPath;
   characterPathStart: CharacterPath;
   characterPathEnd: CharacterPath;
   requiredPlayerCount: number | null;
+  playerCount: number | null;
   playerCountStart: number | null;
   playerCountEnd: number | null;
   reducedMotion: boolean;
@@ -66,7 +68,7 @@ function startVisualValidation() {
   const requestedTier = readRequestedTier(params.get("visualValidationQuality"));
   const requiredPlayerCount = readRequiredPlayerCount(params.get("visualValidationPlayers"));
 
-  root.dataset.visualValidation = requiredPlayerCount === null ? "warming" : "waiting-players";
+  root.dataset.visualValidation = "waiting-players";
   delete window.__foodfightVisualValidation;
 
   let warmupStartedAt: number | undefined;
@@ -136,7 +138,7 @@ function startVisualValidation() {
 
     if (sampleStartedAt === undefined) {
       if (warmupStartedAt === undefined) {
-        if (requiredPlayerCount !== null && readPlayerCount() !== requiredPlayerCount) {
+        if (!populationReady(requiredPlayerCount)) {
           root.dataset.visualValidation = "waiting-players";
           lastFrameAt = now;
           window.requestAnimationFrame(tick);
@@ -239,9 +241,11 @@ function startVisualValidation() {
       requestedGraphicsTier: requestedTier ?? null,
       graphicsTierStart,
       graphicsTierEnd,
+      characterPath: characterPathEnd,
       characterPathStart,
       characterPathEnd,
       requiredPlayerCount,
+      playerCount: playerCountEnd,
       playerCountStart,
       playerCountEnd,
       reducedMotion: reducedMotionEnd,
@@ -259,7 +263,7 @@ function startVisualValidation() {
   window.requestAnimationFrame((now) => {
     lastFrameAt = now;
     if (requestedTier) applyRequestedTier(requestedTier);
-    if (requiredPlayerCount === null || readPlayerCount() === requiredPlayerCount) {
+    if (populationReady(requiredPlayerCount)) {
       warmupStartedAt = now;
       root.dataset.visualValidation = "warming";
     }
@@ -285,6 +289,12 @@ function readRequiredPlayerCount(value: string | null) {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1 || parsed > 8) return null;
   return parsed;
+}
+
+function populationReady(requiredPlayerCount: number | null) {
+  const playerCount = readPlayerCount();
+  if (playerCount === null) return false;
+  return requiredPlayerCount === null || playerCount === requiredPlayerCount;
 }
 
 function readGraphicsTier(): GraphicsTier {
