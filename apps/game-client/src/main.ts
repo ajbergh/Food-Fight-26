@@ -135,6 +135,7 @@ interface ImpactVisual {
 }
 
 const playerVisuals = new Map<string, PlayerVisual>();
+const playerTeams = new Map<string, number>();
 const projectileVisuals = new Map<string, MovingVisual>();
 const bananaVisuals = new Map<string, pc.Entity>();
 const pickupVisuals = new Map<string, PickupVisual>();
@@ -178,6 +179,7 @@ function colorForSession(sessionId: string): pc.Color {
 }
 
 function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVisual {
+  playerTeams.set(sessionId, player.team);
   const existing = playerVisuals.get(sessionId);
   if (existing) {
     existing.label.textContent = player.stunRemaining > 0
@@ -292,6 +294,7 @@ function syncState(state: MatchStateShape) {
     visual.entity.destroy();
     visual.label.remove();
     playerVisuals.delete(sessionId);
+    playerTeams.delete(sessionId);
   }
 
   const projectiles = state.projectiles as unknown as StateCollection<ProjectileSnapshot>;
@@ -409,6 +412,12 @@ function handleMatchEvent(message: MatchEventMessage) {
   if (message.type === "objective_control" || message.type === "overtime" || message.type === "round_started") {
     vfx.spawnObjectiveBurst(message.team);
   }
+  if (message.type === "round_finished" && message.team) {
+    const winningTeam = message.team === "blue" ? 0 : 1;
+    for (const [sessionId, playerTeam] of playerTeams) {
+      art.triggerPlayerReaction(sessionId, playerTeam === winningTeam ? "celebrate" : "defeat");
+    }
+  }
   if (toastTimer !== undefined) window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => eventToast.classList.remove("visible"), 1500);
 }
@@ -493,6 +502,7 @@ function spawnImpact(message: ImpactMessage) {
   app.root.addChild(entity);
   impactVisuals.push({ entity, age: 0 });
   vfx.spawnImpact(message);
+  if (message.targetSessionId) art.triggerPlayerReaction(message.targetSessionId, "hit");
 }
 
 function tickImpacts(dt: number) {

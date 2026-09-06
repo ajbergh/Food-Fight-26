@@ -5,6 +5,7 @@ import { createArenaDetail } from "./arenaDetail";
 import { createArenaHeroModels } from "./arenaHeroModels";
 import {
   createCharacterVisual,
+  type CharacterReactionKind,
   type CharacterThrowKind,
   type CharacterVisual,
 } from "./characterVisual";
@@ -31,6 +32,7 @@ interface ArtPrototypeController {
     direction?: { x: number; z: number },
     kind?: CharacterThrowKind,
   ): void;
+  triggerPlayerReaction(sessionId: string, kind: CharacterReactionKind): void;
   setObjectiveState(owner: TeamName, contested: boolean): void;
   update(dt: number): void;
   cycleQuality(): void;
@@ -326,9 +328,14 @@ export function createArtPrototype(options: ArtPrototypeOptions): ArtPrototypeCo
     playerCharacters.get(sessionId)?.triggerThrow(direction, kind);
   }
 
+  function triggerPlayerReaction(sessionId: string, kind: CharacterReactionKind) {
+    playerCharacters.get(sessionId)?.triggerReaction(kind);
+  }
+
   return {
     decoratePlayer,
     triggerPlayerThrow,
+    triggerPlayerReaction,
     setObjectiveState,
     update(dt: number) {
       elapsed += dt;
