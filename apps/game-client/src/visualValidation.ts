@@ -69,6 +69,7 @@ function startVisualValidation() {
   const requiredPlayerCount = readRequiredPlayerCount(params.get("visualValidationPlayers"));
 
   root.dataset.visualValidation = "waiting-players";
+  root.dataset.visualValidationReasons = "pending";
   delete window.__foodfightVisualValidation;
 
   let warmupStartedAt: number | undefined;
@@ -254,6 +255,7 @@ function startVisualValidation() {
 
     window.__foodfightVisualValidation = report;
     root.dataset.visualValidation = report.valid ? "ready" : "invalid";
+    root.dataset.visualValidationReasons = invalidReasons.length > 0 ? invalidReasons.join(",") : "none";
     root.dataset.visualValidationTier = graphicsTierEnd;
     root.dataset.visualValidationCharacter = characterPathEnd;
     root.dataset.visualValidationPlayers = playerCountEnd === null ? "unknown" : String(playerCountEnd);
