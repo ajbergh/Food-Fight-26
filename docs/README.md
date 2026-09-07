@@ -34,6 +34,7 @@ This directory is the product and engineering source of truth for the initial ve
 - [M17 ambient arena life](ambient-arena-life.md)
 - [M18 visual validation harness](visual-validation-harness.md)
 - [M18 CI visual review captures](visual-review-captures.md)
+- [M18 render resource instrumentation](render-resource-instrumentation.md)
 - [Asset pipeline](asset-pipeline.md)
 - [Character animation](character-animation.md)
 - [Character production pass](character-production-pass.md)
