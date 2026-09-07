@@ -56,6 +56,8 @@ When enabled, the root `<html>` element progresses through:
 - `data-visual-validation="ready"` for a valid completed run;
 - `data-visual-validation="invalid"` when a trustworthiness guard is violated.
 
+`data-visual-validation-reasons` is `pending` while a run is active, `none` for a valid completed run, or a comma-separated set of invalidation reasons for a rejected run. This root diagnostic exists so browser/CI failures can identify the exact guard without opening the JavaScript report object first.
+
 A completed report is published at:
 
 ```js
@@ -144,7 +146,7 @@ M18 should compare repeated runs and investigate material regressions rather tha
 
 ## CI contract
 
-Unit tests validate percentile ordering, invalid-sample filtering, empty windows, and bounded query durations. Browser E2E runs deliberately short samples to prove that:
+Unit tests validate percentile ordering, invalid-sample filtering, empty windows, and bounded query durations. Browser E2E uses a short 3-second measurement window—longer than the original 700 ms probe so a slow hosted renderer can still satisfy the production minimum-frame-sample guard—to prove that:
 
 - the harness activates only when requested;
 - it waits for a known live room population;
@@ -152,7 +154,8 @@ Unit tests validate percentile ordering, invalid-sample filtering, empty windows
 - frame-time percentiles remain ordered;
 - tier start/end metadata is coherent;
 - the default character path and player-count metadata are exposed;
-- an explicit requested tier and required rendered-player count are honored in the valid report contract.
+- an explicit requested tier and required rendered-player count are honored in the valid report contract;
+- completed runs expose `data-visual-validation-reasons="none"` or the exact comma-separated invalidation reason set.
 
 **Headless CI values are plumbing diagnostics only and must not be copied into the M18 representative-device evidence table.**
 
