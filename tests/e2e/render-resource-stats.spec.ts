@@ -12,7 +12,30 @@ test("visual validation publishes an aligned render-resource report", async ({ p
   await expect(html).toHaveAttribute("data-visual-validation", "ready", { timeout: 25_000 });
   await expect(html).toHaveAttribute("data-render-resource-stats", "ready", { timeout: 5_000 });
 
-  const report = await page.evaluate(() => window.__foodfightRenderResources);
+  const report = await page.evaluate(() => {
+    const renderWindow = window as Window & {
+      __foodfightRenderResources?: {
+        phase: string;
+        sampleCount: number;
+        sampleIntervalMs: number;
+        detailedStatsAvailable: boolean;
+        drawCallsP50: number;
+        drawCallsP95: number;
+        drawCallsMax: number;
+        trianglesP50: number | null;
+        trianglesP95: number | null;
+        trianglesMax: number | null;
+        skinnedDrawCallsP50: number | null;
+        skinnedDrawCallsP95: number | null;
+        skinnedDrawCallsMax: number | null;
+        vramGeometryBytesMax: number;
+        vramTotalBytesMax: number;
+        graphicsDeviceType: string;
+      };
+    };
+    return renderWindow.__foodfightRenderResources;
+  });
+
   expect(report).toBeDefined();
   expect(report!.phase).toBe("ready");
   expect(report!.sampleCount).toBeGreaterThan(0);
