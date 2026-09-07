@@ -1,13 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 test("visual validation gates on requested tier and required rendered-player count", async ({ page }) => {
+  test.setTimeout(60_000);
+
   await page.goto(
-    "/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=700&visualValidationQuality=medium&visualValidationPlayers=1&visualValidationLabel=e2e-required",
+    "/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=3000&visualValidationQuality=medium&visualValidationPlayers=1&visualValidationLabel=e2e-required",
   );
 
   const html = page.locator("html");
   await expect(page.locator("#network")).toContainText("1/8", { timeout: 15_000 });
-  await expect(html).toHaveAttribute("data-visual-validation", "ready", { timeout: 15_000 });
+  await expect(html).toHaveAttribute("data-visual-validation", "ready", { timeout: 25_000 });
+  await expect(html).toHaveAttribute("data-visual-validation-reasons", "none");
 
   const report = await page.evaluate(() => {
     const validationWindow = window as Window & {
