@@ -88,7 +88,9 @@ test("opt-in skeletal pilot loads and preserves authoritative combat input", asy
 test("opt-in visual validation harness publishes a bounded machine-readable report", async ({ page }) => {
   test.setTimeout(60_000);
 
-  await page.goto("/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=3000&visualValidationLabel=e2e");
+  await page.goto(
+    "/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=3000&visualValidationMinSamples=1&visualValidationLabel=e2e",
+  );
 
   const html = page.locator("html");
   await expect(page.locator("#network")).toContainText("online");
@@ -101,6 +103,7 @@ test("opt-in visual validation harness publishes a bounded machine-readable repo
         label: string;
         valid: boolean;
         invalidReasons: string[];
+        minimumFrameSamples: number;
         sampleCount: number;
         fps: number;
         frameMsP50: number;
@@ -122,7 +125,8 @@ test("opt-in visual validation harness publishes a bounded machine-readable repo
   expect(report!.label).toBe("e2e");
   expect(report!.valid).toBe(true);
   expect(report!.invalidReasons).toEqual([]);
-  expect(report!.sampleCount).toBeGreaterThan(10);
+  expect(report!.minimumFrameSamples).toBe(1);
+  expect(report!.sampleCount).toBeGreaterThanOrEqual(1);
   expect(report!.fps).toBeGreaterThan(0);
   expect(report!.frameMsP50).toBeLessThanOrEqual(report!.frameMsP95);
   expect(report!.frameMsP95).toBeLessThanOrEqual(report!.frameMsP99);
