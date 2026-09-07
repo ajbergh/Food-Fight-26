@@ -86,11 +86,14 @@ test("opt-in skeletal pilot loads and preserves authoritative combat input", asy
 });
 
 test("opt-in visual validation harness publishes a bounded machine-readable report", async ({ page }) => {
-  await page.goto("/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=700&visualValidationLabel=e2e");
+  test.setTimeout(60_000);
+
+  await page.goto("/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=3000&visualValidationLabel=e2e");
 
   const html = page.locator("html");
   await expect(page.locator("#network")).toContainText("online");
-  await expect(html).toHaveAttribute("data-visual-validation", "ready", { timeout: 15_000 });
+  await expect(html).toHaveAttribute("data-visual-validation", "ready", { timeout: 25_000 });
+  await expect(html).toHaveAttribute("data-visual-validation-reasons", "none");
 
   const report = await page.evaluate(() => {
     const validationWindow = window as Window & {
