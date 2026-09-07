@@ -12,6 +12,7 @@ export interface VisualValidationReport {
   invalidReasons: string[];
   warmupMs: number;
   requestedSampleMs: number;
+  minimumFrameSamples: number;
   sampleCount: number;
   elapsedMs: number;
   fps: number;
@@ -64,6 +65,7 @@ function startVisualValidation() {
     500,
     120_000,
   );
+  const minimumFrameSamples = readMinimumFrameSamples(params.get("visualValidationMinSamples"));
   const label = sanitizeLabel(params.get("visualValidationLabel"));
   const requestedTier = readRequestedTier(params.get("visualValidationQuality"));
   const requiredPlayerCount = readRequiredPlayerCount(params.get("visualValidationPlayers"));
@@ -217,7 +219,7 @@ function startVisualValidation() {
     ) {
       invalidReasons.push("viewport-changed-during-sample");
     }
-    if (summary.sampleCount < 10) invalidReasons.push("insufficient-frame-samples");
+    if (summary.sampleCount < minimumFrameSamples) invalidReasons.push("insufficient-frame-samples");
 
     const report: VisualValidationReport = {
       schemaVersion: 1,
@@ -227,6 +229,7 @@ function startVisualValidation() {
       invalidReasons,
       warmupMs,
       requestedSampleMs: sampleMs,
+      minimumFrameSamples,
       sampleCount: summary.sampleCount,
       elapsedMs: round(summary.elapsedMs),
       fps: round(summary.fps),
@@ -291,6 +294,13 @@ function readRequiredPlayerCount(value: string | null) {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1 || parsed > 8) return null;
   return parsed;
+}
+
+function readMinimumFrameSamples(value: string | null) {
+  if (value === null || value.trim() === "") return 10;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return 10;
+  return Math.min(120, Math.max(1, parsed));
 }
 
 function populationReady(requiredPlayerCount: number | null) {
