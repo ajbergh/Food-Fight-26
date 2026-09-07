@@ -76,7 +76,7 @@ function startRenderResourceStats() {
 }
 
 function publishReport(
-  app: pc.Application,
+  app: pc.AppBase,
   samples: readonly RenderResourceSample[],
   phase: "live" | "ready" | "invalid",
   root: HTMLElement,
@@ -102,8 +102,8 @@ function publishReport(
   root.dataset.renderResourceDetailed = detailedStatsAvailable ? "available" : "unavailable";
 }
 
-function readSample(app: pc.Application): RenderResourceSample {
-  const stats = (app as pc.Application & { stats?: EngineStatsLike }).stats;
+function readSample(app: pc.AppBase): RenderResourceSample {
+  const stats = (app as pc.AppBase & { stats?: EngineStatsLike }).stats;
   const drawCallsTotal = safeNumber(stats?.drawCalls?.total);
   const detailedAvailable = safeNumber(stats?.drawCalls?.forward) > 0 ||
     safeNumber(stats?.drawCalls?.shadow) > 0 ||
@@ -126,7 +126,7 @@ function readSample(app: pc.Application): RenderResourceSample {
   };
 }
 
-function readGraphicsDeviceType(app: pc.Application) {
+function readGraphicsDeviceType(app: pc.AppBase) {
   const device = app.graphicsDevice as pc.GraphicsDevice & {
     deviceType?: string;
     isWebGPU?: boolean;
