@@ -2,7 +2,7 @@
 
 This roadmap is milestone-based. Dates should be assigned only after prototype velocity is measured. A milestone marked complete means its scoped implementation is merged; any remaining production, hosting, hardware, or external-playtest validation is called out separately.
 
-**Status snapshot (2026-09-06):** M15 audited production-prop replacement implementation is complete through [PR #43](https://github.com/ajbergh/Food-Fight-26/pull/43). The five merged M15 implementation tranches ([#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38), [#41](https://github.com/ajbergh/Food-Fight-26/pull/41), [#42](https://github.com/ajbergh/Food-Fight-26/pull/42), and [#43](https://github.com/ajbergh/Food-Fight-26/pull/43)) cover food displays, perimeter furniture/waste, storefront/service and cold-display fixtures, checkout/recycling, core food-service equipment, and authored commercial-lighting fixtures. M16 character-production work is in progress through the merged procedural-chef shipping-candidate finish in [PR #46](https://github.com/ajbergh/Food-Fight-26/pull/46) and the merged authoritative hit/result-reaction tranche in [PR #47](https://github.com/ajbergh/Food-Fight-26/pull/47); the final procedural-vs-authored-skeletal decision remains gated. M17 ambient arena-life implementation is complete at scoped animation level through [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39), [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40), and the final peripheral-service tranche in [PR #45](https://github.com/ajbergh/Food-Fight-26/pull/45). M18 visual validation is now in progress through the reproducible representative-device measurement harness in [PR #48](https://github.com/ajbergh/Food-Fight-26/pull/48); that harness enables evidence collection but does not itself satisfy the representative-hardware/readability gate. [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31), [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35), and [PR #44](https://github.com/ajbergh/Food-Fight-26/pull/44) are documentation/reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate M18 graphics requirement to measure eight simultaneously rendered animated players on representative client hardware.
+**Status snapshot (2026-09-07):** M15 audited production-prop replacement implementation is complete through [PR #43](https://github.com/ajbergh/Food-Fight-26/pull/43). The five merged M15 implementation tranches ([#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38), [#41](https://github.com/ajbergh/Food-Fight-26/pull/41), [#42](https://github.com/ajbergh/Food-Fight-26/pull/42), and [#43](https://github.com/ajbergh/Food-Fight-26/pull/43)) cover food displays, perimeter furniture/waste, storefront/service and cold-display fixtures, checkout/recycling, core food-service equipment, and authored commercial-lighting fixtures. M16 character-production work is in progress through the merged procedural-chef shipping-candidate finish in [PR #46](https://github.com/ajbergh/Food-Fight-26/pull/46) and the merged authoritative hit/result-reaction tranche in [PR #47](https://github.com/ajbergh/Food-Fight-26/pull/47); the final procedural-vs-authored-skeletal decision remains gated. M17 ambient arena-life implementation is complete at scoped animation level through [PR #37](https://github.com/ajbergh/Food-Fight-26/pull/37), [PR #39](https://github.com/ajbergh/Food-Fight-26/pull/39), [PR #40](https://github.com/ajbergh/Food-Fight-26/pull/40), and the final peripheral-service tranche in [PR #45](https://github.com/ajbergh/Food-Fight-26/pull/45). M18 visual validation is in progress through the merged representative-device measurement harness in [PR #48](https://github.com/ajbergh/Food-Fight-26/pull/48), merged deterministic CI human-review captures in [PR #49](https://github.com/ajbergh/Food-Fight-26/pull/49), and aligned renderer-cost instrumentation in [PR #50](https://github.com/ajbergh/Food-Fight-26/pull/50). These tranches make frame pacing, screenshot review, draw-call/VRAM evidence, and profiler-only triangle/skinning evidence reproducible without treating headless CI as representative hardware. [PR #31](https://github.com/ajbergh/Food-Fight-26/pull/31), [PR #35](https://github.com/ajbergh/Food-Fight-26/pull/35), and [PR #44](https://github.com/ajbergh/Food-Fight-26/pull/44) are documentation/reconciliation passes. The automated eight-player multiplayer/authoritative-room gate is treated as passing for this roadmap iteration, per project direction. That assumption does not replace the separate M18 graphics requirement to measure eight simultaneously rendered animated players on representative client hardware and complete formal readability/accessibility review.
 
 ## M0 — Repository and architecture — complete
 
@@ -60,7 +60,7 @@ This roadmap is milestone-based. Dates should be assigned only after prototype v
 - Third-party provenance manifest and automated CI audits for source approval, hashes, runtime formats, byte ceilings, first-play buckets, and glTF/GLB structure.
 - Kenney Food Kit, Kenney Furniture Kit, and Kenney Mini Market are approved as controlled CC0 production-prop sources. Quaternius Ultimate Food Pack remains on hold pending explicit license/provenance resolution.
 
-**Production status after M12–M18 work to date:** the procedural art stack is no longer only a graybox. M13 established stronger hero architecture and food-service equipment footprints, M14 moved the opt-in skeletal pilot toward a chef identity, M15 completed a deterministic audited production-GLB replacement pass, M16 strengthened the default procedural chef and supplied authoritative character-reaction fallbacks, M17 completed a bounded environmental-life pass without changing gameplay, and M18 now has a reproducible measurement harness for representative-device evidence collection. Remaining production work is concentrated in collecting/reviewing that M18 evidence and making the final character/default-tier/production-readiness decisions.
+**Production status after M12–M18 work to date:** the procedural art stack is no longer only a graybox. M13 established stronger hero architecture and food-service equipment footprints, M14 moved the opt-in skeletal pilot toward a chef identity, M15 completed a deterministic audited production-GLB replacement pass, M16 strengthened the default procedural chef and supplied authoritative character-reaction fallbacks, M17 completed a bounded environmental-life pass without changing gameplay, and M18 now has reproducible frame-time measurement, deterministic CI human-review captures, and aligned renderer-cost instrumentation. Remaining production work is concentrated in collecting/reviewing the physical-device M18 evidence and making the final character/default-tier/first-play/production-readiness decisions.
 
 ## M5 — First polished playtest foundation — in progress
 
@@ -266,20 +266,42 @@ The next M16 decision remains conditional on measured visual value: produce a pu
 
 ### M18 — Visual validation and regression gates — in progress
 
-[PR #48](https://github.com/ajbergh/Food-Fight-26/pull/48) establishes the first M18 implementation tranche: a reproducible opt-in rendered-client measurement harness and representative-device runbook.
+[PR #48](https://github.com/ajbergh/Food-Fight-26/pull/48), [PR #49](https://github.com/ajbergh/Food-Fight-26/pull/49), and [PR #50](https://github.com/ajbergh/Food-Fight-26/pull/50) form the current M18 evidence-collection implementation sequence.
+
+#### Tranche 1 — representative-device measurement harness — merged in PR #48
 
 - Adds bounded warm-up and sample windows without changing normal play when the harness is disabled.
 - Records FPS plus p50/p95/p99/worst frame time rather than relying on the near-instantaneous HUD meter.
 - Records viewport/DPR, graphics tier, procedural-vs-skeletal path, player count, reduced-motion state, team palette, and bounded browser hardware hints alongside each run.
 - Allows a requested graphics tier and sanitized run label so repeated physical-device captures are comparable.
-- Marks runs invalid when the page is hidden, the graphics tier changes during sampling, or too few frames are observed.
+- Marks runs invalid when the page is hidden, the graphics tier changes during sampling, required player density/presentation state changes, or too few frames are observed.
 - Exposes results through `window.__foodfightVisualValidation` and stable DOM diagnostics without adding a visible benchmark overlay.
-- Adds unit and browser plumbing coverage while explicitly excluding headless-CI numbers from representative-hardware evidence.
 - Defines a representative procedure using eight rendered players, three valid 30-second samples per configuration, physical device/GPU/OS/browser/power notes, and saved JSON/screenshots.
 
 See [M18 Visual Validation Harness](visual-validation-harness.md) for the run contract and evidence procedure.
 
-**Exit status:** not yet met. PR #48 makes evidence collection repeatable but does not itself supply the representative Windows/macOS/tablet measurements, formal combat-readability/color-vision/reduced-motion review, draw-call/skinning/memory investigation, default character/default-tier decision, first-play inventory decision, or Food Court production-readiness decision.
+#### Tranche 2 — deterministic CI human-review captures — merged in PR #49
+
+- Produces repeatable desktop procedural, desktop skeletal, tablet color-safe, and phone reduced-motion/color-safe viewport captures.
+- Writes one PNG plus adjacent JSON runtime/provenance metadata per case under the ignored visual-review artifact tree.
+- Explicitly labels CI captures as non-representative hardware and non-acceptance evidence.
+- Uploads the captures with bounded retention for human review.
+- Uses runtime state assertions only: no committed screenshot baselines and no pixel-diff threshold is allowed to masquerade as the M18 visual-readiness decision.
+
+See [M18 CI Visual Review Captures](visual-review-captures.md).
+
+#### Tranche 3 — aligned renderer-cost instrumentation — PR #50
+
+- Samples renderer statistics during the same bounded window used by PR #48.
+- Publishes `window.__foodfightRenderResources` plus stable DOM readiness/detail diagnostics.
+- Summarizes total draw calls as p50/p95/max and records maximum tracked texture, geometry, buffer, and total VRAM bytes.
+- Records graphics-device type when exposed by PlayCanvas.
+- Treats profiler-build-only triangle and skinned-draw counters as nullable and records whether detailed statistics were available; unavailable counters are never turned into synthetic zero evidence.
+- Adds unit coverage for aggregation/nullability and browser coverage for aligned collection/completion and schema consistency.
+
+See [M18 Render Resource Instrumentation](render-resource-instrumentation.md).
+
+**Exit status:** not yet met. The tooling required to collect frame pacing, deterministic reference captures, draw calls, tracked VRAM, and profiler-detail evidence is now being completed, but M18 still requires representative Windows/macOS/tablet measurements with eight rendered players, formal combat-readability/color-vision/reduced-motion review, first-play inventory evidence, and the resulting default character/default tier/Food Court production-readiness decisions. Headless CI numbers and captures are plumbing/review aids only.
 
 ### M19 — Second arena/theme kit — conditional
 
@@ -306,7 +328,7 @@ Only begin a second arena after M18 proves that the first arena's production art
 | M15 | [#36](https://github.com/ajbergh/Food-Fight-26/pull/36), [#38](https://github.com/ajbergh/Food-Fight-26/pull/38), [#41](https://github.com/ajbergh/Food-Fight-26/pull/41), [#42](https://github.com/ajbergh/Food-Fight-26/pull/42), [#43](https://github.com/ajbergh/Food-Fight-26/pull/43) |
 | M16 | [#46](https://github.com/ajbergh/Food-Fight-26/pull/46), [#47](https://github.com/ajbergh/Food-Fight-26/pull/47) |
 | M17 | [#37](https://github.com/ajbergh/Food-Fight-26/pull/37), [#39](https://github.com/ajbergh/Food-Fight-26/pull/39), [#40](https://github.com/ajbergh/Food-Fight-26/pull/40), [#45](https://github.com/ajbergh/Food-Fight-26/pull/45) |
-| M18 | [#48](https://github.com/ajbergh/Food-Fight-26/pull/48) |
+| M18 | [#48](https://github.com/ajbergh/Food-Fight-26/pull/48), [#49](https://github.com/ajbergh/Food-Fight-26/pull/49), [#50](https://github.com/ajbergh/Food-Fight-26/pull/50) |
 
 M0 is the repository baseline and predates this PR ledger. PR #31, PR #35, and PR #44 are documentation/reconciliation passes and are intentionally not counted as implementation pull requests.
 
