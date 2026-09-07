@@ -28,6 +28,14 @@ jobs:
         run: bash infra/smoke-containers.sh
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+      - name: Upload visual review captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-review-captures
+          path: artifacts/visual-review/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Upload Playwright report on failure
         if: failure()
         uses: actions/upload-artifact@v4
