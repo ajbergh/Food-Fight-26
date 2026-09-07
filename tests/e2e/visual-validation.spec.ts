@@ -4,7 +4,7 @@ test("visual validation gates on requested tier and required rendered-player cou
   test.setTimeout(60_000);
 
   await page.goto(
-    "/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=3000&visualValidationQuality=medium&visualValidationPlayers=1&visualValidationLabel=e2e-required",
+    "/?visualValidation=1&visualValidationWarmupMs=100&visualValidationMs=3000&visualValidationMinSamples=1&visualValidationQuality=medium&visualValidationPlayers=1&visualValidationLabel=e2e-required",
   );
 
   const html = page.locator("html");
@@ -17,6 +17,8 @@ test("visual validation gates on requested tier and required rendered-player cou
       __foodfightVisualValidation?: {
         valid: boolean;
         invalidReasons: string[];
+        minimumFrameSamples: number;
+        sampleCount: number;
         requestedGraphicsTier: string | null;
         graphicsTierStart: string;
         graphicsTierEnd: string;
@@ -33,6 +35,8 @@ test("visual validation gates on requested tier and required rendered-player cou
   expect(report).toBeDefined();
   expect(report!.valid).toBe(true);
   expect(report!.invalidReasons).toEqual([]);
+  expect(report!.minimumFrameSamples).toBe(1);
+  expect(report!.sampleCount).toBeGreaterThanOrEqual(1);
   expect(report!.requestedGraphicsTier).toBe("medium");
   expect(report!.graphicsTierStart).toBe("medium");
   expect(report!.graphicsTierEnd).toBe("medium");
