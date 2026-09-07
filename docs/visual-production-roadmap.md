@@ -2,7 +2,7 @@
 
 This document extends the master roadmap with the next art-production gates after M12–M14. It is deliberately ordered so visual ambition does not outrun multiplayer readability, asset provenance, or client performance.
 
-## Current baseline — M15/M17 complete, M16 in progress
+## Current baseline — M15/M17 complete, M16/M18 in progress
 
 The repository now has a coherent presentation stack rather than a single graybox art pass:
 
@@ -10,8 +10,9 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M13 — arena hero models:** quality-gated mezzanine/escalator architecture and recognizable food-service equipment add food-court depth outside combat lanes.
 - **M14 — skeletal chef model finish:** the opt-in skinned pilot receives lightweight bone-attached chef identity geometry while retaining deterministic derivation and procedural fallback.
 - **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit path; PR #38 added audited perimeter furniture/waste; PR #41 added Mini Market service, refrigeration, checkout, and recycling fixtures; PR #42 added production food-service equipment; PR #43 added authored commercial fixtures and hardened runtime-manifest coverage. The scoped replacement implementation is complete.
-- **M16 — default chef shipping candidate/final-character decision:** merged PR #46 brings the existing default procedural chef closer to the environment's production finish with deterministic, zero-download costume/silhouette detailing. PR #47 adds authoritative hit, celebration, and defeat reactions to both the procedural and skeletal presentation paths. The eventual authored-skeletal/default decision remains gated by measured value and M18 evidence.
+- **M16 — default chef shipping candidate/final-character decision:** merged PR #46 brings the existing default procedural chef closer to the environment's production finish with deterministic, zero-download costume/silhouette detailing. Merged PR #47 adds authoritative hit, celebration, and defeat reactions to both the procedural and skeletal presentation paths. The eventual authored-skeletal/default decision remains gated by measured value and M18 evidence.
 - **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 added bounded vendor-menu activity; PR #40 added High-quality-only mezzanine spectators; merged PR #45 added one occasional peripheral service cart on the same 30 Hz scheduler. The scoped ambient-animation implementation is complete without increasing crowd density.
+- **M18 — visual validation:** PR #48 establishes an opt-in, machine-readable representative-device measurement harness and runbook. It makes the shipping evidence repeatable but does not substitute headless CI numbers for physical-device performance/readability review.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate M18 requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -140,7 +141,7 @@ PR #46 improves the character path players actually see by default without addin
 
 See [M16 Procedural Chef Finish](procedural-chef-finish.md) for the detailed visual/performance contract.
 
-### Tranche 2 — PR #47: authoritative character reactions
+### Tranche 2 — merged in PR #47: authoritative character reactions
 
 PR #47 closes the remaining presentation-level `hit`, `celebrate`, and `defeat` behavior gap without introducing new replicated state or authored binary clips:
 
@@ -260,11 +261,29 @@ See [M17 Ambient Arena Life](ambient-arena-life.md) for the complete motion/read
 
 Restrained environmental audio remains an optional playtest-driven enhancement rather than an M17 blocker. M18 owns structured eight-player rendered-client readability and performance evidence; its findings may require reducing or retuning current ambient motion before shipping.
 
-## M18 — Visual validation and regression gates
+## M18 — Visual validation and regression gates — in progress
 
 ### Goal
 
 Convert visual quality from subjective approval into a repeatable shipping gate.
+
+### Tranche 1 — PR #48: reproducible representative-device measurement harness
+
+PR #48 adds the measurement plumbing and run contract needed to collect comparable evidence without pretending that CI is representative hardware:
+
+- opt-in only through `?visualValidation=1`, leaving normal play unchanged;
+- configurable bounded warm-up and measured windows;
+- FPS plus frame-time p50/p95/p99/worst reporting;
+- viewport/DPR, graphics tier, character path, player count, reduced-motion state, palette, and bounded hardware-hint metadata;
+- optional requested graphics tier and sanitized run label;
+- invalidation when the document is hidden, graphics tier changes during the sample, or too few frames are observed;
+- machine-readable `window.__foodfightVisualValidation` report plus stable DOM diagnostics with no visible benchmark overlay;
+- unit coverage for summary math/config bounds and browser E2E for the report contract;
+- a physical-device runbook requiring eight rendered players and repeated 30-second samples.
+
+See [M18 Visual Validation Harness](visual-validation-harness.md).
+
+Headless CI output from this harness is plumbing evidence only. It must not be used as the representative-device dataset that closes M18.
 
 ### Required evidence
 
@@ -285,6 +304,8 @@ M18 ends with an explicit decision on:
 2. default graphics tier and adaptive-fallback thresholds;
 3. which imported arena assets ship in first play vs deferred/background buckets;
 4. whether the current Food Court is visually production-ready enough to justify a second arena.
+
+**Exit status:** not yet met. PR #48 makes the performance/readability evidence repeatable; physical-device results and the resulting production decisions remain outstanding.
 
 ## M19 — Second arena/theme kit — conditional
 
