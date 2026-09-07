@@ -41,10 +41,11 @@ Supported harness parameters:
 | `visualValidationPlayers` | any known population | integer 1–8 | Waits for the requested rendered-player count before warm-up and invalidates if it is not maintained. Use `8` for M18 acceptance runs. |
 | `visualValidationWarmupMs` | 2000 | 0–10000 ms | Allows shaders/assets/runtime state to settle after the room population is ready. |
 | `visualValidationMs` | 15000 | 500–120000 ms | Controls the measured requestAnimationFrame window. |
+| `visualValidationMinSamples` | 10 | integer 1–120 | Changes the minimum valid RAF sample count. This exists for CI/plumbing diagnostics only. **Omit it for M18 acceptance runs so the default remains 10.** |
 | `visualValidationQuality` | current tier | `low`, `medium`, `high` | Requests a tier once before warm-up; adaptive fallback remains authoritative afterward. |
 | `visualValidationLabel` | empty | sanitized, 80 characters | Human-readable device/tier/path/run identifier. |
 
-For M18 acceptance runs, use a **5-second warm-up and 30-second sample** unless a later ADR changes the standard.
+For M18 acceptance runs, use a **5-second warm-up and 30-second sample**, do not set `visualValidationMinSamples`, and require the resulting report to show `minimumFrameSamples: 10` unless a later ADR changes the standard.
 
 ## Report surface
 
@@ -68,7 +69,7 @@ The report includes:
 
 - validity and invalid-reason list;
 - warm-up/sample duration;
-- sample count;
+- configured minimum frame-sample requirement and actual sample count;
 - measured FPS;
 - frame-time p50, p95, p99, and worst frame;
 - viewport width/height and DPR;
@@ -101,7 +102,9 @@ A report is marked invalid when:
 - an explicitly required player count is not maintained throughout the measured window;
 - reduced-motion or team-palette settings change during the measured window;
 - viewport size or DPR changes during the measured window;
-- fewer than 10 valid frame samples are recorded.
+- fewer than the configured minimum valid frame samples are recorded.
+
+The default minimum is 10. A representative-device M18 result with `minimumFrameSamples` below 10 is not acceptance evidence, even if `valid` is true. The override is deliberately serialized into the report so CI/plumbing runs cannot be mistaken for normal M18 captures.
 
 An invalid run should be retained only as diagnostic evidence. It must be repeated before comparing tiers or character paths.
 
@@ -115,10 +118,11 @@ For each device under review:
 2. Close unrelated high-load applications and avoid OS updates, screen recording, remote-desktop capture, or background GPU workloads during the measured window.
 3. Start the normal release-shaped client/server stack. For local development, `pnpm dev` starts the web, game-client, game-server, and platform API; `pnpm bots` starts the existing bot harness.
 4. Use `visualValidationPlayers=8`. The harness will remain in `waiting-players` until the room reaches **8/8**, then it begins the warm-up. M18 is specifically concerned with eight simultaneously rendered characters; the server-only eight-client benchmark is a separate gate and is not a substitute.
-5. Confirm the intended character path and requested graphics tier before accepting the result. A tier/path transition during sampling invalidates the report.
-6. Run at least **three valid 30-second samples** for each required configuration. Use distinct `visualValidationLabel` values ending in `run1`, `run2`, and `run3`.
-7. Save the JSON reports with the hardware notes and screenshots/reference captures from the same build.
-8. Repeat any run marked invalid rather than averaging it into the comparison.
+5. Do **not** set `visualValidationMinSamples`; confirm the completed report records `minimumFrameSamples: 10`. A lower value identifies a plumbing/diagnostic run rather than acceptance evidence.
+6. Confirm the intended character path and requested graphics tier before accepting the result. A tier/path transition during sampling invalidates the report.
+7. Run at least **three valid 30-second samples** for each required configuration. Use distinct `visualValidationLabel` values ending in `run1`, `run2`, and `run3`.
+8. Save the JSON reports with the hardware notes and screenshots/reference captures from the same build.
+9. Repeat any run marked invalid rather than averaging it into the comparison.
 
 ## Minimum M18 comparison matrix
 
@@ -146,18 +150,20 @@ M18 should compare repeated runs and investigate material regressions rather tha
 
 ## CI contract
 
-Unit tests validate percentile ordering, invalid-sample filtering, empty windows, and bounded query durations. Browser E2E uses a short 3-second measurement window—longer than the original 700 ms probe so a slow hosted renderer can still satisfy the production minimum-frame-sample guard—to prove that:
+Unit tests validate percentile ordering, invalid-sample filtering, empty windows, and bounded query durations. GitHub-hosted headless Chromium can render so slowly under CI contention that a short plumbing probe may produce fewer than 10 RAF callbacks even when the harness state machine is correct. Browser E2E therefore uses a short 3-second measurement window with `visualValidationMinSamples=1` to prove only that:
 
 - the harness activates only when requested;
 - it waits for a known live room population;
 - the report becomes machine-readable;
-- frame-time percentiles remain ordered;
+- at least one valid frame sample is captured;
+- frame-time percentile fields are coherent for the captured samples;
 - tier start/end metadata is coherent;
 - the default character path and player-count metadata are exposed;
 - an explicit requested tier and required rendered-player count are honored in the valid report contract;
+- the report explicitly records `minimumFrameSamples: 1`, preventing the CI result from being confused with default M18 evidence;
 - completed runs expose `data-visual-validation-reasons="none"` or the exact comma-separated invalidation reason set.
 
-**Headless CI values are plumbing diagnostics only and must not be copied into the M18 representative-device evidence table.**
+**Headless CI values are plumbing diagnostics only and must not be copied into the M18 representative-device evidence table. A result is eligible for M18 acceptance only when `minimumFrameSamples` is 10, the physical-device procedure is followed, and the other acceptance conditions are met.**
 
 ## M18 status after PR #48
 
