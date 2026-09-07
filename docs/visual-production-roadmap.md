@@ -12,7 +12,7 @@ The repository now has a coherent presentation stack rather than a single graybo
 - **M15 — audited production prop replacement:** PR #36 established the deterministic Kenney Food Kit path; PR #38 added audited perimeter furniture/waste; PR #41 added Mini Market service, refrigeration, checkout, and recycling fixtures; PR #42 added production food-service equipment; PR #43 added authored commercial fixtures and hardened runtime-manifest coverage. The scoped replacement implementation is complete.
 - **M16 — default chef shipping candidate/final-character decision:** merged PR #46 brings the existing default procedural chef closer to the environment's production finish with deterministic, zero-download costume/silhouette detailing. Merged PR #47 adds authoritative hit, celebration, and defeat reactions to both the procedural and skeletal presentation paths. The eventual authored-skeletal/default decision remains gated by measured value and M18 evidence.
 - **M17 — ambient arena life:** PR #37 established bounded escalator/sign/equipment animation; PR #39 added bounded vendor-menu activity; PR #40 added High-quality-only mezzanine spectators; merged PR #45 added one occasional peripheral service cart on the same 30 Hz scheduler. The scoped ambient-animation implementation is complete without increasing crowd density.
-- **M18 — visual validation:** PR #48 establishes an opt-in, machine-readable representative-device measurement harness and runbook. It makes the shipping evidence repeatable but does not substitute headless CI numbers for physical-device performance/readability review.
+- **M18 — visual validation:** merged PR #48 establishes an opt-in, machine-readable representative-device measurement harness and runbook; merged PR #49 adds deterministic CI screenshot/metadata artifacts for human review without treating headless pixels as acceptance evidence; PR #50 adds renderer-cost instrumentation aligned to the same measured window, including basic draw-call/VRAM evidence and nullable profiler-only triangle/skinning counters. These tranches make evidence collection repeatable but do not substitute CI output for physical-device performance/readability review.
 
 The automated eight-player multiplayer/room gate is treated as passing for this roadmap pass. That does **not** replace the separate M18 requirement to measure eight simultaneously rendered animated clients on representative hardware.
 
@@ -267,7 +267,7 @@ Restrained environmental audio remains an optional playtest-driven enhancement r
 
 Convert visual quality from subjective approval into a repeatable shipping gate.
 
-### Tranche 1 — PR #48: reproducible representative-device measurement harness
+### Tranche 1 — merged PR #48: reproducible representative-device measurement harness
 
 PR #48 adds the measurement plumbing and run contract needed to collect comparable evidence without pretending that CI is representative hardware:
 
@@ -285,16 +285,46 @@ See [M18 Visual Validation Harness](visual-validation-harness.md).
 
 Headless CI output from this harness is plumbing evidence only. It must not be used as the representative-device dataset that closes M18.
 
+### Tranche 2 — merged PR #49: deterministic CI human-review captures
+
+PR #49 adds a repeatable screenshot/reference surface without converting headless Chromium into a visual acceptance oracle:
+
+- captures desktop procedural and skeletal Medium-quality views;
+- captures tablet color-safe and phone reduced-motion/color-safe presentation states;
+- writes a viewport PNG plus adjacent JSON runtime/provenance metadata for each case;
+- explicitly marks CI artifacts `representativeHardware: false` and `acceptanceEvidence: false`;
+- keeps captures under the ignored `artifacts/visual-review/` tree and uploads them for bounded CI retention;
+- asserts runtime readiness/state only, with no committed screenshot baselines or pixel-diff thresholds.
+
+See [M18 CI Visual Review Captures](visual-review-captures.md).
+
+### Tranche 3 — PR #50: aligned render-resource instrumentation
+
+PR #50 aligns renderer-cost evidence with the same bounded frame-time window used by PR #48:
+
+- samples renderer statistics every 100 ms only while visual validation is collecting;
+- publishes `window.__foodfightRenderResources` alongside stable root diagnostics;
+- summarizes total draw calls as p50/p95/max;
+- records maximum tracked texture, geometry, buffer, and total VRAM bytes plus graphics-device type;
+- treats PlayCanvas profiler-build-only triangle and skinned-draw counters as nullable and records `detailedStatsAvailable` rather than misrepresenting unavailable counters as zero;
+- supports a standalone `?renderStats=1` rolling diagnostic mode while keeping M18 acceptance coupled to the bounded visual-validation run;
+- adds unit and browser coverage for aggregation, aligned state transitions, and nullable detailed metrics.
+
+See [M18 Render Resource Instrumentation](render-resource-instrumentation.md).
+
+As with the prior M18 tranches, headless CI resource values prove report plumbing only. Representative-device numbers must be collected from the physical-device procedure before they influence shipping decisions.
+
 ### Required evidence
 
 - eight simultaneously rendered animated players on representative laptop hardware;
 - frame-time p50/p95/p99 and sustained FPS by Low/Medium/High quality tier;
-- draw-call, triangle, skinning, texture-memory, GPU-memory, and first-play download measurements;
+- draw-call and tracked VRAM measurements from the aligned resource report, plus triangle/skinning measurements from a profiler build where required;
+- first-play download measurements and asset-bucket review;
 - objective/player/projectile readability review with eight-player combat density;
 - color-safe palette review with hue-independent team markers;
 - reduced-motion review for character, VFX, camera, and environmental animation;
 - screenshot/reference captures at standard desktop and representative tablet/phone viewports;
-- regression checks for major art-direction landmarks and HUD overlap where automated image testing is stable enough to be useful.
+- human review of the CI capture artifacts for obvious layout/art-direction regressions, without treating pixel output as a standalone acceptance gate.
 
 ### Decision gate
 
@@ -305,7 +335,7 @@ M18 ends with an explicit decision on:
 3. which imported arena assets ship in first play vs deferred/background buckets;
 4. whether the current Food Court is visually production-ready enough to justify a second arena.
 
-**Exit status:** not yet met. PR #48 makes the performance/readability evidence repeatable; physical-device results and the resulting production decisions remain outstanding.
+**Exit status:** not yet met. PRs #48 and #49 are merged and PR #50 supplies the remaining renderer-cost collection plumbing, but representative physical-device measurements, eight-player readability/accessibility review, and the resulting production decisions remain outstanding.
 
 ## M19 — Second arena/theme kit — conditional
 
