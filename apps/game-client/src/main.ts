@@ -26,6 +26,7 @@ let connectionAvailable = false;
 
 function showConnectionStatus(message: string, allowRejoin: boolean) {
   connectionStatus.hidden = false;
+  document.documentElement.dataset.connectionStatus = allowRejoin ? "offline" : "reconnecting";
   connectionMessage.textContent = message;
   rejoinButton.hidden = !allowRejoin;
   inviteButton.disabled = true;
@@ -639,6 +640,9 @@ connectToMatch(joinOptions.displayName, joinOptions)
     connection = matchConnection;
     connectionAvailable = true;
     connectionStatus.hidden = true;
+    document.documentElement.dataset.connectionStatus = "online";
+    document.documentElement.dataset.localSessionId = connection.room.sessionId;
+    document.documentElement.dataset.roomId = connection.room.roomId;
     inviteButton.disabled = false;
     connection.room.onDrop(() => {
       connectionAvailable = false;
@@ -646,6 +650,7 @@ connectToMatch(joinOptions.displayName, joinOptions)
     });
     connection.room.onReconnect(() => {
       connectionAvailable = true;
+      document.documentElement.dataset.connectionStatus = "online";
       connectionStatus.hidden = true;
       inviteButton.disabled = false;
       inputAccumulator = 0;
