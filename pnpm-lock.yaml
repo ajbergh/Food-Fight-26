@@ -9,25 +9,25 @@ importers:
   .:
     devDependencies:
       '@playwright/test':
-        specifier: latest
+        specifier: 1.64.0
         version: 1.64.0
       '@types/node':
-        specifier: latest
+        specifier: 26.6.5
         version: 26.6.5
       prettier:
-        specifier: latest
+        specifier: 3.9.10
         version: 3.9.10
       typescript:
-        specifier: latest
+        specifier: 7.0.2
         version: 7.0.2
       vitest:
-        specifier: latest
+        specifier: 5.0.3
         version: 5.0.3(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(tsx@4.23.15))
 
   apps/game-client:
     dependencies:
       '@colyseus/sdk':
-        specifier: latest
+        specifier: 0.18.5
         version: 0.18.5(@colyseus/core@0.18.18)(typescript@7.0.2)(zod@4.6.5)
       '@foodfight/game-core':
         specifier: workspace:*
@@ -39,19 +39,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/protocol
       playcanvas:
-        specifier: latest
+        specifier: 2.23.2
         version: 2.23.2
       vite:
-        specifier: latest
+        specifier: 8.3.4
         version: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(tsx@4.23.15)
 
   apps/game-server:
     dependencies:
       '@colyseus/schema':
-        specifier: latest
+        specifier: 5.0.36
         version: 5.0.36(typescript@7.0.2)
       '@colyseus/ws-transport':
-        specifier: latest
+        specifier: 0.18.4
         version: 0.18.4(@colyseus/core@0.18.18)(express@5.3.0)
       '@foodfight/game-core':
         specifier: workspace:*
@@ -63,49 +63,49 @@ importers:
         specifier: workspace:*
         version: link:../../packages/protocol
       colyseus:
-        specifier: latest
+        specifier: 0.18.9
         version: 0.18.9(@colyseus/auth@0.18.4(@colyseus/core@0.18.18)(express@5.3.0)(zod@4.6.5))(@colyseus/core@0.18.18)(@colyseus/redis-driver@0.18.5(@colyseus/auth@0.18.4(@colyseus/core@0.18.18)(express@5.3.0)(zod@4.6.5))(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.36(typescript@7.0.2))(@colyseus/ws-transport@0.18.4(@colyseus/core@0.18.18)(express@5.3.0))(@pm2/io@6.1.0)(express@5.3.0)(zod@4.6.5))(@colyseus/redis-presence@0.18.5(@colyseus/auth@0.18.4(@colyseus/core@0.18.18)(express@5.3.0)(zod@4.6.5))(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.36(typescript@7.0.2))(@colyseus/ws-transport@0.18.4(@colyseus/core@0.18.18)(express@5.3.0))(@pm2/io@6.1.0)(express@5.3.0)(zod@4.6.5))(@colyseus/schema@5.0.36(typescript@7.0.2))(@colyseus/uwebsockets-transport@0.18.4(@colyseus/core@0.18.18))(@colyseus/ws-transport@0.18.4(@colyseus/core@0.18.18)(express@5.3.0))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.27.7)(tsx@4.23.15))(zod@4.6.5)
     devDependencies:
       tsup:
-        specifier: latest
+        specifier: 8.5.1
         version: 8.5.1(postcss@8.5.29)(tsx@4.23.15)(typescript@7.0.2)
       tsx:
-        specifier: latest
+        specifier: 4.23.15
         version: 4.23.15
 
   apps/platform-api:
     dependencies:
       fastify:
-        specifier: latest
+        specifier: 5.12.5
         version: 5.12.5
     devDependencies:
       tsup:
-        specifier: latest
+        specifier: 8.5.1
         version: 8.5.1(postcss@8.5.29)(tsx@4.23.15)(typescript@7.0.2)
       tsx:
-        specifier: latest
+        specifier: 4.23.15
         version: 4.23.15
 
   apps/web:
     dependencies:
       '@vitejs/plugin-react':
-        specifier: latest
+        specifier: 6.1.2
         version: 6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(tsx@4.23.15))
       react:
-        specifier: latest
+        specifier: 19.3.0
         version: 19.3.0
       react-dom:
-        specifier: latest
+        specifier: 19.3.0
         version: 19.3.0(react@19.3.0)
       vite:
-        specifier: latest
+        specifier: 8.3.4
         version: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(tsx@4.23.15)
     devDependencies:
       '@types/react':
-        specifier: latest
+        specifier: 19.3.0
         version: 19.3.0
       '@types/react-dom':
-        specifier: latest
+        specifier: 19.3.0
         version: 19.3.0(@types/react@19.3.0)
 
   packages/game-core: {}
@@ -119,7 +119,7 @@ importers:
   tools/bot-harness:
     dependencies:
       '@colyseus/sdk':
-        specifier: latest
+        specifier: 0.18.5
         version: 0.18.5(@colyseus/core@0.18.18)(typescript@7.0.2)(zod@4.6.5)
       '@foodfight/game-core':
         specifier: workspace:*
@@ -132,16 +132,16 @@ importers:
         version: link:../../packages/protocol
     devDependencies:
       '@types/node':
-        specifier: latest
+        specifier: 26.6.5
         version: 26.6.5
       tsx:
-        specifier: latest
+        specifier: 4.23.15
         version: 4.23.15
 
   tools/load-benchmark:
     dependencies:
       '@colyseus/sdk':
-        specifier: latest
+        specifier: 0.18.5
         version: 0.18.5(@colyseus/core@0.18.18)(typescript@7.0.2)(zod@4.6.5)
       '@foodfight/game-core':
         specifier: workspace:*
@@ -151,10 +151,10 @@ importers:
         version: link:../../packages/protocol
     devDependencies:
       '@types/node':
-        specifier: latest
+        specifier: 26.6.5
         version: 26.6.5
       tsx:
-        specifier: latest
+        specifier: 4.23.15
         version: 4.23.15
 
   tools/perf-budget: {}
@@ -3661,7 +3661,7 @@ snapshots:
 
   require-in-the-middle@5.2.0:
     dependencies:
-      debug: 4.3.7
+      debug: 4.4.3
       module-details-from-path: 1.0.4
       resolve: 1.22.13
     transitivePeerDependencies:
