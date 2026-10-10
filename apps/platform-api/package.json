@@ -11,10 +11,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "fastify": "latest"
+    "fastify": "5.12.5"
   },
   "devDependencies": {
-    "tsx": "latest",
-    "tsup": "latest"
+    "tsx": "4.23.15",
+    "tsup": "8.5.1"
   }
 }

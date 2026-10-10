@@ -10,12 +10,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@colyseus/sdk": "latest",
+    "@colyseus/sdk": "0.18.5",
     "@foodfight/game-core": "workspace:*",
     "@foodfight/protocol": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "tsx": "latest"
+    "@types/node": "26.6.5",
+    "tsx": "4.23.15"
   }
 }

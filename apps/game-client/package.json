@@ -10,11 +10,11 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@colyseus/sdk": "latest",
+    "@colyseus/sdk": "0.18.5",
     "@foodfight/game-core": "workspace:*",
     "@foodfight/maps": "workspace:*",
     "@foodfight/protocol": "workspace:*",
-    "playcanvas": "latest",
-    "vite": "latest"
+    "playcanvas": "2.23.2",
+    "vite": "8.3.4"
   }
 }
