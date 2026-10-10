@@ -13,6 +13,7 @@ import {
   type ObjectiveParticipant,
 } from "@foodfight/game-core";
 import { foodCourtMap } from "@foodfight/maps";
+import { InputRateLimiter, isValidPlayerInput, selectJoinTeam } from "./inputGuards";
 import type {
   ImpactMessage,
   MatchEventMessage,
@@ -112,6 +113,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   private nextBananaId = 1;
   private blueScoreExact = 0;
   private redScoreExact = 0;
+  private readonly inputRateLimiter = new InputRateLimiter();
 
   onCreate() {
     this.initializePickups();
@@ -121,16 +123,23 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
   onJoin(client: Client, options: { displayName?: string }) {
     const index = this.state.players.size;
+    let blueCount = 0;
+    let redCount = 0;
+    this.state.players.forEach((existing: PlayerState) => {
+      if (existing.team === 0) blueCount += 1;
+      else if (existing.team === 1) redCount += 1;
+    });
     const spawn = foodCourtMap.spawns[index % foodCourtMap.spawns.length]!;
     const player = new PlayerState();
     player.x = spawn.x;
     player.y = spawn.y;
-    player.team = index % 2;
+    player.team = selectJoinTeam(blueCount, redCount);
     player.displayName = sanitizeName(options.displayName);
     this.state.players.set(client.sessionId, player);
   }
 
   onLeave(client: Client) {
+    this.inputRateLimiter.forget(client.sessionId);
     this.state.players.delete(client.sessionId);
   }
 
@@ -144,9 +153,12 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     }
   }
 
-  private handleInput(client: Client, input: PlayerInputMessage) {
+  private handleInput(client: Client, raw: unknown) {
+    if (!this.inputRateLimiter.accept(client.sessionId, Date.now())) return;
+    if (!isValidPlayerInput(raw)) return;
+    const input: PlayerInputMessage = raw;
     const player = this.state.players.get(client.sessionId);
-    if (!player || !Number.isFinite(input.seq) || input.seq <= player.lastInputSeq) return;
+    if (!player || input.seq <= player.lastInputSeq) return;
     player.lastInputSeq = input.seq;
     player.moveX = clampAxis(input.moveX);
     player.moveY = clampAxis(input.moveY);
