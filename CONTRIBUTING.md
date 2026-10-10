@@ -6,7 +6,8 @@
 2. Keep gameplay rules data-driven and deterministic where practical.
 3. Never trust client-authored outcomes; clients submit inputs/intents.
 4. Add or update design docs when changing player-facing rules or architecture.
-5. Run `pnpm check`, `pnpm test`, and `pnpm build` before opening a pull request.
+5. Run `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm test`, and `pnpm build` before opening a pull request.
+6. When changing dependencies, run `pnpm install` with the repository-pinned pnpm version and commit the updated `pnpm-lock.yaml` together with package manifest changes.
 
 ## Code conventions
 

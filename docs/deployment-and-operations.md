@@ -134,3 +134,7 @@ The platform telemetry summary also groups accepted browser events by the runtim
 - Configure browser service endpoints at deployment/runtime, not by recompiling the game bundle.
 - Keep `FOOD_FIGHT_RELEASE` aligned with the deployed immutable tag/digest identifier.
 - Do not make a database migration irreversible in the same release that first depends on it without a recovery plan.
+
+## Reproducible package installation
+
+CI and production image builds use the committed `pnpm-lock.yaml` with `pnpm install --frozen-lockfile`. Dependency updates must review both the manifest and lockfile diff, run the whole test/asset/performance/container suite, and preserve Node.js 22 and pnpm 10.15.0 compatibility. Automated weekly Dependabot npm/pnpm ecosystem PRs should go through the same checks; avoid relaxing the frozen lockfile invariant to work around a failed dependency upgrade.
