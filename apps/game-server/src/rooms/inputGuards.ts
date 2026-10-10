@@ -6,7 +6,7 @@ const MAX_INPUT_MESSAGES_PER_SECOND = 90;
 export function isValidPlayerInput(raw: unknown): raw is PlayerInputMessage {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return false;
   const input = raw as Record<string, unknown>;
-  if (!Number.isInteger(input.seq) || (input.seq as number) < 1 || (input.seq as number) > MAX_SEQUENCE) return false;
+  if (typeof input.seq !== "number" || !Number.isInteger(input.seq) || input.seq < 1 || input.seq > MAX_SEQUENCE) return false;
   for (const axis of ["moveX", "moveY", "aimX", "aimY"]) {
     const value = input[axis];
     if (typeof value !== "number" || !Number.isFinite(value) || value < -1 || value > 1) return false;
