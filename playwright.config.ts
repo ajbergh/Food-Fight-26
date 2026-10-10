@@ -17,6 +17,13 @@ export default defineConfig({
   },
   webServer: [
     {
+      command: "pnpm --filter @foodfight/web exec vite --host 127.0.0.1 --port 5173",
+      url: "http://127.0.0.1:5173",
+      env: { VITE_GAME_URL: "http://127.0.0.1:5174" },
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
       command: "pnpm --filter @foodfight/platform-api dev",
       url: "http://127.0.0.1:3000/health",
       reuseExistingServer: !process.env.CI,
