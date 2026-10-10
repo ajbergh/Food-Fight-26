@@ -9,7 +9,7 @@ For an early invite-only **guest-only** alpha, `infra/compose.alpha.yml` provide
 - Use a Linux host with Docker Compose, suitable CPU/RAM, a publicly reachable IP, and inbound ports 80/443. Set A/AAAA DNS for **four distinct actual hostnames**: WEB_HOST, PLAY_HOST, MATCH_HOST and API_HOST.
 - Confirm whether GHCR images are publicly readable; authenticate to GHCR on the host if they are private.
 - Select an immutable SHA with successful PR and main-branch CI, container publishing and an explicit rollback SHA. Never deploy the `main` moving image tag for this flow.
-- Copy `infra/alpha.env.example` to an untracked private environment file and replace the `.example.com` hostnames and all-zero commit SHA; configure ACME_EMAIL if desired. Do not commit deployment credentials.
+- Copy `infra/alpha.env.example` to an untracked private environment file and replace the `.example.com` hostnames and all-zero commit SHA. Do not commit deployment credentials.
 - Plan outbound firewall rules, host patching, backup/restore (if using a database elsewhere), logging/retention, incident response, and a way to roll back by tag. Gate alpha access with an appropriate external control if invitation privacy is required; room links themselves are not authorization.
 
 ## Validate and deploy
