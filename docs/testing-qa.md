@@ -116,3 +116,7 @@ Ask behavior-focused questions:
 - Did you want another round?
 
 Avoid asking players to design features before diagnosing the observed problem.
+
+## Alpha reconnection validation
+
+The server retains dropped player seats for 20 seconds via Colyseus lifecycle hooks while preventing disconnected occupants from affecting objectives, pickups or combat. The browser pauses input during automatic reconnect, and stores only a tab-scoped resume token. Unit tests exercise seat freshness and scope. Before public rollout, verify browser tab refresh, network interruption, consented departure, expired session, full room, and server restart on actual target browser/OS combinations.

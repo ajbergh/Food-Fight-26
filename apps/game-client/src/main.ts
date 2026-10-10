@@ -19,6 +19,20 @@ import "./styles.css";
 const canvas = document.querySelector<HTMLCanvasElement>("#game")!;
 const networkLabel = document.querySelector<HTMLDivElement>("#network")!;
 const inviteButton = document.querySelector<HTMLButtonElement>("#invite")!;
+const connectionStatus = document.querySelector<HTMLDivElement>("#connection-status")!;
+const connectionMessage = document.querySelector<HTMLElement>("#connection-message")!;
+const rejoinButton = document.querySelector<HTMLButtonElement>("#rejoin")!;
+let connectionAvailable = false;
+
+function showConnectionStatus(message: string, allowRejoin: boolean) {
+  connectionStatus.hidden = false;
+  document.documentElement.dataset.connectionStatus = allowRejoin ? "offline" : "reconnecting";
+  connectionMessage.textContent = message;
+  rejoinButton.hidden = !allowRejoin;
+  inviteButton.disabled = true;
+}
+
+rejoinButton.addEventListener("click", () => window.location.reload());
 const timerLabel = document.querySelector<HTMLDivElement>("#timer")!;
 const blueScoreLabel = document.querySelector<HTMLSpanElement>("#blue-score")!;
 const redScoreLabel = document.querySelector<HTMLSpanElement>("#red-score")!;
@@ -184,7 +198,7 @@ function ensurePlayerVisual(sessionId: string, player: PlayerSnapshot): PlayerVi
   playerTeams.set(sessionId, player.team);
   const existing = playerVisuals.get(sessionId);
   if (existing) {
-    existing.label.textContent = player.stunRemaining > 0
+    existing.label.textContent = !player.connected ? `${player.displayName} · RECONNECTING` : player.stunRemaining > 0
       ? `${player.displayName} · SLIP!`
       : player.dodgeRemaining > 0
         ? `${player.displayName} · DODGE!`
@@ -597,7 +611,7 @@ app.on("update", (dt: number) => {
   art.update(dt);
   updateLabels();
 
-  if (!connection) return;
+  if (!connection || !connectionAvailable) return;
   inputAccumulator += dt;
   const sendInterval = 1 / GAME.serverHz;
   while (inputAccumulator >= sendInterval) {
@@ -624,7 +638,31 @@ const joinOptions = readJoinOptions(window.location.search, `Guest-${Math.floor(
 connectToMatch(joinOptions.displayName, joinOptions)
   .then((matchConnection) => {
     connection = matchConnection;
+    connectionAvailable = true;
+    connectionStatus.hidden = true;
+    document.documentElement.dataset.connectionStatus = "online";
+    document.documentElement.dataset.localSessionId = connection.room.sessionId;
+    document.documentElement.dataset.roomId = connection.room.roomId;
     inviteButton.disabled = false;
+    connection.room.onDrop(() => {
+      connectionAvailable = false;
+      throwQueued = false;
+      bananaQueued = false;
+      dodgeQueued = false;
+      inputAccumulator = 0;
+      showConnectionStatus("Connection interrupted. Reconnecting to your match…", false);
+    });
+    connection.room.onReconnect(() => {
+      connectionAvailable = true;
+      document.documentElement.dataset.connectionStatus = "online";
+      connectionStatus.hidden = true;
+      inviteButton.disabled = false;
+      inputAccumulator = 0;
+    });
+    connection.room.onLeave(() => {
+      connectionAvailable = false;
+      showConnectionStatus("You left the match or reconnection expired.", true);
+    });
     inviteButton.addEventListener("click", async () => {
       if (!connection) return;
       const link = inviteUrl(window.location.href, connection.room.roomId);
@@ -645,5 +683,10 @@ connectToMatch(joinOptions.displayName, joinOptions)
   })
   .catch((error: unknown) => {
     console.error("Unable to connect to game server", error);
-    networkLabel.textContent = "server unavailable · start apps/game-server";
+    connectionAvailable = false;
+    const status = joinOptions.roomId
+      ? "Unable to join this room. It may have expired or reached capacity."
+      : "Unable to connect to the game server. Check your connection and retry.";
+    networkLabel.textContent = "offline · match unavailable";
+    showConnectionStatus(status, true);
   });

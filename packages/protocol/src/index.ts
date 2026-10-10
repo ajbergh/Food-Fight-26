@@ -19,6 +19,7 @@ export interface PlayerSnapshot {
   aimY: number;
   team: number;
   displayName: string;
+  connected: boolean;
   lastInputSeq: number;
   stunRemaining: number;
   dodgeRemaining: number;

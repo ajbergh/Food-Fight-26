@@ -29,6 +29,7 @@ const PlayerState = schema(
     aimY: t.number().default(0),
     team: t.uint8().default(0),
     displayName: t.string().default("Guest"),
+    connected: t.boolean().default(true),
     lastInputSeq: t.uint32().default(0),
     stunRemaining: t.number().default(0),
     dodgeRemaining: t.number().default(0),
@@ -114,9 +115,13 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   private blueScoreExact = 0;
   private redScoreExact = 0;
   private readonly inputRateLimiter = new InputRateLimiter();
+  private isInviteOnly = false;
 
   onCreate(options: { privateRoom?: boolean } = {}) {
-    if (options.privateRoom === true) this.setPrivate(true);
+    if (options.privateRoom === true) {
+      this.isInviteOnly = true;
+      this.setPrivate(true);
+    }
     this.initializePickups();
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
     this.setSimulationInterval((deltaMs) => this.tick(deltaMs / 1000), 1000 / GAME.serverHz);
@@ -139,6 +144,33 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     this.state.players.set(client.sessionId, player);
   }
 
+  onDrop(client: Client) {
+    // Retain the same authoritative session for a short unexpected-disconnect window.
+    const player = this.state.players.get(client.sessionId);
+    if (player) {
+      player.connected = false;
+      player.moveX = 0;
+      player.moveY = 0;
+      player.dodgeRemaining = 0;
+    }
+    // Prevent a public room with only temporarily held/disconnected seats
+    // from being selected by new Quick Play sessions. Recovery by token still works.
+    if (!this.isInviteOnly) {
+      let connected = 0;
+      this.state.players.forEach((candidate: PlayerState) => {
+        if (candidate.connected) connected += 1;
+      });
+      if (connected === 0) this.setPrivate(true);
+    }
+    this.allowReconnection(client, 20);
+  }
+
+  onReconnect(client: Client) {
+    const player = this.state.players.get(client.sessionId);
+    if (player) player.connected = true;
+    if (!this.isInviteOnly) this.setPrivate(false);
+  }
+
   onLeave(client: Client) {
     this.inputRateLimiter.forget(client.sessionId);
     this.state.players.delete(client.sessionId);
@@ -159,7 +191,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     if (!isValidPlayerInput(raw)) return;
     const input: PlayerInputMessage = raw;
     const player = this.state.players.get(client.sessionId);
-    if (!player || input.seq <= player.lastInputSeq) return;
+    if (!player || !player.connected || input.seq <= player.lastInputSeq) return;
     player.lastInputSeq = input.seq;
     player.moveX = clampAxis(input.moveX);
     player.moveY = clampAxis(input.moveY);
@@ -323,6 +355,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
   private tickPlayers(dt: number) {
     this.state.players.forEach((player: PlayerState) => {
+      if (!player.connected) return;
       const dodging = player.dodgeRemaining > 0;
       player.throwCooldown = Math.max(0, player.throwCooldown - dt);
       player.bananaCooldown = Math.max(0, player.bananaCooldown - dt);
@@ -373,6 +406,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       this.state.players.forEach((target: PlayerState, sessionId: string) => {
         if (
           targetSessionId ||
+          !target.connected ||
           sessionId === projectile.ownerSessionId ||
           target.team === projectile.team ||
           target.dodgeRemaining > 0
@@ -414,6 +448,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       this.state.players.forEach((target: PlayerState, sessionId: string) => {
         if (
           targetSessionId ||
+          !target.connected ||
           sessionId === banana.ownerSessionId ||
           target.team === banana.team ||
           target.dodgeRemaining > 0 ||
@@ -452,7 +487,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
       let collector: PlayerState | undefined;
       this.state.players.forEach((player: PlayerState) => {
-        if (collector || player.stunRemaining > 0) return;
+        if (collector || !player.connected || player.stunRemaining > 0) return;
         const needsPickup = pickup.kind === "tomato"
           ? player.tomatoAmmo < GAME.tomatoAmmoMax
           : player.bananaAmmo < GAME.bananaAmmoMax;
@@ -475,7 +510,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   private tickObjective(dt: number) {
     const participants: ObjectiveParticipant[] = [];
     this.state.players.forEach((player: PlayerState) => {
-      participants.push({ x: player.x, y: player.y, team: player.team });
+      if (player.connected) participants.push({ x: player.x, y: player.y, team: player.team });
     });
 
     const control = resolveObjectiveControl(

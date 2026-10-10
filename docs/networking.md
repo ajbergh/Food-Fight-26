@@ -80,7 +80,11 @@ Initial latency strategy:
 
 ## Reconnect
 
-Prototype: if disconnected, attempt short reconnect to the same room if session support allows; otherwise return player to lobby with a clear status. Do not build complex mid-match migration before retention justifies it.
+Alpha: unexpected WebSocket drops trigger the Colyseus 0.17 automatic reconnection path. The authoritative room holds the same player/session for 20 seconds using `onDrop` and `allowReconnection`; dropped players are marked disconnected and cannot move, score, take hits, or collect items. `onReconnect` restores their existing session. Intentional departures and expired reconnections use `onLeave` for cleanup.
+
+The client stores the short-lived reconnection credential **only in tab-scoped sessionStorage** and attempts a manual resume on page reload when the backend, guest name, and join mode/room match. Credentials are never included in URLs, logs, or gameplay telemetry. A failed/expired resume falls back to normal match admission. During automatic recovery, network input is paused and an accessible status is displayed; permanent failures offer a Rejoin action.
+
+This is same-room recovery, not seamless room migration between regional servers. Test actual drop/reload behavior on real networks and reject multi-region/hosted production assumptions until observed.
 
 ## Bandwidth telemetry
 
@@ -92,3 +96,5 @@ Measure per match:
 - correction magnitude;
 - RTT/jitter;
 - disconnect/reconnect frequency.
+
+Public rooms are hidden from Quick Play while every held seat is disconnected, preventing lingering held seats from contaminating a new public session.
