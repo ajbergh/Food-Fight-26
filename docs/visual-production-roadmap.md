@@ -316,6 +316,9 @@ As with the prior M18 tranches, headless CI resource values prove report plumbin
 
 ### Required evidence
 
+Paired physical-device JSON can be validated and summarized by `scripts/m18-report.mjs` using [M18 evidence procedure](m18-evidence.md). This checks collection completeness only, not visual production acceptance.
+
+
 - eight simultaneously rendered animated players on representative laptop hardware;
 - frame-time p50/p95/p99 and sustained FPS by Low/Medium/High quality tier;
 - draw-call and tracked VRAM measurements from the aligned resource report, plus triangle/skinning measurements from a profiler build where required;

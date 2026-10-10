@@ -22,7 +22,8 @@
     "assets:derive:kenney-mini-market": "pnpm --filter @foodfight/asset-audit run derive:kenney-mini-market",
     "benchmark:room": "pnpm --filter @foodfight/load-benchmark start",
     "format:check": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:m18": "node --test scripts/m18-report.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "latest",

@@ -17,6 +17,7 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm check
       - run: pnpm test
+      - run: pnpm test:m18
       - run: pnpm assets:derive:kenney-props
       - run: pnpm assets:derive:kenney-furniture
       - run: pnpm assets:derive:kenney-mini-market
