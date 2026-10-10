@@ -398,3 +398,6 @@ body[data-reduced-motion="true"] .objective {
   .event-toast { top: 24%; }
   .match-banner { top: 38%; }
 }
+
+.settings #invite:disabled { opacity: .5; cursor: not-allowed; }
+.settings #invite:not(:disabled) { border-color: rgba(255, 194, 71, .7); }

@@ -115,7 +115,8 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   private redScoreExact = 0;
   private readonly inputRateLimiter = new InputRateLimiter();
 
-  onCreate() {
+  onCreate(options: { privateRoom?: boolean } = {}) {
+    if (options.privateRoom === true) this.setPrivate(true);
     this.initializePickups();
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
     this.setSimulationInterval((deltaMs) => this.tick(deltaMs / 1000), 1000 / GAME.serverHz);

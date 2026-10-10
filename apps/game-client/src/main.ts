@@ -13,10 +13,12 @@ import type {
 import { createArtPrototype } from "./artPrototype";
 import { createCommercialVfx } from "./commercialVfx";
 import { connectToMatch, type MatchConnection } from "./network";
+import { inviteUrl, readJoinOptions } from "./joinOptions";
 import "./styles.css";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game")!;
 const networkLabel = document.querySelector<HTMLDivElement>("#network")!;
+const inviteButton = document.querySelector<HTMLButtonElement>("#invite")!;
 const timerLabel = document.querySelector<HTMLDivElement>("#timer")!;
 const blueScoreLabel = document.querySelector<HTMLSpanElement>("#blue-score")!;
 const redScoreLabel = document.querySelector<HTMLSpanElement>("#red-score")!;
@@ -618,9 +620,22 @@ app.on("update", (dt: number) => {
 
 window.addEventListener("resize", () => app.resizeCanvas());
 
-connectToMatch(`Guest-${Math.floor(Math.random() * 9000 + 1000)}`)
+const joinOptions = readJoinOptions(window.location.search, `Guest-${Math.floor(Math.random() * 9000 + 1000)}`);
+connectToMatch(joinOptions.displayName, joinOptions)
   .then((matchConnection) => {
     connection = matchConnection;
+    inviteButton.disabled = false;
+    inviteButton.addEventListener("click", async () => {
+      if (!connection) return;
+      const link = inviteUrl(window.location.href, connection.room.roomId);
+      try {
+        await navigator.clipboard.writeText(link);
+        inviteButton.textContent = "invite · copied";
+        window.setTimeout(() => { inviteButton.textContent = "invite · copy"; }, 2000);
+      } catch {
+        window.prompt("Copy this match invitation", link);
+      }
+    });
     networkLabel.textContent = `connected · ${connection.room.sessionId.slice(0, 6)}`;
     connection.room.onStateChange((state) => syncState(state));
     connection.room.onMessage("impact", (message: ImpactMessage) => spawnImpact(message));

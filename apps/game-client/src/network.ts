@@ -8,9 +8,13 @@ export interface MatchConnection {
   leave(): Promise<number>;
 }
 
-export async function connectToMatch(displayName: string): Promise<MatchConnection> {
+export async function connectToMatch(displayName: string, options: { roomId?: string; privateRoom?: boolean } = {}): Promise<MatchConnection> {
   const client = new Client(getRuntimeConfig().gameServerUrl);
-  const room = await client.joinOrCreate("food_fight", { displayName });
+  const room = options.roomId
+    ? await client.joinById(options.roomId, { displayName })
+    : options.privateRoom
+      ? await client.create("food_fight", { displayName, privateRoom: true })
+      : await client.joinOrCreate("food_fight", { displayName });
 
   return {
     room,

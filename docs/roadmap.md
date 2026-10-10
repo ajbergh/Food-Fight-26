@@ -332,6 +332,10 @@ Only begin a second arena after M18 proves that the first arena's production art
 
 M0 is the repository baseline and predates this PR ledger. PR #31, PR #35, and PR #44 are documentation/reconciliation passes and are intentionally not counted as implementation pull requests.
 
+## Post-M18 guest onboarding pilot (experimental)
+
+A guest launch shell provides Quick Play, a private room creation option, join-by-room-code, and shareable game-client invitations. This is an *alpha onboarding slice*, not a finished party/matchmaking/reconnect system. Private rooms are hidden from matchmaking, not password protected. Continue validation of real join/leave and rematch UX before publicly shipping this as a party platform.
+
 ## Later product work, only after validation
 
 - Matchmaking, party, and social depth.
