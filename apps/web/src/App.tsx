@@ -1,8 +1,9 @@
-const gameUrl = import.meta.env.VITE_GAME_URL ?? "http://localhost:5174";
+import { resolveGameUrl } from "./gameUrl";
 
 const roster = ["Pip", "Jax", "Mochi", "Zoe", "Dunk", "Kai", "Lux", "Niko"];
 
 export function App() {
+  const gameUrl = resolveGameUrl(window.__FOOD_FIGHT_CONFIG__?.gameUrl, import.meta.env.VITE_GAME_URL);
   return (
     <main className="shell">
       <section className="hero">
