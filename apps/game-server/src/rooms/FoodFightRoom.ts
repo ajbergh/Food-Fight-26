@@ -149,12 +149,22 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       player.moveY = 0;
       player.dodgeRemaining = 0;
     }
+    // Prevent a public room with only temporarily held/disconnected seats
+    // from being selected by new Quick Play sessions. Recovery by token still works.
+    if (!this.state.privateMatch) {
+      let connected = 0;
+      this.state.players.forEach((candidate: PlayerState) => {
+        if (candidate.connected) connected += 1;
+      });
+      if (connected === 0) this.setPrivate(true);
+    }
     this.allowReconnection(client, 20);
   }
 
   onReconnect(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) player.connected = true;
+    if (!this.state.privateMatch) this.setPrivate(false);
   }
 
   onLeave(client: Client) {
