@@ -26,10 +26,10 @@
     "test:m18": "node --test scripts/m18-report.test.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "latest",
-    "@types/node": "latest",
-    "prettier": "latest",
-    "typescript": "latest",
-    "vitest": "latest"
+    "@playwright/test": "1.64.0",
+    "@types/node": "26.6.5",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
   }
 }

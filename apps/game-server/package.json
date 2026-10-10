@@ -11,15 +11,15 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@colyseus/schema": "latest",
-    "@colyseus/ws-transport": "latest",
+    "@colyseus/schema": "5.0.36",
+    "@colyseus/ws-transport": "0.18.4",
     "@foodfight/game-core": "workspace:*",
     "@foodfight/maps": "workspace:*",
     "@foodfight/protocol": "workspace:*",
-    "colyseus": "latest"
+    "colyseus": "0.18.9"
   },
   "devDependencies": {
-    "tsx": "latest",
-    "tsup": "latest"
+    "tsx": "4.23.15",
+    "tsup": "8.5.1"
   }
 }
