@@ -9,6 +9,9 @@ Pure rules in `game-core`: normalization, movement bounds, cooldowns, scoring, i
 Serialization compatibility, malformed input rejection, authoritative state transitions.
 
 ### Room integration
+
+Room ingress helpers have unit coverage for non-object/malformed input, non-finite/out-of-bounds axes, monotonic 32-bit sequence shape, per-session rate limiting, and balanced replacement-team selection. Extend the real-room integration suite with reconnect and burst-input lifecycle tests before a public alpha.
+
 Multiple simulated clients join/leave, move, throw, score, disconnect, and finish rounds.
 
 ### Browser integration

@@ -22,7 +22,7 @@ Never accept client messages equivalent to `I hit player X`, `give me item Y`, o
 
 ## Abuse limits
 
-- Cap messages per client/time window.
+- Cap messages per client/time window. The current room ingress rejects malformed payloads and bounds accepted processing to 90 input messages per session per second; revisit this limit with live network telemetry and consider a graduated disconnect policy if abuse emerges.
 - Bound payload sizes.
 - Disconnect malformed/flooding clients after telemetry/logging thresholds.
 - Sanitize display names and future user-generated text.
