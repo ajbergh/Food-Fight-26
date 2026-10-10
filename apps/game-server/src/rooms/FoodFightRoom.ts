@@ -115,9 +115,13 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   private blueScoreExact = 0;
   private redScoreExact = 0;
   private readonly inputRateLimiter = new InputRateLimiter();
+  private isInviteOnly = false;
 
   onCreate(options: { privateRoom?: boolean } = {}) {
-    if (options.privateRoom === true) this.setPrivate(true);
+    if (options.privateRoom === true) {
+      this.isInviteOnly = true;
+      this.setPrivate(true);
+    }
     this.initializePickups();
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
     this.setSimulationInterval((deltaMs) => this.tick(deltaMs / 1000), 1000 / GAME.serverHz);
@@ -151,7 +155,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     }
     // Prevent a public room with only temporarily held/disconnected seats
     // from being selected by new Quick Play sessions. Recovery by token still works.
-    if (!this.state.privateMatch) {
+    if (!this.isInviteOnly) {
       let connected = 0;
       this.state.players.forEach((candidate: PlayerState) => {
         if (candidate.connected) connected += 1;
@@ -164,7 +168,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   onReconnect(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) player.connected = true;
-    if (!this.state.privateMatch) this.setPrivate(false);
+    if (!this.isInviteOnly) this.setPrivate(false);
   }
 
   onLeave(client: Client) {
