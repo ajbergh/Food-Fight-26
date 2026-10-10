@@ -401,3 +401,9 @@ body[data-reduced-motion="true"] .objective {
 
 .settings #invite:disabled { opacity: .5; cursor: not-allowed; }
 .settings #invite:not(:disabled) { border-color: rgba(255, 194, 71, .7); }
+
+.connection-status { position: fixed; z-index: 24; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(430px, calc(100vw - 32px)); border-radius: 18px; padding: 24px; background: rgba(15, 12, 23, .95); border: 2px solid #ffc247; box-shadow: 0 15px 65px rgba(0,0,0,.65); color: #fff; text-align: center; }
+.connection-status[hidden], .connection-status button[hidden] { display: none !important; }
+.connection-status strong { display: block; margin-bottom: 16px; }
+.connection-status button { border: 0; background: #ffc247; color: #251b2a; border-radius: 12px; padding: 12px 24px; min-height: 44px; cursor: pointer; font: inherit; font-weight: 800; }
+.connection-status button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
