@@ -33,6 +33,8 @@ Development builds still support `VITE_GAME_SERVER_URL`, `VITE_PLATFORM_API_URL`
 
 The release value is attached to bounded browser telemetry so a staged rollout can compare client health by immutable build identity.
 
+CI additionally runs `bash infra/smoke-compose.sh`, bringing up the full PostgreSQL/Redis/API/game/web Compose graph, checking that database initialization creates the four declared tables, validating both runtime configurations, and joining real bot clients. This catches errors absent from isolated container smoke tests.
+
 CI runs `bash infra/smoke-containers.sh`. The smoke harness builds all four targets, boots them on isolated host ports, verifies the API/static health endpoints, then points two real Colyseus bot clients at the **containerized** game server. A PR therefore cannot merge merely because source builds work; the production-shaped images must also boot and accept traffic.
 
 For a local image smoke:
