@@ -1,0 +1,37 @@
+name: Cross-Browser Guest Shell
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+  pull_request:
+    paths:
+      - "apps/web/**"
+      - "tests/cross-browser/**"
+      - "playwright.cross-browser.config.ts"
+      - ".github/workflows/browser-matrix.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  guest-shell:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps firefox webkit
+      - run: pnpm exec playwright test --config playwright.cross-browser.config.ts
+      - name: Upload test traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-browser-traces
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

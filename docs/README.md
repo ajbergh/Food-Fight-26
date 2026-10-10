@@ -20,6 +20,7 @@ This directory is the product and engineering source of truth for the initial ve
 - [Security and anti-cheat](security-and-anti-cheat.md)
 - [Performance budgets](performance-budgets.md)
 - [Testing and QA](testing-qa.md)
+- [Cross-browser guest shell matrix](cross-browser-matrix.md)
 - [Deployment and operations](deployment-and-operations.md)
 - [Observability](observability.md)
 
