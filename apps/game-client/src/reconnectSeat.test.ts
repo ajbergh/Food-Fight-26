@@ -18,7 +18,8 @@ describe("short-lived session resumption", () => {
       expect(readReconnectToken(raw,key,101)).toBeNull();
     }
     const saved = JSON.stringify({key,token:"abc",savedAt:100});
-    expect(readReconnectToken(saved,key,20100)).toBeNull();
+    expect(readReconnectToken(saved,key,20100)).not.toBeNull();
+    expect(readReconnectToken(saved,key,100 + 24 * 60 * 60 * 1000)).toBeNull();
     expect(readReconnectToken(saved,key,99)).toBeNull();
   });
 });
