@@ -26,6 +26,8 @@ jobs:
       - run: pnpm benchmark:room
       - name: Build and smoke staging containers
         run: bash infra/smoke-containers.sh
+      - name: Smoke complete staging Compose stack
+        run: bash infra/smoke-compose.sh
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - name: Upload visual review captures

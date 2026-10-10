@@ -57,6 +57,10 @@ FROM workspace AS web-build
 RUN pnpm --filter @foodfight/web build
 
 FROM nginx:1.27-alpine AS web-static
+ENV WEB_GAME_PUBLIC_URL=http://localhost:8081
 COPY infra/nginx-static.conf /etc/nginx/conf.d/default.conf
+COPY infra/40-foodfight-runtime-config.sh /docker-entrypoint.d/40-foodfight-runtime-config.sh
 COPY --from=web-build /workspace/apps/web/dist /usr/share/nginx/html
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-foodfight-runtime-config.sh \
+    && chmod +x /docker-entrypoint.d/40-foodfight-runtime-config.sh
 EXPOSE 8080

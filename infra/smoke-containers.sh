@@ -93,6 +93,7 @@ docker run --detach \
 
 docker run --detach \
   --name "$web_container" \
+  --env WEB_GAME_PUBLIC_URL=https://game.smoke.example \
   --publish 38080:8080 \
   "$web_image" >/dev/null
 
@@ -104,6 +105,10 @@ runtime_config="$(curl --fail --silent --show-error http://127.0.0.1:38081/runti
 assert_contains "$runtime_config" 'gameServerUrl: "https://match.smoke.example"'
 assert_contains "$runtime_config" 'platformApiUrl: "https://api.smoke.example"'
 assert_contains "$runtime_config" 'release: "sha-smoke-test"'
+web_runtime_config="$(curl --fail --silent --show-error http://127.0.0.1:38080/runtime-config.js)"
+assert_contains "$web_runtime_config" 'gameUrl: "https://game.smoke.example"'
+web_html="$(curl --fail --silent --show-error http://127.0.0.1:38080/)"
+assert_contains "$web_html" '/runtime-config.js'
 
 for production_prop in pizza pizza-box can carton; do
   prop_url="http://127.0.0.1:38081/assets/third-party/kenney-food-kit/${production_prop}.glb"

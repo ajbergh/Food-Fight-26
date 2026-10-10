@@ -20,15 +20,20 @@ The static nginx image serves hashed `/assets/` with immutable caching, serves t
 
 ### Runtime browser configuration
 
+The production game-client and web-shell bundles are environment-neutral. The web shell loads the same runtime configuration document and uses its `gameUrl` to direct visitors to the deployed game, rather than embedding a development localhost link. Set `PUBLIC_WEB_GAME_URL` when deploying Compose; its local-only default points at `http://localhost:8081`.
+
 The production game-client bundle is environment-neutral. `index.html` loads `/runtime-config.js` before the game modules, and the nginx image generates that file at container startup from:
 
 - `GAME_SERVER_PUBLIC_URL`;
 - `PLATFORM_API_PUBLIC_URL`;
-- `FOOD_FIGHT_RELEASE`.
+- `FOOD_FIGHT_RELEASE`;
+- `WEB_GAME_PUBLIC_URL` (web-shell Play link).
 
 Development builds still support `VITE_GAME_SERVER_URL`, `VITE_PLATFORM_API_URL`, and `VITE_FOOD_FIGHT_RELEASE` as fallbacks. Runtime values take precedence. This separation is deliberate: a tested game-client image can now be promoted from staging to production without rebuilding its JavaScript merely to change service URLs.
 
 The release value is attached to bounded browser telemetry so a staged rollout can compare client health by immutable build identity.
+
+CI additionally runs `bash infra/smoke-compose.sh`, bringing up the full PostgreSQL/Redis/API/game/web Compose graph, checking that database initialization creates the four declared tables, validating both runtime configurations, and joining real bot clients. This catches errors absent from isolated container smoke tests.
 
 CI runs `bash infra/smoke-containers.sh`. The smoke harness builds all four targets, boots them on isolated host ports, verifies the API/static health endpoints, then points two real Colyseus bot clients at the **containerized** game server. A PR therefore cannot merge merely because source builds work; the production-shaped images must also boot and accept traffic.
 
