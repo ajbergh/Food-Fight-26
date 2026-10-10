@@ -17,13 +17,15 @@ export async function connectToMatch(
   const client = new Client(config.gameServerUrl);
   const key = connectionKey(config.gameServerUrl, displayName, options);
   let room: Room | undefined;
-  const saved = readReconnectToken(sessionStorage.getItem("ff26-seat"), key, Date.now());
+  let cached: string | null = null;
+  try { cached = sessionStorage.getItem("ff26-seat"); } catch { /* Storage may be disabled. */ }
+  const saved = readReconnectToken(cached, key, Date.now());
   if (saved) {
     try {
       room = await client.reconnect(saved.token);
     } catch {
       // The authoritative 20-second hold may have expired: join normally.
-      sessionStorage.removeItem("ff26-seat");
+      try { sessionStorage.removeItem("ff26-seat"); } catch { /* Storage may be disabled. */ }
     }
   }
   if (!room) {
