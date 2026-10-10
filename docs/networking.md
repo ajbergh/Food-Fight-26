@@ -96,3 +96,5 @@ Measure per match:
 - correction magnitude;
 - RTT/jitter;
 - disconnect/reconnect frequency.
+
+Public rooms are hidden from Quick Play while every held seat is disconnected, preventing lingering held seats from contaminating a new public session.
