@@ -407,3 +407,16 @@ body[data-reduced-motion="true"] .objective {
 .connection-status strong { display: block; margin-bottom: 16px; }
 .connection-status button { border: 0; background: #ffc247; color: #251b2a; border-radius: 12px; padding: 12px 24px; min-height: 44px; cursor: pointer; font: inherit; font-weight: 800; }
 .connection-status button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+.party-lobby { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 9; width: min(450px,calc(100vw - 32px)); max-height: 52vh; overflow-y: auto; border: 1px solid rgba(255,194,71,.75); border-radius: 22px; background: rgba(18,13,28,.93); box-shadow: 0 18px 75px rgba(0,0,0,.6); padding: 22px; color: #fff; }
+.party-lobby[hidden] { display: none !important; }
+.party-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.party-heading span { color: #ffc247; font-size: 12px; font-weight: 900; letter-spacing: .13em; }
+.party-heading strong { font-size: 13px; color: #f4e8d3; overflow-wrap: anywhere; }
+.party-lobby p { margin: 16px 0; line-height: 1.45; font-size: 14px; }
+.party-lobby ul { padding: 0; margin: 0; list-style: none; display: grid; gap: 7px; }
+.party-lobby li { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); border-radius: 11px; padding: 8px 12px; font-size: 13px; }
+.party-lobby li[data-team="blue"] { border-left: 4px solid #4e9aff; }
+.party-lobby li[data-team="red"] { border-left: 4px solid #f76c65; }
+.party-lobby li[data-offline="true"] { opacity: .65; }
+@media (max-height: 570px) { .party-lobby { top: 54%; max-height: 50vh; padding: 15px; } }

@@ -78,6 +78,7 @@ export interface MatchStateShape {
   redScore: number;
   timeRemaining: number;
   phase: MatchPhase;
+  privateMatch: boolean;
   phaseRemaining: number;
   objectiveOwner: TeamName;
   objectiveContested: boolean;

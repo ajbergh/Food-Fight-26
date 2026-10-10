@@ -336,6 +336,10 @@ M0 is the repository baseline and predates this PR ledger. PR #31, PR #35, and P
 
 A guest launch shell provides Quick Play, a private room creation option, join-by-room-code, and shareable game-client invitations. This is an *alpha onboarding slice*, not a finished party/matchmaking/reconnect system. Private rooms are hidden from matchmaking, not password protected. Continue validation of real join/leave and rematch UX before publicly shipping this as a party platform.
 
+### Private waiting-room increment
+
+A private match now waits until **two actively connected participants** enter the room before the round countdown. Its roster displays the current blue/red assignment, invitation code, and temporarily disconnected members. Quick Play retains the existing solo-capable prototype loop. This is not yet a ready-vote/rematch lobby.
+
 ## Later product work, only after validation
 
 - Matchmaking, party, and social depth.
