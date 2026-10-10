@@ -1,0 +1,22 @@
+{
+  email {$ACME_EMAIL}
+}
+
+{$WEB_HOST} {
+  encode zstd gzip
+  reverse_proxy web:8080
+}
+
+{$PLAY_HOST} {
+  encode zstd gzip
+  reverse_proxy game-client:8080
+}
+
+{$API_HOST} {
+  reverse_proxy platform-api:3000
+}
+
+{$MATCH_HOST} {
+  # Caddy forwards the HTTP Upgrade handshake for Colyseus WebSockets.
+  reverse_proxy game-server:2567
+}

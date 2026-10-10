@@ -1,0 +1,58 @@
+# Guest-only external alpha: only the TLS edge is publicly bound. Use immutable GHCR SHA tags.
+services:
+  edge:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      WEB_HOST: ${WEB_HOST:?required}
+      PLAY_HOST: ${PLAY_HOST:?required}
+      MATCH_HOST: ${MATCH_HOST:?required}
+      API_HOST: ${API_HOST:?required}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./Caddyfile.alpha:/etc/caddy/Caddyfile:ro
+      - alpha-caddy-data:/data
+      - alpha-caddy-config:/config
+    depends_on:
+      - web
+      - game-client
+      - game-server
+      - platform-api
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/ajbergh/food-fight-26-web:${FOOD_FIGHT_IMAGE_TAG:?required}
+    environment:
+      WEB_GAME_PUBLIC_URL: https://${PLAY_HOST:?required}
+    expose: ["8080"]
+    restart: unless-stopped
+
+  game-client:
+    image: ghcr.io/ajbergh/food-fight-26-game-client:${FOOD_FIGHT_IMAGE_TAG:?required}
+    environment:
+      GAME_SERVER_PUBLIC_URL: https://${MATCH_HOST:?required}
+      PLATFORM_API_PUBLIC_URL: https://${API_HOST:?required}
+      FOOD_FIGHT_RELEASE: ${FOOD_FIGHT_IMAGE_TAG:?required}
+    expose: ["8080"]
+    restart: unless-stopped
+
+  game-server:
+    image: ghcr.io/ajbergh/food-fight-26-game-server:${FOOD_FIGHT_IMAGE_TAG:?required}
+    environment:
+      GAME_SERVER_PORT: 2567
+    expose: ["2567"]
+    restart: unless-stopped
+
+  platform-api:
+    image: ghcr.io/ajbergh/food-fight-26-platform-api:${FOOD_FIGHT_IMAGE_TAG:?required}
+    environment:
+      PLATFORM_API_PORT: 3000
+    expose: ["3000"]
+    restart: unless-stopped
+
+volumes:
+  alpha-caddy-data:
+  alpha-caddy-config:

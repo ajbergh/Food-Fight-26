@@ -1,0 +1,33 @@
+name: Alpha Edge Configuration
+
+on:
+  pull_request:
+    paths:
+      - "infra/compose.alpha.yml"
+      - "infra/Caddyfile.alpha"
+      - "infra/alpha.env.example"
+      - "infra/validate-alpha-config.sh"
+      - ".github/workflows/alpha-config.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/compose.alpha.yml"
+      - "infra/Caddyfile.alpha"
+      - "infra/alpha.env.example"
+      - "infra/validate-alpha-config.sh"
+      - ".github/workflows/alpha-config.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  config-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check example edge configuration
+        run: |
+          set -a
+          source infra/alpha.env.example
+          set +a
+          bash infra/validate-alpha-config.sh
