@@ -646,6 +646,10 @@ connectToMatch(joinOptions.displayName, joinOptions)
     inviteButton.disabled = false;
     connection.room.onDrop(() => {
       connectionAvailable = false;
+      throwQueued = false;
+      bananaQueued = false;
+      dodgeQueued = false;
+      inputAccumulator = 0;
       showConnectionStatus("Connection interrupted. Reconnecting to your match…", false);
     });
     connection.room.onReconnect(() => {
