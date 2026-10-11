@@ -14,6 +14,7 @@ import { createArtPrototype } from "./artPrototype";
 import { createCommercialVfx } from "./commercialVfx";
 import { connectToMatch, type MatchConnection } from "./network";
 import { inviteUrl, readJoinOptions } from "./joinOptions";
+import { getRuntimeConfig } from "./runtimeConfig";
 import "./styles.css";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game")!;
@@ -44,6 +45,31 @@ const tomatoAmmoLabel = document.querySelector<HTMLElement>("#tomato-ammo")!;
 const bananaAmmoLabel = document.querySelector<HTMLElement>("#banana-ammo")!;
 const matchBanner = document.querySelector<HTMLDivElement>("#match-banner")!;
 const eventToast = document.querySelector<HTMLDivElement>("#event-toast")!;
+const postMatch = document.querySelector<HTMLElement>("#post-match")!;
+const resultHeading = document.querySelector<HTMLElement>("#post-match-heading")!;
+const resultScore = document.querySelector<HTMLElement>("#post-match-score")!;
+const resultProgress = document.querySelector<HTMLElement>("#post-match-progress")!;
+const rematchButton = document.querySelector<HTMLButtonElement>("#ready-rematch")!;
+const leaveMatchButton = document.querySelector<HTMLButtonElement>("#leave-match")!;
+let mostRecentRound = 0;
+
+rematchButton.addEventListener("click", () => {
+  if (!connection || !connectionAvailable || rematchButton.disabled) return;
+  connection.voteRematch(mostRecentRound);
+  rematchButton.disabled = true;
+  rematchButton.textContent = "Ready ✓";
+});
+
+leaveMatchButton.addEventListener("click", async () => {
+  leaveMatchButton.disabled = true;
+  connectionAvailable = false;
+  try {
+    if (connection) await connection.leave();
+  } catch {
+    // Always honor explicit navigation even if the server already closed.
+  }
+  window.location.assign(getRuntimeConfig().webShellUrl);
+});
 const objectiveLabel = document.querySelector<HTMLDivElement>("#objective")!;
 const keyboard = new pc.Keyboard(window);
 
@@ -390,6 +416,7 @@ function syncState(state: MatchStateShape) {
   timerLabel.textContent = formatTime(state.phase === "playing" ? state.timeRemaining : state.phaseRemaining);
   art.setObjectiveState(state.objectiveOwner, state.objectiveContested);
   updateMatchPresentation(state);
+  updatePostMatch(state);
   updatePartyLobby(state);
   updateNetworkLabel(state.phase, projectiles.size);
 }
@@ -415,6 +442,38 @@ function updatePartyLobby(state: MatchStateShape) {
     item.textContent = `${marker} · ${player.name}${player.connected ? "" : " (reconnecting)"}`;
     partyPlayers.appendChild(item);
   }
+}
+
+function updatePostMatch(state: MatchStateShape) {
+  mostRecentRound = state.roundNumber;
+  postMatch.hidden = state.phase !== "finished";
+  document.documentElement.dataset.postMatch = state.phase === "finished" ? "visible" : "hidden";
+  if (postMatch.hidden) return;
+  resultHeading.textContent = state.winner === "none"
+    ? "Round complete"
+    : `${state.winner.toUpperCase()} TEAM WINS!`;
+  resultScore.textContent = `Blue ${state.blueScore} · Red ${state.redScore}`;
+  if (!state.privateMatch) {
+    rematchButton.hidden = true;
+    resultProgress.textContent = `Next round in ${Math.max(0, Math.ceil(state.phaseRemaining))} seconds.`;
+    return;
+  }
+  rematchButton.hidden = false;
+  let active = 0;
+  let votes = 0;
+  let localReady = false;
+  (state.players as unknown as StateCollection<PlayerSnapshot>).forEach((player, sessionId) => {
+    if (player.connected) {
+      active += 1;
+      if (player.rematchReady) votes += 1;
+    }
+    if (connection?.room.sessionId === sessionId) localReady = player.rematchReady;
+  });
+  rematchButton.disabled = !connectionAvailable || localReady;
+  rematchButton.textContent = localReady ? "Ready ✓" : "Ready for rematch";
+  resultProgress.textContent = active < 2
+    ? "Waiting for another chef to join."
+    : `${votes}/${active} players ready${state.phaseRemaining > 0 ? " · results displayed" : ""}`;
 }
 
 function updateMatchPresentation(state: MatchStateShape) {

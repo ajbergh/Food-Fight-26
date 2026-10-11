@@ -20,6 +20,7 @@ export interface PlayerSnapshot {
   team: number;
   displayName: string;
   connected: boolean;
+  rematchReady: boolean;
   lastInputSeq: number;
   stunRemaining: number;
   dodgeRemaining: number;

@@ -35,6 +35,7 @@ services:
       GAME_SERVER_PUBLIC_URL: https://${MATCH_HOST:?required}
       PLATFORM_API_PUBLIC_URL: https://${API_HOST:?required}
       FOOD_FIGHT_RELEASE: ${FOOD_FIGHT_IMAGE_TAG:?required}
+      WEB_SHELL_PUBLIC_URL: https://${WEB_HOST:?required}
     expose: ["8080"]
     restart: unless-stopped
 

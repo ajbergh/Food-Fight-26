@@ -420,3 +420,14 @@ body[data-reduced-motion="true"] .objective {
 .party-lobby li[data-team="red"] { border-left: 4px solid #f76c65; }
 .party-lobby li[data-offline="true"] { opacity: .65; }
 @media (max-height: 570px) { .party-lobby { top: 54%; max-height: 50vh; padding: 15px; } }
+
+.post-match { position: fixed; z-index: 17; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(460px, calc(100vw - 32px)); border: 2px solid #ffc247; border-radius: 24px; padding: 25px; background: rgba(19,14,29,.96); box-shadow: 0 20px 80px rgba(0,0,0,.65); color: #fff; text-align: center; }
+.post-match[hidden], .post-match button[hidden] { display: none !important; }
+.post-match h2 { font-size: clamp(25px,5vw,36px); margin: 0 0 14px; letter-spacing: -.025em; }
+.post-match p { line-height: 1.5; margin: 11px 0; }
+.post-match-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.post-match button { border-radius: 12px; border: 1px solid #ffc247; padding: 12px 20px; min-height: 44px; font: inherit; font-weight: 800; cursor: pointer; background: #ffc247; color: #231625; }
+.post-match #leave-match { border-color: #78617d; color: #fff; background: transparent; }
+.post-match button:disabled { opacity: .55; cursor: default; }
+.post-match button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+body[data-reduced-motion="true"] .post-match { animation: none !important; }

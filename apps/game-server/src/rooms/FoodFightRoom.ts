@@ -14,6 +14,7 @@ import {
 } from "@foodfight/game-core";
 import { foodCourtMap } from "@foodfight/maps";
 import { InputRateLimiter, isValidPlayerInput, selectJoinTeam } from "./inputGuards";
+import { isRematchVote, shouldStartPrivateRematch } from "./rematchRules";
 import type {
   ImpactMessage,
   MatchEventMessage,
@@ -30,6 +31,7 @@ const PlayerState = schema(
     team: t.uint8().default(0),
     displayName: t.string().default("Guest"),
     connected: t.boolean().default(true),
+    rematchReady: t.boolean().default(false),
     lastInputSeq: t.uint32().default(0),
     stunRemaining: t.number().default(0),
     dodgeRemaining: t.number().default(0),
@@ -126,6 +128,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     }
     this.initializePickups();
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
+    this.onMessage("rematch_ready", (client, raw: unknown) => this.handleRematchVote(client, raw));
     this.setSimulationInterval((deltaMs) => this.tick(deltaMs / 1000), 1000 / GAME.serverHz);
   }
 
@@ -357,7 +360,23 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   private tickFinished(dt: number) {
     this.state.phaseRemaining = Math.max(0, this.state.phaseRemaining - dt);
     if (this.state.phaseRemaining > 0) return;
+    if (this.state.privateMatch) {
+      const votes: { connected: boolean; rematchReady: boolean }[] = [];
+      this.state.players.forEach((player: PlayerState) => {
+        votes.push({ connected: player.connected, rematchReady: player.rematchReady });
+      });
+      if (!shouldStartPrivateRematch(votes)) return;
+    }
     this.prepareNextRound();
+  }
+
+  private handleRematchVote(client: Client, raw: unknown) {
+    if (!this.state.privateMatch || this.state.phase !== "finished") return;
+    if (!this.inputRateLimiter.accept(client.sessionId, Date.now())) return;
+    if (!isRematchVote(raw, this.state.roundNumber)) return;
+    const player = this.state.players.get(client.sessionId);
+    if (!player || !player.connected) return;
+    player.rematchReady = true;
   }
 
   private tickPlayers(dt: number) {
@@ -595,6 +614,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       player.dodgeCooldown = 0;
       player.tomatoAmmo = GAME.tomatoAmmoStart;
       player.bananaAmmo = GAME.bananaAmmoStart;
+      player.rematchReady = false;
       index += 1;
     });
   }

@@ -8,7 +8,8 @@ describe("runtime configuration", () => {
         {
           gameServerUrl: "https://match.example.test/",
           platformApiUrl: "https://api.example.test/",
-          release: "sha-runtime",
+          webShellUrl: "http://localhost:5173",
+      release: "sha-runtime",
         },
         {
           gameServerUrl: "http://build-match:2567",
@@ -19,6 +20,7 @@ describe("runtime configuration", () => {
     ).toEqual({
       gameServerUrl: "https://match.example.test",
       platformApiUrl: "https://api.example.test",
+      webShellUrl: "http://localhost:5173",
       release: "sha-runtime",
     });
   });
@@ -32,6 +34,7 @@ describe("runtime configuration", () => {
     ).toEqual({
       gameServerUrl: "http://127.0.0.1:2567",
       platformApiUrl: "http://127.0.0.1:3000",
+      webShellUrl: "http://localhost:5173",
       release: "dev",
     });
   });
@@ -40,7 +43,16 @@ describe("runtime configuration", () => {
     expect(resolveRuntimeConfig({}, {})).toEqual({
       gameServerUrl: "http://localhost:2567",
       platformApiUrl: "",
+      webShellUrl: "http://localhost:5173",
       release: "dev",
     });
+  });
+});
+
+describe("web shell link", () => {
+  it("uses deployed web origin and rejects unsafe URL schemes", () => {
+    expect(resolveRuntimeConfig({ webShellUrl: "https://foodfight.example.com/" }, {}).webShellUrl).toBe("https://foodfight.example.com");
+    expect(resolveRuntimeConfig({ webShellUrl: "javascript:alert(1)" }, {}).webShellUrl).toBe("http://localhost:5173");
+    expect(resolveRuntimeConfig({ webShellUrl: "//evil.example" }, {}).webShellUrl).toBe("http://localhost:5173");
   });
 });

@@ -6,6 +6,7 @@ import { connectionKey, readReconnectToken, type SavedSeat } from "./reconnectSe
 export interface MatchConnection {
   room: Room;
   sendInput(input: PlayerInputMessage): void;
+  voteRematch(roundNumber: number): void;
   leave(): Promise<number>;
 }
 
@@ -49,6 +50,9 @@ export async function connectToMatch(
     room: matchRoom,
     sendInput(input) {
       matchRoom.send("input", input);
+    },
+    voteRematch(roundNumber) {
+      matchRoom.send("rematch_ready", { roundNumber });
     },
     leave() {
       try { sessionStorage.removeItem("ff26-seat"); } catch { /* Storage may be disabled. */ }
