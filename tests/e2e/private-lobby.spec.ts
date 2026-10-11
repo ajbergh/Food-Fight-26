@@ -14,6 +14,10 @@ test("private room waits for a second chef then starts the round", async ({ page
   await expect(other.locator("html")).toHaveAttribute("data-connection-status", "online", { timeout: 20_000 });
   await expect(page.locator("#party-players li")).toHaveCount(2);
   await expect(other.locator("#party-players li")).toHaveCount(2);
+  await expect(page.locator("#match-banner")).toContainText("WAITING FOR READY");
+  await page.locator("#party-ready").click();
+  await expect(page.locator("#party-ready")).toHaveText("Ready ✓");
+  await other.locator("#party-ready").click();
   await expect(page.locator("#network")).toContainText("playing", { timeout: 25_000 });
   await expect(page.locator("#party-lobby")).toBeHidden();
   await other.close();

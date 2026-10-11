@@ -15,6 +15,7 @@ import {
 import { foodCourtMap } from "@foodfight/maps";
 import { InputRateLimiter, isValidPlayerInput, selectJoinTeam } from "./inputGuards";
 import { isRematchVote, shouldStartPrivateRematch } from "./rematchRules";
+import { shouldBeginPrivateRound } from "./privateReadyRules";
 import type {
   ImpactMessage,
   MatchEventMessage,
@@ -32,6 +33,7 @@ const PlayerState = schema(
     displayName: t.string().default("Guest"),
     connected: t.boolean().default(true),
     rematchReady: t.boolean().default(false),
+    lobbyReady: t.boolean().default(false),
     lastInputSeq: t.uint32().default(0),
     stunRemaining: t.number().default(0),
     dodgeRemaining: t.number().default(0),
@@ -129,6 +131,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
     this.initializePickups();
     this.onMessage("input", (client, raw: PlayerInputMessage) => this.handleInput(client, raw));
     this.onMessage("rematch_ready", (client, raw: unknown) => this.handleRematchVote(client, raw));
+    this.onMessage("lobby_ready", (client, raw: unknown) => this.handleLobbyVote(client, raw));
     this.setSimulationInterval((deltaMs) => this.tick(deltaMs / 1000), 1000 / GAME.serverHz);
   }
 
@@ -340,12 +343,14 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   }
 
   private tickWaiting(dt: number) {
-    // Public quick play is solo-capable; invite rooms wait for two active players.
+    // Invite rooms require two active chefs and unanimous ready intent before starting.
     let activePlayers = 0;
+    const seats: { connected: boolean; lobbyReady: boolean }[] = [];
     this.state.players.forEach((player: PlayerState) => {
+      seats.push({ connected: player.connected, lobbyReady: player.lobbyReady });
       if (player.connected) activePlayers += 1;
     });
-    if (activePlayers === 0 || (this.state.privateMatch && activePlayers < 2)) {
+    if (activePlayers === 0 || (this.state.privateMatch && !shouldBeginPrivateRound(seats))) {
       this.state.phaseRemaining = GAME.preRoundSeconds;
       return;
     }
@@ -368,6 +373,15 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       if (!shouldStartPrivateRematch(votes)) return;
     }
     this.prepareNextRound();
+  }
+
+  private handleLobbyVote(client: Client, raw: unknown) {
+    if (!this.state.privateMatch || this.state.phase !== "waiting") return;
+    if (!this.inputRateLimiter.accept(client.sessionId, Date.now())) return;
+    if (!isRematchVote(raw, this.state.roundNumber)) return;
+    const player = this.state.players.get(client.sessionId);
+    if (!player || !player.connected) return;
+    player.lobbyReady = true;
   }
 
   private handleRematchVote(client: Client, raw: unknown) {
@@ -614,6 +628,8 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
       player.dodgeCooldown = 0;
       player.tomatoAmmo = GAME.tomatoAmmoStart;
       player.bananaAmmo = GAME.bananaAmmoStart;
+      // Rematch consent also authorizes the new round; first-round joins must ready manually.
+      player.lobbyReady = player.rematchReady;
       player.rematchReady = false;
       index += 1;
     });
