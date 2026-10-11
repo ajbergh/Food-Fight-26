@@ -431,3 +431,7 @@ body[data-reduced-motion="true"] .objective {
 .post-match button:disabled { opacity: .55; cursor: default; }
 .post-match button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 body[data-reduced-motion="true"] .post-match { animation: none !important; }
+
+.party-lobby #party-ready { display: block; width: 100%; margin-top: 12px; padding: 13px; border: 0; border-radius: 12px; background: #ffc247; color: #231625; font: inherit; font-weight: 900; cursor: pointer; }
+.party-lobby #party-ready:disabled { opacity: .6; cursor: default; }
+.party-lobby #party-ready:focus-visible { outline: 3px solid white; outline-offset: 3px; }

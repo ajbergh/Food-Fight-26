@@ -21,6 +21,7 @@ export interface PlayerSnapshot {
   displayName: string;
   connected: boolean;
   rematchReady: boolean;
+  lobbyReady: boolean;
   lastInputSeq: number;
   stunRemaining: number;
   dodgeRemaining: number;

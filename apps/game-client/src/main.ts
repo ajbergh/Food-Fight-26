@@ -23,6 +23,14 @@ const inviteButton = document.querySelector<HTMLButtonElement>("#invite")!;
 const partyLobby = document.querySelector<HTMLElement>("#party-lobby")!;
 const partyRoom = document.querySelector<HTMLElement>("#party-room")!;
 const partyPlayers = document.querySelector<HTMLUListElement>("#party-players")!;
+const partyReadyStatus = document.querySelector<HTMLElement>("#party-ready-status")!;
+const partyReadyButton = document.querySelector<HTMLButtonElement>("#party-ready")!;
+partyReadyButton.addEventListener("click", () => {
+  if (!connection || !connectionAvailable || partyReadyButton.disabled) return;
+  connection.voteLobbyReady(mostRecentRound);
+  partyReadyButton.disabled = true;
+  partyReadyButton.textContent = "Ready ✓";
+});
 let lastPartySignature = "";
 const connectionStatus = document.querySelector<HTMLDivElement>("#connection-status")!;
 const connectionMessage = document.querySelector<HTMLElement>("#connection-message")!;
@@ -425,11 +433,19 @@ function updatePartyLobby(state: MatchStateShape) {
   const visible = state.privateMatch && state.phase === "waiting";
   partyLobby.hidden = !visible;
   if (!visible) return;
-  const entries: { sessionId: string; name: string; team: number; connected: boolean }[] = [];
+  const entries: { sessionId: string; name: string; team: number; connected: boolean; ready: boolean }[] = [];
   (state.players as unknown as StateCollection<PlayerSnapshot>).forEach((player, sessionId) => {
-    entries.push({ sessionId, name: player.displayName, team: player.team, connected: player.connected });
+    entries.push({ sessionId, name: player.displayName, team: player.team, connected: player.connected, ready: player.lobbyReady });
   });
   entries.sort((a, b) => a.team - b.team || a.name.localeCompare(b.name) || a.sessionId.localeCompare(b.sessionId));
+  const readyCount = entries.filter((player) => player.connected && player.ready).length;
+  const activeCount = entries.filter((player) => player.connected).length;
+  const localReady = entries.some((player) => player.sessionId === connection?.room.sessionId && player.ready);
+  partyReadyStatus.textContent = activeCount < 2
+    ? `Waiting for friends · ${activeCount}/${GAME.maxPlayers}`
+    : `${readyCount}/${activeCount} connected chefs ready`;
+  partyReadyButton.disabled = localReady || !connectionAvailable;
+  partyReadyButton.textContent = localReady ? "Ready ✓" : "Ready to start";
   const signature = JSON.stringify(entries);
   if (signature === lastPartySignature) return;
   lastPartySignature = signature;
@@ -439,7 +455,7 @@ function updatePartyLobby(state: MatchStateShape) {
     item.dataset.team = player.team === 0 ? "blue" : "red";
     item.dataset.offline = String(!player.connected);
     const marker = player.team === 0 ? "◆ BLUE" : "● RED";
-    item.textContent = `${marker} · ${player.name}${player.connected ? "" : " (reconnecting)"}`;
+    item.textContent = `${marker} · ${player.name}${player.connected ? player.ready ? " ✓ Ready" : " · Not ready" : " (reconnecting)"}`;
     partyPlayers.appendChild(item);
   }
 }
@@ -481,9 +497,13 @@ function updateMatchPresentation(state: MatchStateShape) {
   if (state.phase === "waiting") {
     let active = 0;
     (state.players as unknown as StateCollection<PlayerSnapshot>).forEach((p) => { if (p.connected) active += 1; });
+    let ready = 0;
+    (state.players as unknown as StateCollection<PlayerSnapshot>).forEach((p) => { if (p.connected && p.lobbyReady) ready += 1; });
     banner = state.privateMatch && active < 2
       ? `WAITING FOR FRIENDS · ${active}/${GAME.maxPlayers}`
-      : `ROUND ${state.roundNumber} · ${Math.max(1, Math.ceil(state.phaseRemaining))}`;
+      : state.privateMatch && ready < active
+        ? `WAITING FOR READY · ${ready}/${active}`
+        : `ROUND ${state.roundNumber} · ${Math.max(1, Math.ceil(state.phaseRemaining))}`;
   } else if (state.phase === "overtime") {
     banner = "OVERTIME · SUDDEN CONTROL";
   } else if (state.phase === "finished") {

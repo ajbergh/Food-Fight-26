@@ -128,3 +128,7 @@ Private rooms retain a waiting phase with a visible roster and room code until t
 ## Consent-based rematch acceptance
 
 Server-side vote validation and pure quorum rules are unit tested for stale round IDs, malformed inputs, missing players and disconnected seats. The browser results panel displays authoritative scores, current ready count, and a Leave Match action. A live two-browser full-round vote and intentional leave/rejoin should be manually checked before opening public alpha access.
+
+## Private-party ready-up gate
+
+Two invited participants must each select **Ready to start** before their first private round begins. The authoritative server ignores votes outside waiting phase and stale round IDs; dropped seats do not satisfy the minimum party count. The real two-page browser test confirms that joining does not start play until both users consent. Rematch consent automatically carries forward to the subsequent pre-round countdown, so players are not asked to confirm twice. Quick Play keeps its solo-capable automatic countdown.

@@ -7,6 +7,7 @@ export interface MatchConnection {
   room: Room;
   sendInput(input: PlayerInputMessage): void;
   voteRematch(roundNumber: number): void;
+  voteLobbyReady(roundNumber: number): void;
   leave(): Promise<number>;
 }
 
@@ -53,6 +54,9 @@ export async function connectToMatch(
     },
     voteRematch(roundNumber) {
       matchRoom.send("rematch_ready", { roundNumber });
+    },
+    voteLobbyReady(roundNumber) {
+      matchRoom.send("lobby_ready", { roundNumber });
     },
     leave() {
       try { sessionStorage.removeItem("ff26-seat"); } catch { /* Storage may be disabled. */ }
