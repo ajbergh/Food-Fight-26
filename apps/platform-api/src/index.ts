@@ -1,9 +1,11 @@
 import Fastify, { type FastifyReply } from "fastify";
 import { ClientTelemetryStore, parseClientTelemetry } from "./clientTelemetry";
+import { TelemetryIngressLimiter } from "./telemetryIngressLimiter";
 
 const app = Fastify({ logger: true });
 const port = Number(process.env.PLATFORM_API_PORT ?? 3000);
 const telemetry = new ClientTelemetryStore();
+const ingress = new TelemetryIngressLimiter();
 
 function allowTelemetryCors(reply: FastifyReply) {
   reply.header("access-control-allow-origin", "*");
@@ -26,6 +28,10 @@ app.options("/api/v1/telemetry/client", async (_request, reply) => {
 
 app.post("/api/v1/telemetry/client", { bodyLimit: 8 * 1024 }, async (request, reply) => {
   allowTelemetryCors(reply);
+  if (!ingress.acceptRequest(Date.now())) {
+    reply.header("retry-after", "60");
+    return reply.code(429).send({ accepted: false, error: "ingress_rate_limited" });
+  }
 
   let raw: unknown = request.body;
   if (typeof raw === "string") {
@@ -38,6 +44,10 @@ app.post("/api/v1/telemetry/client", { bodyLimit: 8 * 1024 }, async (request, re
 
   const event = parseClientTelemetry(raw);
   if (!event) return reply.code(400).send({ accepted: false, error: "invalid_event" });
+  if (!ingress.acceptSession(event.sessionId, Date.now())) {
+    reply.header("retry-after", "60");
+    return reply.code(429).send({ accepted: false, error: "session_rate_limited" });
+  }
 
   telemetry.record(event);
   const logContext = { kind: event.kind, route: event.route };

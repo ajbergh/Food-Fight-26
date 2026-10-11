@@ -75,6 +75,9 @@ function percentile(values: number[], fraction: number) {
 export class ClientTelemetryStore {
   private received = 0;
   private sessions = new Set<string>();
+  private sessionIdsEvicted = 0;
+
+  constructor(private readonly maxTrackedSessions = 20_000) {}
   private byKind = new Map<ClientTelemetryKind, number>();
   private byRelease = new Map<string, number>();
   private fpsSamples: number[] = [];
@@ -83,7 +86,16 @@ export class ClientTelemetryStore {
 
   record(event: ClientTelemetryEnvelope) {
     this.received += 1;
-    this.sessions.add(event.sessionId);
+    if (!this.sessions.has(event.sessionId)) {
+      if (this.sessions.size >= this.maxTrackedSessions) {
+        const oldest = this.sessions.values().next().value;
+        if (oldest !== undefined) {
+          this.sessions.delete(oldest);
+          this.sessionIdsEvicted += 1;
+        }
+      }
+      this.sessions.add(event.sessionId);
+    }
     this.byKind.set(event.kind, (this.byKind.get(event.kind) ?? 0) + 1);
     this.lastReceivedAt = new Date().toISOString();
 
@@ -103,6 +115,7 @@ export class ClientTelemetryStore {
     return {
       received: this.received,
       uniqueSessions: this.sessions.size,
+      sessionIdsEvicted: this.sessionIdsEvicted,
       byKind: Object.fromEntries(this.byKind),
       byRelease: Object.fromEntries(this.byRelease),
       frame: {
