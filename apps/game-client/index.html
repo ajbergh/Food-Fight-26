@@ -49,6 +49,11 @@
     <div id="objective" class="objective" data-state="none" role="status" aria-live="polite" aria-atomic="true">HOLD THE SUNDAE</div>
     <div class="controls" aria-label="Controls">WASD / stick · move &nbsp; SPACE / A · tomato &nbsp; Q / B · banana &nbsp; SHIFT / RB · dodge &nbsp; G · graphics &nbsp; H · HUD &nbsp; R · motion &nbsp; P · palette &nbsp; M · audio</div>
     <div id="network" class="network" aria-label="Network diagnostics">connecting…</div>
+    <section id="party-lobby" class="party-lobby" aria-label="Private match waiting room" hidden>
+      <div class="party-heading"><span>PRIVATE MATCH</span><strong id="party-room"></strong></div>
+      <p>Invite friends with the invite button. The round begins when a second player joins.</p>
+      <ul id="party-players" aria-label="Players in this room"></ul>
+    </section>
     <div id="connection-status" class="connection-status" role="status" aria-live="polite" hidden>
       <strong id="connection-message"></strong>
       <button id="rejoin" type="button" hidden>Rejoin match</button>

@@ -97,6 +97,7 @@ const FoodFightState = schema(
     redScore: t.uint16().default(0),
     timeRemaining: t.number().default(GAME.roundSeconds),
     phase: t.string().default("waiting"),
+    privateMatch: t.boolean().default(false),
     phaseRemaining: t.number().default(GAME.preRoundSeconds),
     objectiveOwner: t.string().default("none"),
     objectiveContested: t.boolean().default(false),
@@ -119,6 +120,7 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
 
   onCreate(options: { privateRoom?: boolean } = {}) {
     if (options.privateRoom === true) {
+      this.state.privateMatch = true;
       this.isInviteOnly = true;
       this.setPrivate(true);
     }
@@ -335,7 +337,12 @@ export class FoodFightRoom extends Room<{ state: FoodFightState }> {
   }
 
   private tickWaiting(dt: number) {
-    if (this.state.players.size === 0) {
+    // Public quick play is solo-capable; invite rooms wait for two active players.
+    let activePlayers = 0;
+    this.state.players.forEach((player: PlayerState) => {
+      if (player.connected) activePlayers += 1;
+    });
+    if (activePlayers === 0 || (this.state.privateMatch && activePlayers < 2)) {
       this.state.phaseRemaining = GAME.preRoundSeconds;
       return;
     }
