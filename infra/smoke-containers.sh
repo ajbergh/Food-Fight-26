@@ -88,6 +88,7 @@ docker run --detach \
   --env GAME_SERVER_PUBLIC_URL=https://match.smoke.example \
   --env PLATFORM_API_PUBLIC_URL=https://api.smoke.example \
   --env FOOD_FIGHT_RELEASE=sha-smoke-test \
+  --env WEB_SHELL_PUBLIC_URL=https://home.smoke.example \
   --publish 38081:8080 \
   "$game_client_image" >/dev/null
 
@@ -105,6 +106,7 @@ runtime_config="$(curl --fail --silent --show-error http://127.0.0.1:38081/runti
 assert_contains "$runtime_config" 'gameServerUrl: "https://match.smoke.example"'
 assert_contains "$runtime_config" 'platformApiUrl: "https://api.smoke.example"'
 assert_contains "$runtime_config" 'release: "sha-smoke-test"'
+assert_contains "$runtime_config" 'webShellUrl: "https://home.smoke.example"'
 web_runtime_config="$(curl --fail --silent --show-error http://127.0.0.1:38080/runtime-config.js)"
 assert_contains "$web_runtime_config" 'gameUrl: "https://game.smoke.example"'
 web_html="$(curl --fail --silent --show-error http://127.0.0.1:38080/)"
