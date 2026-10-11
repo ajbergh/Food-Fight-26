@@ -22,6 +22,7 @@ This directory is the product and engineering source of truth for the initial ve
 - [Testing and QA](testing-qa.md)
 - [Cross-browser guest shell matrix](cross-browser-matrix.md)
 - [Deployment and operations](deployment-and-operations.md)
+- [Immutable guest-alpha hosting reference](alpha-hosting.md)
 - [Observability](observability.md)
 
 ## Art

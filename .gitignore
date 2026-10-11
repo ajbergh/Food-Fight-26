@@ -11,3 +11,6 @@ coverage/
 artifacts/
 apps/game-client/public/assets/third-party/kenney-food-kit/
 apps/game-client/public/assets/third-party/kenney-furniture-kit/
+
+# Hosted alpha DNS/configuration (never commit deployment-specific env or secrets)
+infra/alpha.env
