@@ -98,3 +98,7 @@ Measure per match:
 - disconnect/reconnect frequency.
 
 Public rooms are hidden from Quick Play while every held seat is disconnected, preventing lingering held seats from contaminating a new public session.
+
+## Private-room rematches
+
+Private matches display a post-round results panel. Connected participants must individually select **Ready for rematch**. The authoritative server accepts only votes referencing the current round, waits for at least two connected players and unanimous connected-player approval, then resets all votes and begins the usual pre-round countdown. Disconnect-held seats do not count toward the quorum. Public Quick Play keeps the existing automatic next-round transition. Both modes provide an explicit Leave Match button, returning to the runtime-configured landing page after closing the player's Colyseus session.

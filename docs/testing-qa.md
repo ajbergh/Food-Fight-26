@@ -124,3 +124,7 @@ The server retains dropped player seats for 20 seconds via Colyseus lifecycle ho
 ## Private room start gate
 
 Private rooms retain a waiting phase with a visible roster and room code until two connected players are present; reconnect-held seats do not count as active. Confirm the two-browser join flow and that Quick Play still starts alone. Ready-vote and rematch workflows are separate work.
+
+## Consent-based rematch acceptance
+
+Server-side vote validation and pure quorum rules are unit tested for stale round IDs, malformed inputs, missing players and disconnected seats. The browser results panel displays authoritative scores, current ready count, and a Leave Match action. A live two-browser full-round vote and intentional leave/rejoin should be manually checked before opening public alpha access.
