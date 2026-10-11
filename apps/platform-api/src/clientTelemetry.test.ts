@@ -29,6 +29,18 @@ describe("client telemetry", () => {
     ).toEqual({ fps: 60, release: "sha-test" });
   });
 
+  it("bounds unique-session tracking under sustained anonymous traffic", () => {
+    const store = new ClientTelemetryStore(2);
+    for (const id of ["a", "b", "c"]) {
+      store.record({ ...baseEvent, sessionId: id });
+    }
+    expect(store.summary()).toMatchObject({
+      received: 3,
+      uniqueSessions: 2,
+      sessionIdsEvicted: 1,
+    });
+  });
+
   it("aggregates event counts, releases, and frame percentiles without retaining raw events", () => {
     const store = new ClientTelemetryStore();
     for (const fps of [60, 58, 30]) {
