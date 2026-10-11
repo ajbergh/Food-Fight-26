@@ -132,3 +132,5 @@ Server-side vote validation and pure quorum rules are unit tested for stale roun
 ## Private-party ready-up gate
 
 Two invited participants must each select **Ready to start** before their first private round begins. The authoritative server ignores votes outside waiting phase and stale round IDs; dropped seats do not satisfy the minimum party count. The real two-page browser test confirms that joining does not start play until both users consent. Rematch consent automatically carries forward to the subsequent pre-round countdown, so players are not asked to confirm twice. Quick Play keeps its solo-capable automatic countdown.
+
+This ready-up gate is intentionally server-authoritative and is checked through `privateReadyRules.test.ts`; UI roster readiness cannot by itself advance the round. Repeat the two-browser readiness test after changes to matchmaking, team membership, or reconnection lifecycle.
