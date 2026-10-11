@@ -33,3 +33,7 @@ For rollback, update the private env file to the **previous validated SHA** and 
 This Compose graph deliberately omits Postgres and Redis because the current guest-match API does not yet persist user accounts/match history or implement distributed matchmaking. It also does **not** constitute durable observability, scalable regional hosting, infrastructure backups, private invite authorization, or a completed M18 hardware/visual acceptance. The platform API's in-process telemetry summary is not a production metrics store. Require a separately measured external alpha, ingress abuse controls, and issue #58 acceptance before calling the service production-ready.
 
 The accompanying CI job validates **configuration syntax only**. It does not provision DNS, TLS certificates, a server, or public access.
+
+## Browser telemetry ingress limits
+
+The platform API caps browser telemetry at 3,000 requests/minute process-wide and 60 valid events/minute per anonymous session, with bounded concurrent session accounting. Excess requests return HTTP 429 and Retry-After; game-client telemetry remains best-effort. These controls are intentionally global/session scoped rather than relying on easily spoofed forwarded IP headers; they are an initial alpha safeguard, not a CDN/WAF replacement or distributed rate limit. Monitor rejection volume and upstream ingress configuration during playtesting.
