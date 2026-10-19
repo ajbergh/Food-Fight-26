@@ -11,7 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@colyseus/schema": "5.0.36",
+    "@colyseus/schema": "5.0.40",
     "@colyseus/ws-transport": "0.18.4",
     "@foodfight/game-core": "workspace:*",
     "@foodfight/maps": "workspace:*",
